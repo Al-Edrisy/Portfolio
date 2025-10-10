@@ -653,15 +653,6 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">Author</div>
-                        <div className="text-sm text-muted-foreground">
-                          Salih Ben Otman
-                        </div>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

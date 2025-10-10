@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Plus, Edit } from "lucide-react"
 import Link from "next/link"
 import { ModernProjectsList } from "@/components/projects/modern-projects-list"
+import StickySidebar from "@/components/ui/sticky-sidebar"
+import ProjectsSidebar from "@/components/projects/sidebar/projects-sidebar"
 
 export default function ProjectsSection() {
   const { user } = useAuth()
@@ -17,14 +19,14 @@ export default function ProjectsSection() {
   const isAdmin = user?.role === 'admin'
 
   return (
-    <section id="projects" className="py-20 bg-muted/30 relative overflow-hidden">
+    <section id="projects" className="py-8 bg-muted/30 relative overflow-hidden">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <SplitText
             text="Featured Projects"
@@ -64,8 +66,20 @@ export default function ProjectsSection() {
         </motion.div>
 
 
-        {/* Projects List with Pagination */}
-        <ModernProjectsList />
+        {/* Projects Layout with Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Content - Projects List */}
+          <div className="lg:col-span-8">
+            <ModernProjectsList />
+          </div>
+
+          {/* Sticky Sidebar */}
+          <div className="hidden lg:block lg:col-span-4">
+            <StickySidebar offsetTop={100} offsetBottom={40}>
+              <ProjectsSidebar />
+            </StickySidebar>
+          </div>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}

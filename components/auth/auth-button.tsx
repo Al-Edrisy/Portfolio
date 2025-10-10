@@ -112,6 +112,7 @@ function AuthButtonContent({
   onSignIn: () => void
   onLogout: () => void
 }) {
+  const router = useRouter()
 
   if (loading) {
     return (
@@ -166,15 +167,19 @@ function AuthButtonContent({
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
+          <User className="mr-2 h-4 w-4" />
+          <span>My Profile</span>
+        </DropdownMenuItem>
         {isAdmin && (
           <>
             <DropdownMenuItem onClick={onAdminPanel} className="cursor-pointer">
               <Crown className="mr-2 h-4 w-4" />
               <span>Admin Panel</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

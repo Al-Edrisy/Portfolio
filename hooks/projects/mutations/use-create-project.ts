@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { collection, addDoc, serverTimestamp, updateDoc, increment } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, updateDoc, increment, doc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { ProjectFormData, Project } from '@/types'
 import { COLLECTIONS } from '@/lib/firebase/utils'

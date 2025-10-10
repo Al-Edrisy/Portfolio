@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 const techCategories = {
   'Frontend': {
     icon: Globe,
-    color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800',
+    color: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
     items: [
       'React', 'Vue.js', 'Angular', 'Svelte', 'Next.js', 'Nuxt.js',
       'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Sass', 'Tailwind CSS',
@@ -32,7 +32,7 @@ const techCategories = {
   },
   'Mobile': {
     icon: Smartphone,
-    color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800',
+    color: 'bg-secondary/10 text-secondary-foreground border-secondary/20 hover:bg-secondary/20',
     items: [
       'React Native', 'Flutter', 'Swift', 'Kotlin', 'Dart', 'Ionic',
       'Xamarin', 'Cordova', 'Expo', 'NativeScript'
@@ -40,7 +40,7 @@ const techCategories = {
   },
   'Backend': {
     icon: Code,
-    color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-800',
+    color: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
     items: [
       'Node.js', 'Python', 'Django', 'Flask', 'FastAPI', 'Express.js',
       'Ruby', 'Ruby on Rails', 'PHP', 'Laravel', 'Symfony', 'Java',
@@ -49,7 +49,7 @@ const techCategories = {
   },
   'Database': {
     icon: Database,
-    color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-300 dark:border-orange-800',
+    color: 'bg-accent/10 text-accent-foreground border-accent/20 hover:bg-accent/20',
     items: [
       'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Firebase', 'Supabase',
       'SQLite', 'DynamoDB', 'Elasticsearch', 'Cassandra', 'Neo4j'
@@ -57,7 +57,7 @@ const techCategories = {
   },
   'Cloud & DevOps': {
     icon: Cloud,
-    color: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-300 dark:border-cyan-800',
+    color: 'bg-card/50 text-card-foreground border-border hover:bg-card',
     items: [
       'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'Vercel',
       'Netlify', 'Heroku', 'Railway', 'DigitalOcean', 'Terraform', 'Jenkins'
@@ -65,7 +65,7 @@ const techCategories = {
   },
   'Design & Tools': {
     icon: Palette,
-    color: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950/30 dark:text-pink-300 dark:border-pink-800',
+    color: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20',
     items: [
       'Figma', 'Sketch', 'Adobe XD', 'Photoshop', 'Illustrator', 'Framer',
       'Webflow', 'Git', 'GitHub', 'GitLab', 'Bitbucket', 'VS Code'

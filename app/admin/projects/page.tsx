@@ -1,23 +1,25 @@
 "use client"
 
-import { useProjects } from '@/hooks/projects'
+import { useAdminProjects } from '@/hooks/projects/use-admin-projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Edit, Eye, EyeOff, Trash2 } from 'lucide-react'
+import { Plus, Edit, Eye, EyeOff, Trash2, Globe, Globe2 } from 'lucide-react'
 import Navigation from '@/components/ui/navigation'
 import { UserCursor } from '@/components/ui/custom-cursor'
 import { CursorProvider } from '@/components/ui/custom-cursor'
 import { useToggleFeatured } from '@/hooks/projects/mutations'
 import { useDeleteProject } from '@/hooks/projects/mutations'
+import { useTogglePublished } from '@/hooks/projects/mutations/use-toggle-published'
 
 export default function AdminProjectsPage() {
   const { user } = useAuth()
   const router = useRouter()
-  const { projects, loading } = useProjects()
+  const { projects, loading, refresh } = useAdminProjects()
   const { toggleFeatured } = useToggleFeatured()
   const { deleteProject } = useDeleteProject()
+  const { togglePublished } = useTogglePublished()
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -42,11 +44,18 @@ export default function AdminProjectsPage() {
 
   const handleToggleFeatured = async (projectId: string) => {
     await toggleFeatured(projectId)
+    refresh()
+  }
+
+  const handleTogglePublished = async (projectId: string, currentStatus: boolean) => {
+    await togglePublished(projectId, currentStatus)
+    refresh()
   }
 
   const handleDeleteProject = async (projectId: string) => {
     if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       await deleteProject(projectId)
+      refresh()
     }
   }
 
@@ -163,6 +172,24 @@ export default function AdminProjectsPage() {
                       >
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant={project.published ? "default" : "secondary"}
+                        onClick={() => handleTogglePublished(project.id, project.published)}
+                      >
+                        {project.published ? (
+                          <>
+                            <Globe className="w-4 h-4 mr-1" />
+                            Published
+                          </>
+                        ) : (
+                          <>
+                            <Globe2 className="w-4 h-4 mr-1" />
+                            Publish
+                          </>
+                        )}
                       </Button>
                       
                       <Button

@@ -15,7 +15,8 @@ service cloud.firestore {
     function isDeveloper() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer';
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer' ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
     
     function isValidUser() {
@@ -89,20 +90,16 @@ service cloud.firestore {
     
     // Comments collection
     match /comments/{commentId} {
-      // Everyone can read comments (for published projects), authenticated users can read all
+      // Everyone can read comments
       allow read: if true;
       
-      // Users can create comments for themselves - simplified validation
+      // Any authenticated user can create comments
       allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.content is string &&
-                       request.resource.data.content.size() > 0 &&
-                       request.resource.data.content.size() <= 1000;
+                       request.resource.data.userId == request.auth.uid;
       
       // Users can update their own comments, developers can update any
       allow update: if isAuthenticated() &&
-                       (resource.data.userId == request.auth.uid || isDeveloper()) &&
-                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt', 'likesCount', 'repliesCount', 'userLikes']);
+                       (resource.data.userId == request.auth.uid || isDeveloper());
       
       // Users can delete their own comments, developers can delete any
       allow delete: if isAuthenticated() &&
