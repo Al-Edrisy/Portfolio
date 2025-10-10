@@ -44,7 +44,12 @@ export function useUpdateProject() {
       if (projectData.description !== undefined) updateData.description = projectData.description
       if (projectData.longDescription !== undefined) updateData.longDescription = projectData.longDescription
       if (projectData.tech !== undefined) updateData.tech = projectData.tech
-      if (projectData.category !== undefined) updateData.category = projectData.category
+      if (projectData.categories !== undefined) {
+        updateData.categories = projectData.categories
+        updateData.category = projectData.categories[0] || '' // Keep legacy field in sync
+      } else if (projectData.category !== undefined) {
+        updateData.category = projectData.category // Legacy support
+      }
       if (projectData.link !== undefined) updateData.link = projectData.link
       if (projectData.github !== undefined) updateData.github = projectData.github
       
@@ -86,7 +91,8 @@ export function useUpdateProject() {
         description: projectData.description || '',
         image: projectData.image || '',
         tech: projectData.tech || [],
-        category: projectData.category || '',
+        categories: projectData.categories || [],
+        category: projectData.categories?.[0] || projectData.category,
         link: projectData.link || '',
         github: projectData.github || '',
         createdAt: new Date(), // Would need to fetch from Firestore for accurate timestamp

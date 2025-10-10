@@ -64,7 +64,7 @@ export function ProjectForm({
     image: project?.image || '',
     images: project?.image ? [project.image] : [],
     tech: project?.tech || [],
-    category: project?.category || '',
+    categories: project?.categories || (project?.category ? [project.category] : []), // Support both new and legacy
     link: project?.link || '',
     github: project?.github || '',
     published: project?.published || false
@@ -84,7 +84,7 @@ export function ProjectForm({
     const total = 5
 
     if (formData.title && formData.description) completed++
-    if (formData.image && formData.category) completed++
+    if (formData.image && formData.categories && formData.categories.length > 0) completed++
     if (formData.tech && formData.tech.length > 0) completed++
     if (formData.link || formData.github) completed++
     if (formData.published !== undefined) completed++
@@ -109,7 +109,7 @@ export function ProjectForm({
         image: project.image,
         images: project.image ? [project.image] : [],
         tech: project.tech,
-        category: project.category,
+        categories: project.categories || (project.category ? [project.category] : []), // Support both new and legacy
         link: project.link,
         github: project.github,
         published: project.published
@@ -154,8 +154,8 @@ export function ProjectForm({
       newErrors.longDescription = 'Long description must be 2000 characters or less'
     }
 
-    if (!formData.category) {
-      newErrors.category = 'Please select a category'
+    if (!formData.categories || formData.categories.length === 0) {
+      newErrors.categories = 'Please select at least one category'
     }
 
     if (formData.tech.length === 0) {
@@ -466,19 +466,19 @@ export function ProjectForm({
                   transition={{ delay: 0.1 }}
                   className="space-y-3"
                 >
-                  <Label className="text-sm font-semibold">Project Category *</Label>
+                  <Label className="text-sm font-semibold">Project Categories *</Label>
                   <CompactCategoryPicker
-                    selectedCategory={formData.category as any}
-                    onCategoryChange={(category) => handleInputChange('category', category)}
+                    selectedCategories={formData.categories as any}
+                    onCategoriesChange={(categories) => handleInputChange('categories', categories)}
                   />
-                  {errors.category && (
+                  {errors.categories && (
                     <motion.p 
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="text-sm text-red-500 flex items-center gap-2"
                     >
                       <AlertCircle className="w-4 h-4" />
-                      {errors.category}
+                      {errors.categories}
                     </motion.p>
                   )}
                 </motion.div>

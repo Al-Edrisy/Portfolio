@@ -47,8 +47,8 @@ service cloud.firestore {
                        !('role' in request.resource.data.diff(resource.data).affectedKeys())) ||
                       isDeveloper();
       
-      // Only developers can delete users
-      allow delete: if isDeveloper();
+      // Users can delete their own account, developers can delete any
+      allow delete: if isOwner(userId) || isDeveloper();
     }
     
     // Projects collection
@@ -104,6 +104,27 @@ service cloud.firestore {
       // Users can delete their own comments, developers can delete any
       allow delete: if isAuthenticated() &&
                        (resource.data.userId == request.auth.uid || isDeveloper());
+    }
+    
+    // Feedback collection
+    match /feedback/{feedbackId} {
+      // Public: Everyone can read all feedback (no authentication required)
+      allow read: if true;
+      
+      // Only authenticated users can create feedback
+      // The one-time check is also enforced in the application layer
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 6 &&
+                       request.resource.data.comment.size() >= 10 &&
+                       request.resource.data.comment.size() <= 500;
+      
+      // Only developers can update feedback (for moderation)
+      allow update: if isDeveloper();
+      
+      // Only developers can delete feedback
+      allow delete: if isDeveloper();
     }
     
     // Views collection (for tracking unique project views)

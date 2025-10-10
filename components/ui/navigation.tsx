@@ -34,7 +34,7 @@ export default function Navigation() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > 20)
     }
 
     window.addEventListener("scroll", handleScroll)
@@ -50,19 +50,22 @@ export default function Navigation() {
   }
 
   return (
-    <motion.nav
+    <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/90 backdrop-blur-md border-b border-border shadow-lg" : "bg-transparent"
+        isScrolled 
+          ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm" 
+          : "bg-transparent"
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-20">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
             <motion.div
-              className="text-xl font-bold text-foreground hover:text-primary transition-colors duration-200 cursor-pointer"
+              className="text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors duration-200"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -70,52 +73,54 @@ export default function Navigation() {
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link key={item.name} href={item.href}>
-                <motion.div
-                  className={`relative text-sm font-medium transition-colors duration-200 cursor-pointer ${
-                    isActiveRoute(item.href)
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {item.name}
-                  {isActiveRoute(item.href) && (
-                    <motion.div
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
-                      layoutId="activeSection"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                </motion.div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Developer Menu */}
-            {canManageProjects && (
-              <div className="flex items-center space-x-2">
-                <Link href="/projects/create">
-                  <motion.button
-                    className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/20 hover:border-primary/40 rounded-lg"
-                    whileHover={{ scale: 1.05 }}
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden lg:flex items-center justify-center flex-1 px-8">
+            <div className="flex items-center space-x-1">
+              {navItems.map((item) => (
+                <Link key={item.name} href={item.href}>
+                  <motion.div
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-md ${
+                      isActiveRoute(item.href)
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    }`}
+                    whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    + Add Project
+                    {item.name}
+                    {isActiveRoute(item.href) && (
+                      <motion.div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
+                        layoutId="activeIndicator"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+            {canManageProjects && (
+              <div className="flex items-center gap-1 mr-1">
+                <Link href="/projects/create">
+                  <motion.button
+                    className="px-3 py-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/30 hover:border-primary/50 rounded-md hover:bg-primary/5"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    + Project
                   </motion.button>
                 </Link>
                 {isAdmin && (
                   <Link href="/admin/projects">
                     <motion.button
-                      className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 hover:bg-accent/50 rounded-md"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       Manage
                     </motion.button>
@@ -127,7 +132,7 @@ export default function Navigation() {
             {mounted && (
               <motion.button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors duration-200"
+                className="p-2 rounded-md hover:bg-accent/50 transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Toggle theme"
@@ -144,9 +149,9 @@ export default function Navigation() {
 
             <Link href="/contact">
               <motion.button
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors duration-200"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="ml-2 px-5 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors duration-200 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 Hire Me
               </motion.button>
@@ -155,40 +160,41 @@ export default function Navigation() {
 
           {/* Mobile menu button */}
           <motion.button
-            className="md:hidden text-foreground p-2"
+            className="lg:hidden p-2 text-foreground rounded-md hover:bg-accent/50 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label="Toggle menu"
           >
-            <motion.div
-              animate={isMobileMenuOpen ? "open" : "closed"}
-              className="w-6 h-6 flex flex-col justify-center items-center"
-            >
+            <div className="w-5 h-5 flex flex-col justify-center items-center gap-1">
               <motion.span
-                variants={{
-                  closed: { rotate: 0, y: 0 },
-                  open: { rotate: 45, y: 6 },
+                animate={{
+                  rotate: isMobileMenuOpen ? 45 : 0,
+                  y: isMobileMenuOpen ? 4 : 0,
                 }}
-                className="w-6 h-0.5 bg-current block mb-1.5 origin-center transition-all duration-300"
+                className="w-5 h-0.5 bg-current rounded-full"
+                transition={{ duration: 0.2 }}
               />
               <motion.span
-                variants={{
-                  closed: { opacity: 1 },
-                  open: { opacity: 0 },
+                animate={{
+                  opacity: isMobileMenuOpen ? 0 : 1,
+                  scale: isMobileMenuOpen ? 0 : 1,
                 }}
-                className="w-6 h-0.5 bg-current block mb-1.5 transition-all duration-300"
+                className="w-5 h-0.5 bg-current rounded-full"
+                transition={{ duration: 0.2 }}
               />
               <motion.span
-                variants={{
-                  closed: { rotate: 0, y: 0 },
-                  open: { rotate: -45, y: -6 },
+                animate={{
+                  rotate: isMobileMenuOpen ? -45 : 0,
+                  y: isMobileMenuOpen ? -4 : 0,
                 }}
-                className="w-6 h-0.5 bg-current block origin-center transition-all duration-300"
+                className="w-5 h-0.5 bg-current rounded-full"
+                transition={{ duration: 0.2 }}
               />
-            </motion.div>
+            </div>
           </motion.button>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile Menu */}
       <AnimatePresence>
@@ -197,82 +203,89 @@ export default function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-background/95 backdrop-blur-md border-t border-border"
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="lg:hidden bg-background/95 backdrop-blur-lg border-t border-border/50"
           >
-            <div className="container mx-auto px-6 py-6">
-              <div className="flex flex-col space-y-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+              {/* Navigation Links */}
+              <div className="space-y-1 mb-4">
                 {navItems.map((item, index) => (
                   <Link key={item.name} href={item.href} onClick={closeMobileMenu}>
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`text-left py-2 px-4 rounded-lg transition-colors duration-200 cursor-pointer ${
+                      transition={{ delay: index * 0.05, duration: 0.2 }}
+                      className={`text-left py-3 px-4 rounded-md transition-colors duration-200 ${
                         isActiveRoute(item.href)
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "text-primary bg-primary/10 font-medium"
+                          : "text-foreground hover:bg-accent/50"
                       }`}
                     >
                       {item.name}
                     </motion.div>
                   </Link>
                 ))}
+              </div>
 
-                {/* Developer Mobile Menu */}
-                {canManageProjects && (
-                  <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-                    <Link href="/projects/create" onClick={closeMobileMenu}>
+              {/* Developer Actions */}
+              {canManageProjects && (
+                <div className="space-y-1 py-3 border-t border-border/50">
+                  <Link href="/projects/create" onClick={closeMobileMenu}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2, duration: 0.2 }}
+                      className="text-left py-3 px-4 rounded-md transition-colors duration-200 text-primary hover:bg-primary/10 font-medium"
+                    >
+                      + Add New Project
+                    </motion.div>
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin/projects" onClick={closeMobileMenu}>
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-left py-2 px-4 rounded-lg transition-colors duration-200 cursor-pointer text-primary hover:text-primary/80 hover:bg-primary/10"
+                        transition={{ delay: 0.25, duration: 0.2 }}
+                        className="text-left py-3 px-4 rounded-md transition-colors duration-200 text-foreground hover:bg-accent/50"
                       >
-                        + Add New Project
+                        Manage Projects
                       </motion.div>
                     </Link>
-                    {isAdmin && (
-                      <Link href="/admin/projects" onClick={closeMobileMenu}>
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-left py-2 px-4 rounded-lg transition-colors duration-200 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted"
-                        >
-                          Manage Projects
-                        </motion.div>
-                      </Link>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
 
-                <div className="flex flex-col space-y-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    {mounted && (
-                      <motion.button
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors duration-200"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Toggle theme"
-                      >
-                        {theme === "dark" ? (
-                          <Sun className="h-4 w-4 text-foreground" />
-                        ) : (
-                          <Moon className="h-4 w-4 text-foreground" />
-                        )}
-                      </motion.button>
-                    )}
-
-                    <AuthButton />
-                  </div>
-
-                  <Link href="/contact" onClick={closeMobileMenu}>
+              {/* Bottom Actions */}
+              <div className="pt-3 border-t border-border/50 space-y-3">
+                <div className="flex items-center justify-between px-4">
+                  <span className="text-sm text-muted-foreground">Theme</span>
+                  {mounted && (
                     <motion.button
-                      className="w-full px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors duration-200"
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="p-2 rounded-md hover:bg-accent/50 transition-colors duration-200"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label="Toggle theme"
+                    >
+                      {theme === "dark" ? (
+                        <Sun className="h-4 w-4 text-foreground" />
+                      ) : (
+                        <Moon className="h-4 w-4 text-foreground" />
+                      )}
+                    </motion.button>
+                  )}
+                </div>
+
+                <div className="px-4">
+                  <AuthButton />
+                </div>
+
+                <div className="px-4">
+                  <Link href="/contact" onClick={closeMobileMenu}>
+                    <motion.button
+                      className="w-full px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors duration-200 shadow-sm"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       Hire Me
                     </motion.button>
@@ -283,6 +296,6 @@ export default function Navigation() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </motion.header>
   )
 }

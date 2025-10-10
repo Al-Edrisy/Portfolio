@@ -80,7 +80,6 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
     loading: commentsLoading 
   } = useProjectComments(projectId)
 
-  const { addReaction } = useAddReaction()
   const { incrementView } = useIncrementView()
 
   // Increment view count when page loads
@@ -646,9 +645,16 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
                     <div className="flex items-center gap-3">
                       <Tag className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <div className="text-sm font-medium">Category</div>
-                        <div className="text-sm text-muted-foreground">
-                          {project.category}
+                        <div className="text-sm font-medium">Categories</div>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {(project.categories && project.categories.length > 0 
+                            ? project.categories 
+                            : project.category ? [project.category] : ['Uncategorized']
+                          ).map((cat, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {cat}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     </div>

@@ -227,7 +227,7 @@ export function AdminDashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => router.push(`/admin/projects/${project.id}/edit`)}
+                          onClick={() => router.push(`/projects/${project.id}/edit`)}
                         >
                           Edit
                         </Button>

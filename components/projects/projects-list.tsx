@@ -29,7 +29,7 @@ export function ProjectsList() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
   const handleEdit = (projectId: string) => {
-    router.push(`/admin/projects/${projectId}/edit`)
+    router.push(`/projects/${projectId}/edit`)
   }
 
   const handleDelete = async (projectId: string) => {

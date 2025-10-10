@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Plus, Edit } from "lucide-react"
 import Link from "next/link"
 import { ModernProjectsList } from "@/components/projects/modern-projects-list"
-import StickySidebar from "@/components/ui/sticky-sidebar"
-import ProjectsSidebar from "@/components/projects/sidebar/projects-sidebar"
 
 export default function ProjectsSection() {
   const { user } = useAuth()
@@ -66,19 +64,9 @@ export default function ProjectsSection() {
         </motion.div>
 
 
-        {/* Projects Layout with Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Content - Projects List */}
-          <div className="lg:col-span-8">
-            <ModernProjectsList />
-          </div>
-
-          {/* Sticky Sidebar */}
-          <div className="hidden lg:block lg:col-span-4">
-            <StickySidebar offsetTop={100} offsetBottom={40}>
-              <ProjectsSidebar />
-            </StickySidebar>
-          </div>
+        {/* Projects List */}
+        <div className="max-w-4xl mx-auto">
+          <ModernProjectsList />
         </div>
 
         <motion.div

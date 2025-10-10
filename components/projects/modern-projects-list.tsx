@@ -91,7 +91,7 @@ export function ModernProjectsList() {
 
 
   const handleEdit = useCallback((projectId: string) => {
-    router.push(`/admin/projects/${projectId}/edit`)
+    router.push(`/projects/${projectId}/edit`)
   }, [router])
 
   const handleDelete = useCallback(async (projectId: string) => {

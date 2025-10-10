@@ -7,7 +7,8 @@ export interface Project {
   description: string
   image: string
   tech: string[]
-  category: string
+  categories: string[] // Support multiple categories
+  category?: string // Deprecated: Keep for backward compatibility
   link: string
   github: string
   createdAt: Date
@@ -55,6 +56,28 @@ export interface User {
   createdAt: Date
 }
 
+export interface Feedback {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  userEmail: string
+  rating: number // 1-6 stars
+  comment: string
+  projectId?: string
+  projectTitle?: string
+  approved: boolean
+  featured: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface FeedbackFormData {
+  rating: number
+  comment: string
+  projectId?: string
+}
+
 // 8 popular reaction types as requested
 export type ReactionType = 
   | 'like'    // 👍 ThumbsUp
@@ -80,7 +103,8 @@ export interface ProjectDocument {
   description: string
   image: string
   tech: string[]
-  category: string
+  categories: string[] // Support multiple categories
+  category?: string // Deprecated: Keep for backward compatibility
   link: string
   github: string
   createdAt: FirebaseFirestore.Timestamp
@@ -115,6 +139,21 @@ export interface UserDocument {
   createdAt: FirebaseFirestore.Timestamp
 }
 
+export interface FeedbackDocument {
+  userId: string
+  userName: string
+  userAvatar?: string
+  userEmail: string
+  rating: number
+  comment: string
+  projectId?: string
+  projectTitle?: string
+  approved: boolean
+  featured: boolean
+  createdAt: FirebaseFirestore.Timestamp
+  updatedAt: FirebaseFirestore.Timestamp
+}
+
 // API Response types
 export interface ApiResponse<T> {
   success: boolean
@@ -128,8 +167,11 @@ export interface ProjectFormData {
   title: string
   description: string
   image: string
+  images?: string[]
+  longDescription?: string
   tech: string[]
-  category: string
+  categories: string[] // Support multiple categories
+  category?: string // Deprecated: Keep for backward compatibility
   link: string
   github: string
   published: boolean
@@ -142,7 +184,8 @@ export interface CommentFormData {
 
 // Filter and search types
 export interface ProjectFilters {
-  category?: string
+  categories?: string[] // Support filtering by multiple categories
+  category?: string // Deprecated: Keep for backward compatibility
   search?: string
   published?: boolean
 }

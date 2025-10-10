@@ -171,6 +171,31 @@ export interface AnalyticsDocument {
 }
 
 // ============================================================================
+// FEEDBACK COLLECTION
+// ============================================================================
+export interface FeedbackDocument {
+  // User identification
+  userId: string
+  userName: string
+  userAvatar?: string
+  userEmail: string
+  
+  // Feedback content
+  rating: number // 1-6 stars
+  comment: string
+  projectId?: string // Optional: specific project reference
+  projectTitle?: string // Denormalized for display
+  
+  // Status
+  approved: boolean // For moderation
+  featured: boolean // Highlight on home page
+  
+  // Timestamps
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+// ============================================================================
 // COLLECTION CONFIGURATIONS
 // ============================================================================
 
@@ -179,7 +204,8 @@ export const COLLECTIONS = {
   COMMENTS: 'comments',
   REACTIONS: 'reactions',
   USERS: 'users',
-  ANALYTICS: 'analytics'
+  ANALYTICS: 'analytics',
+  FEEDBACK: 'feedback'
 } as const
 
 // ============================================================================
@@ -218,6 +244,13 @@ export const REQUIRED_INDEXES = {
   users: [
     { fields: ['role', 'createdAt'], order: ['role', 'createdAt'] },
     { fields: ['createdAt'], order: ['createdAt'] }
+  ],
+  
+  // Feedback indexes
+  feedback: [
+    { fields: ['userId'], order: ['userId'] },
+    { fields: ['approved', 'featured', 'createdAt'], order: ['approved', 'featured', 'createdAt'] },
+    { fields: ['projectId', 'approved', 'createdAt'], order: ['projectId', 'approved', 'createdAt'] }
   ]
 } as const
 
@@ -244,5 +277,10 @@ export const VALIDATION_RULES = {
     displayName: { min: 1, max: 50 },
     bio: { max: 500 },
     website: { max: 200 }
+  },
+  
+  FEEDBACK: {
+    comment: { min: 10, max: 500 },
+    rating: { min: 1, max: 6 }
   }
 } as const

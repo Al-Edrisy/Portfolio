@@ -186,8 +186,20 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
                     Developer
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{project.category}</span>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                  {(project.categories && project.categories.length > 0 
+                    ? project.categories 
+                    : project.category ? [project.category] : ['Uncategorized']
+                  ).slice(0, 3).map((cat, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {cat}
+                    </Badge>
+                  ))}
+                  {project.categories && project.categories.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{project.categories.length - 3}
+                    </Badge>
+                  )}
                   <span>•</span>
                   <span>{formatDistanceToNow(project.createdAt, { addSuffix: true })}</span>
                 </div>

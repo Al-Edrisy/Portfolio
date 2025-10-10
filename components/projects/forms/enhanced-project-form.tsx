@@ -71,7 +71,7 @@ export function EnhancedProjectForm({
     image: project?.image || '',
     images: project?.image ? [project.image] : [],
     tech: project?.tech || [],
-    category: project?.category || '',
+    categories: project?.categories || (project?.category ? [project.category] : []),
     link: project?.link || '',
     github: project?.github || '',
     published: project?.published || false
@@ -92,7 +92,7 @@ export function EnhancedProjectForm({
     const total = 5
 
     if (formData.title && formData.description) completed++
-    if (formData.image && formData.category) completed++
+    if (formData.image && formData.categories && formData.categories.length > 0) completed++
     if (formData.tech && formData.tech.length > 0) completed++
     if (formData.link || formData.github) completed++
     if (formData.published !== undefined) completed++
@@ -324,8 +324,9 @@ export function EnhancedProjectForm({
                   <div className="space-y-2">
                     <Label>Project Category *</Label>
                     <CategoryPicker
-                      selectedCategory={formData.category}
-                      onCategoryChange={(category) => handleInputChange('category', category)}
+                      selectedCategories={formData.category ? [formData.category] : []}
+                      onCategoriesChange={(categories) => handleInputChange('category', categories[0] || '')}
+                      maxSelections={1}
                     />
                     {errors.category && (
                       <p className="text-sm text-destructive">{errors.category}</p>

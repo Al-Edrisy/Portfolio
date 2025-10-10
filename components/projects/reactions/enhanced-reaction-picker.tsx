@@ -366,7 +366,7 @@ export default function EnhancedReactionPicker({
                 Choose your reaction
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {Object.entries(reactionConfig).map(([type, config]) => {
                   const Icon = config.icon
                   const isActive = currentUserReaction === type
@@ -376,34 +376,23 @@ export default function EnhancedReactionPicker({
                       key={type}
                       onClick={() => handleReactionClick(type as ReactionType)}
                       disabled={isReacting}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
-                        "border border-border/50 hover:border-border",
+                        "flex items-center justify-center p-3 rounded-lg transition-all duration-200",
+                        "border border-border/50 hover:border-border relative",
                         config.bgColor,
                         config.darkBgColor,
                         isActive && config.activeBg,
                         isReacting && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      <span className="text-xl">{config.emoji}</span>
-                      <div className="flex-1 text-left">
-                        <div className={cn(
-                          "font-medium text-sm",
-                          isActive ? config.activeColor : config.color
-                        )}>
-                          {config.label}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {config.description}
-                        </div>
-                      </div>
+                      <span className="text-2xl">{config.emoji}</span>
                       {isActive && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-2 h-2 bg-primary rounded-full"
+                          className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"
                         />
                       )}
                     </motion.button>

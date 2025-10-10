@@ -4,7 +4,8 @@ import HeroSection from "@/components/sections/hero-section"
 import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
-import AnimatedCards from "@/components/ui/animated-cards"
+import { FeedbackSection } from "@/components/feedback"
+import { GitHubActivitySection } from "@/components/sections/github-activity-section"
 
 export const metadata: Metadata = {
   title: "Salih Ben Otman - UI/UX Engineer & AI Systems Builder",
@@ -30,7 +31,8 @@ export default function Home() {
         <Navigation />
         <Suspense fallback={<LoadingFallback />}>
           <HeroSection />
-          <AnimatedCards />
+          <GitHubActivitySection />
+          <FeedbackSection />
         </Suspense>
       </main>
     </ErrorBoundary>

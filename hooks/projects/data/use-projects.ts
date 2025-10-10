@@ -76,7 +76,12 @@ export function useProjects(
 
   // Apply filters and sorting
   const filteredProjects = projects.filter(project => {
-    const matchesCategory = !filters.category || project.category === filters.category
+    // Support both new categories array and legacy category field
+    const projectCategories = project.categories || (project.category ? [project.category] : [])
+    const matchesCategory = !filters.category || 
+      projectCategories.includes(filters.category) ||
+      project.category === filters.category // Legacy support
+    
     const matchesSearch = !filters.search || 
       project.title.toLowerCase().includes(filters.search.toLowerCase()) ||
       project.description.toLowerCase().includes(filters.search.toLowerCase())
@@ -240,10 +245,12 @@ export function useProjectCategories() {
         const categoriesSet = new Set<string>()
         
         snapshot.docs.forEach(doc => {
-          const category = doc.data().category
-          if (category) {
-            categoriesSet.add(category)
-          }
+          const data = doc.data()
+          // Support both new categories array and legacy category field
+          const categories = data.categories || (data.category ? [data.category] : [])
+          categories.forEach((cat: string) => {
+            if (cat) categoriesSet.add(cat)
+          })
         })
         
         setCategories(Array.from(categoriesSet).sort())

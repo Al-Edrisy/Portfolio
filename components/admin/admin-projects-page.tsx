@@ -96,7 +96,7 @@ export function AdminProjectsPage() {
   }
 
   const handleEditProject = (projectId: string) => {
-    router.push(`/admin/projects/${projectId}/edit`)
+    router.push(`/projects/${projectId}/edit`)
   }
 
   const handleViewProject = (projectId: string) => {

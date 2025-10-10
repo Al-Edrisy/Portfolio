@@ -43,7 +43,8 @@ export function useCreateProject() {
         },
         
         tech: projectData.tech,
-        category: projectData.category,
+        categories: projectData.categories || [], // New: support multiple categories
+        category: projectData.categories?.[0] || projectData.category || '', // Legacy: keep for backward compatibility
         link: projectData.link || '',
         github: projectData.github || '',
         
@@ -96,7 +97,8 @@ export function useCreateProject() {
         description: projectData.description,
         image: projectData.image,
         tech: projectData.tech,
-        category: projectData.category,
+        categories: projectData.categories || [],
+        category: projectData.categories?.[0] || projectData.category,
         link: projectData.link || '',
         github: projectData.github || '',
         createdAt: new Date(),

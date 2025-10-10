@@ -126,63 +126,86 @@ const categories = {
 type CategoryKey = keyof typeof categories
 
 interface CategoryPickerProps {
-  selectedCategory: CategoryKey | null
-  onCategoryChange: (category: CategoryKey | null) => void
+  selectedCategories: CategoryKey[]
+  onCategoriesChange: (categories: CategoryKey[]) => void
   className?: string
   allowClear?: boolean
 }
 
 export function CategoryPicker({
-  selectedCategory,
-  onCategoryChange,
+  selectedCategories,
+  onCategoriesChange,
   className,
   allowClear = true
 }: CategoryPickerProps) {
   const [hoveredCategory, setHoveredCategory] = useState<CategoryKey | null>(null)
 
-  const selectedCategoryData = selectedCategory ? categories[selectedCategory] : null
-  const hoveredCategoryData = hoveredCategory ? categories[hoveredCategory] : null
+  const handleCategoryToggle = (categoryKey: CategoryKey) => {
+    if (selectedCategories.includes(categoryKey)) {
+      // Remove category
+      onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
+    } else {
+      // Add category - no limit
+      onCategoriesChange([...selectedCategories, categoryKey])
+    }
+  }
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Selected Category Display */}
-      {selectedCategory && (
+      {/* Selected Categories Display */}
+      {selectedCategories.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+          className="space-y-2"
         >
-          {selectedCategoryData && (
-            <>
-              <div className={cn(
-                "w-12 h-12 rounded-lg flex items-center justify-center",
-                selectedCategoryData.color
-              )}>
-                <selectedCategoryData.icon className="w-6 h-6" />
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                  {selectedCategoryData.label}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedCategoryData.description}
-                </p>
-              </div>
-
-              {allowClear && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Selected ({selectedCategories.length})
+            </p>
+            {allowClear && selectedCategories.length > 0 && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => onCategoryChange(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                onClick={() => onCategoriesChange([])}
+                className="text-gray-400 hover:text-gray-600 h-auto py-1"
                 >
-                  Change
+                Clear All
                 </Button>
               )}
-            </>
-          )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCategories.map(categoryKey => {
+              const category = categories[categoryKey]
+              const Icon = category.icon
+              return (
+                <motion.div
+                  key={categoryKey}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30"
+                  )}
+                >
+                  <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center">
+                    <Icon className="w-3 h-3" />
+                  </div>
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    {category.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCategoryToggle(categoryKey)}
+                    className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                  >
+                    <span className="text-lg leading-none">×</span>
+                  </button>
+                </motion.div>
+              )
+            })}
+          </div>
         </motion.div>
       )}
 
@@ -190,7 +213,7 @@ export function CategoryPicker({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {Object.entries(categories).map(([key, category]) => {
           const categoryKey = key as CategoryKey
-          const isSelected = selectedCategory === categoryKey
+          const isSelected = selectedCategories.includes(categoryKey)
           const isHovered = hoveredCategory === categoryKey
           const Icon = category.icon
 
@@ -198,7 +221,7 @@ export function CategoryPicker({
             <motion.button
               key={key}
               type="button"
-              onClick={() => onCategoryChange(categoryKey)}
+              onClick={() => handleCategoryToggle(categoryKey)}
               onMouseEnter={() => setHoveredCategory(categoryKey)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={cn(
@@ -263,7 +286,7 @@ export function CategoryPicker({
 
       {/* Instructions */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Choose a category that best describes your project
+        Select all categories that describe your project
       </div>
     </div>
   )
@@ -271,74 +294,76 @@ export function CategoryPicker({
 
 // Compact version for forms
 interface CompactCategoryPickerProps {
-  selectedCategory: CategoryKey | null
-  onCategoryChange: (category: CategoryKey | null) => void
+  selectedCategories: CategoryKey[]
+  onCategoriesChange: (categories: CategoryKey[]) => void
   className?: string
 }
 
 export function CompactCategoryPicker({
-  selectedCategory,
-  onCategoryChange,
+  selectedCategories,
+  onCategoriesChange,
   className
 }: CompactCategoryPickerProps) {
-  const selectedCategoryData = selectedCategory ? categories[selectedCategory] : null
+  const handleCategoryToggle = (categoryKey: CategoryKey) => {
+    if (selectedCategories.includes(categoryKey)) {
+      onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
+    } else {
+      onCategoriesChange([...selectedCategories, categoryKey])
+    }
+  }
 
   return (
     <div className={cn("space-y-2", className)}>
       {/* Current Selection */}
       <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        {selectedCategoryData ? (
-          <>
-            <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center",
-              selectedCategoryData.color
-            )}>
-              <selectedCategoryData.icon className="w-4 h-4" />
-            </div>
-            
-            <div className="flex-1">
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {selectedCategoryData.label}
-              </span>
-            </div>
-          </>
+        {selectedCategories.length > 0 ? (
+          <div className="flex-1">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {selectedCategories.length} {selectedCategories.length === 1 ? 'category' : 'categories'} selected
+            </span>
+          </div>
         ) : (
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Select a category
+            Select categories
           </span>
         )}
 
+        {selectedCategories.length > 0 && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => onCategoryChange(null)}
-          className="text-gray-400 hover:text-gray-600"
+            onClick={() => onCategoriesChange([])}
+            className="text-gray-400 hover:text-gray-600 h-auto py-1"
         >
-          {selectedCategory ? 'Change' : 'Select'}
+            Clear
         </Button>
+        )}
       </div>
 
       {/* Quick Selection */}
       <div className="flex flex-wrap gap-2">
-        {Object.entries(categories).slice(0, 8).map(([key, category]) => {
+        {Object.entries(categories).map(([key, category]) => {
           const categoryKey = key as CategoryKey
           const Icon = category.icon
+          const isSelected = selectedCategories.includes(categoryKey)
 
           return (
             <button
               key={key}
               type="button"
-              onClick={() => onCategoryChange(categoryKey)}
+              onClick={() => handleCategoryToggle(categoryKey)}
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm",
                 "border transition-colors",
-                category.color,
-                selectedCategory === categoryKey && "ring-2 ring-blue-500"
+                isSelected 
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500"
+                  : category.color
               )}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{category.label}</span>
+              {isSelected && <span className="ml-1">✓</span>}
             </button>
           )
         })}
