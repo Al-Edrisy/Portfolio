@@ -51,7 +51,7 @@ export interface User {
   email: string
   name: string
   avatar: string
-  role: 'admin' | 'user'
+  role: 'developer' | 'user'
   createdAt: Date
 }
 
@@ -111,7 +111,7 @@ export interface UserDocument {
   email: string
   name: string
   avatar: string
-  role: 'admin' | 'user'
+  role: 'developer' | 'user'
   createdAt: FirebaseFirestore.Timestamp
 }
 

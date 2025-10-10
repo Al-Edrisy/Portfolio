@@ -27,6 +27,11 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Error caught by boundary:", error, errorInfo)
+    
+    // Check if it's a Firebase connection error
+    if (error.message.includes('firestore') || error.message.includes('Firebase') || error.message.includes('network')) {
+      console.warn('Firebase connection issue detected')
+    }
   }
 
   render() {

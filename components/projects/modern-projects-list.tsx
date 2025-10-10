@@ -7,6 +7,8 @@ import { LinkedInStyleProjectCard } from './cards/project-card'
 import { useProjects } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useFirebaseConnection } from '@/hooks/use-firebase-connection'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectCardSkeleton } from '@/components/ui/loading-skeleton'
@@ -14,14 +16,18 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { 
   Loader2,
-  ChevronUp
+  ChevronUp,
+  Wifi,
+  WifiOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function ModernProjectsList() {
   const router = useRouter()
-  const { isAdmin } = useAuth()
+  const { isDeveloper } = useAuth()
   const { toast } = useToast()
+  const { isOnline } = useNetworkStatus()
+  const { isConnected, retry } = useFirebaseConnection()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
   
@@ -147,8 +153,31 @@ export function ModernProjectsList() {
 
   return (
     <div className="w-full space-y-6">
-
-
+      {/* Connection Status */}
+      {(!isOnline || !isConnected) && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20 flex items-center gap-3"
+        >
+          <div className="flex items-center gap-2">
+            {!isOnline ? <WifiOff className="h-4 w-4 text-orange-600" /> : <Wifi className="h-4 w-4 text-orange-600" />}
+            <span className="text-sm text-orange-800 dark:text-orange-200">
+              {!isOnline ? 'You\'re offline' : 'Connection issues detected'}
+            </span>
+        </div>
+          {isOnline && !isConnected && (
+        <Button
+          variant="outline"
+          size="sm"
+              onClick={retry}
+              className="ml-auto border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/30"
+        >
+              Retry
+        </Button>
+          )}
+        </motion.div>
+      )}
 
       {/* Projects List with Infinite Scroll */}
       <div>
@@ -177,7 +206,7 @@ export function ModernProjectsList() {
                     key={project.id}
                     project={project}
                     index={index}
-                    showAdminControls={isAdmin}
+                    showAdminControls={isDeveloper}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onTogglePublished={handleTogglePublished}

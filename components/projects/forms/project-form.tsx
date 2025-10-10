@@ -37,6 +37,9 @@ interface ProjectFormProps {
   onCancel?: () => void
   mode?: 'create' | 'edit'
   className?: string
+  onProgressChange?: (progress: number) => void
+  currentStep?: number
+  onStepChange?: (step: number) => void
 }
 
 export function ProjectForm({
@@ -44,7 +47,10 @@ export function ProjectForm({
   onSuccess,
   onCancel,
   mode = 'create',
-  className
+  className,
+  onProgressChange,
+  currentStep = 1,
+  onStepChange
 }: ProjectFormProps) {
   const { user } = useAuth()
   const { createProject, loading: creating } = useCreateProject()
@@ -66,9 +72,32 @@ export function ProjectForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
+  const [localStep, setLocalStep] = useState(currentStep)
 
   const loading = creating || updating
   const isEdit = mode === 'edit' && project
+  const activeStep = currentStep || localStep
+
+  // Calculate form progress
+  const calculateProgress = () => {
+    let completed = 0
+    const total = 5
+
+    if (formData.title && formData.description) completed++
+    if (formData.image && formData.category) completed++
+    if (formData.tech && formData.tech.length > 0) completed++
+    if (formData.link || formData.github) completed++
+    if (formData.published !== undefined) completed++
+
+    const progress = (completed / total) * 100
+    onProgressChange?.(progress)
+    return progress
+  }
+
+  // Update progress when form data changes
+  useEffect(() => {
+    calculateProgress()
+  }, [formData])
 
   // Update form data when project changes
   useEffect(() => {
@@ -87,6 +116,24 @@ export function ProjectForm({
       })
     }
   }, [project])
+
+  // Step navigation functions
+  const nextStep = () => {
+    const next = Math.min(activeStep + 1, 5)
+    onStepChange?.(next)
+    setLocalStep(next)
+  }
+
+  const prevStep = () => {
+    const prev = Math.max(activeStep - 1, 1)
+    onStepChange?.(prev)
+    setLocalStep(prev)
+  }
+
+  const goToStep = (step: number) => {
+    onStepChange?.(step)
+    setLocalStep(step)
+  }
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}

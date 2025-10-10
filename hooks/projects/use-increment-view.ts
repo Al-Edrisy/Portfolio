@@ -27,7 +27,8 @@ export function useIncrementView() {
       
       // If already viewed, don't count again (unique views)
       if (!viewSnapshot.empty) {
-        console.log('Already viewed this project')
+        // Use a more descriptive log level
+        console.debug('Already viewed this project')
         return
       }
 
@@ -44,9 +45,14 @@ export function useIncrementView() {
         viewsCount: increment(1)
       })
 
-      console.log('View counted successfully')
+      console.debug('View counted successfully')
     } catch (error) {
-      console.error('Error incrementing view:', error)
+      // More specific error handling
+      if (error instanceof Error) {
+        console.warn('Error incrementing view:', error.message)
+      } else {
+        console.warn('Unknown error incrementing view:', error)
+      }
       // Don't throw - view tracking shouldn't break the app
     }
   }, [user])

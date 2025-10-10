@@ -70,7 +70,7 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
   onDelete
 }: LinkedInStyleProjectCardProps) {
   const router = useRouter()
-  const { user, isAdmin } = useAuth()
+  const { user, isDeveloper } = useAuth()
   const [isLiked, setIsLiked] = useState(false)
   const [showCommentsModal, setShowCommentsModal] = useState(false)
   const [showReactionsModal, setShowReactionsModal] = useState(false)
@@ -107,11 +107,23 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleProjectClick = async () => {
-    // Increment view count
-    await incrementView(project.id)
+  const handleProjectClick = async (e?: React.MouseEvent) => {
+    // Prevent default behavior if event is provided
+    if (e) {
+      e.preventDefault()
+    }
+    
+    try {
+      // Increment view count (don't await to prevent blocking navigation)
+      incrementView(project.id).catch(error => {
+        console.warn('Failed to increment view:', error)
+      })
+      
     // Navigate to project - will open in modal due to intercepting routes
     router.push(`/projects/${project.id}`)
+    } catch (error) {
+      console.error('Error handling project click:', error)
+    }
   }
 
   const handleLike = async (e: React.MouseEvent) => {
@@ -183,7 +195,7 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
             </div>
             
             <div className="flex items-center gap-2 relative">
-              {(showAdminControls || isAdmin) && (
+              {(showAdminControls || isDeveloper) && (
                 <>
               <Button
                 variant="ghost"
@@ -311,8 +323,8 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div
-                    onClick={handleReactionsClick}
+              <div
+                onClick={handleReactionsClick}
                     className="hover:underline cursor-pointer transition-colors hover:text-foreground flex items-center gap-1.5"
                   >
                     {/* Show emoji previews of reactions */}
@@ -371,17 +383,17 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
                           </div>
                         )
                       })}
-                  </div>
+              </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
             
-            <button
-              onClick={handleComment}
-              className="hover:underline cursor-pointer transition-colors hover:text-foreground"
-            >
-              {comments.length} comment{comments.length !== 1 ? 's' : ''}
-            </button>
+              <button
+                onClick={handleComment}
+                className="hover:underline cursor-pointer transition-colors hover:text-foreground"
+              >
+                {comments.length} comment{comments.length !== 1 ? 's' : ''}
+              </button>
           </div>
         </div>
 
@@ -389,7 +401,7 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
         <div className="px-3 md:px-4 py-3 md:py-2 border-t border-border relative">
           <div className="flex items-center justify-between">
             <TooltipProvider>
-              <div className="flex items-center gap-1 relative z-10">
+            <div className="flex items-center gap-1 relative z-10">
                 <EnhancedReactionPicker
                 projectId={project.id}
                   currentUserReaction={getCurrentUserReaction()}
@@ -405,9 +417,9 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
                 variant="ghost"
                 size="sm"
                 onClick={handleComment}
-                      className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-2 rounded-lg hover:bg-accent transition-colors min-h-[44px] md:min-h-0"
+                className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-2 rounded-lg hover:bg-accent transition-colors min-h-[44px] md:min-h-0"
               >
-                      <MessageCircle className="h-5 w-5 md:h-4 md:w-4" />
+                <MessageCircle className="h-5 w-5 md:h-4 md:w-4" />
                       <span className="sr-only">Comment</span>
               </Button>
                   </TooltipTrigger>

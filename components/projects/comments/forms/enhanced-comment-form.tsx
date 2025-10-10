@@ -6,20 +6,7 @@ import {
   Send, 
   X, 
   Loader2, 
-  Smile, 
-  Image, 
-  Paperclip,
-  Mic,
-  AtSign,
-  Hash,
-  Bold,
-  Italic,
-  Link,
-  Code,
-  List,
-  Quote,
   Sparkles,
-  Check,
   AlertCircle
 } from 'lucide-react'
 import { useCreateComment } from '@/hooks/comments'
@@ -41,7 +28,6 @@ interface EnhancedCommentFormProps {
   autoFocus?: boolean
   className?: string
   variant?: 'default' | 'compact' | 'minimal'
-  showRichText?: boolean
 }
 
 export function EnhancedCommentForm({
@@ -52,14 +38,12 @@ export function EnhancedCommentForm({
   placeholder = "Share your thoughts...",
   autoFocus = false,
   className,
-  variant = 'default',
-  showRichText = false
+  variant = 'default'
 }: EnhancedCommentFormProps) {
   const [content, setContent] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showFormatting, setShowFormatting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
   const { user } = useAuth()
@@ -144,48 +128,6 @@ export function EnhancedCommentForm({
     }
   }
 
-  const insertFormatting = (format: string) => {
-    if (!textareaRef.current) return
-    
-    const textarea = textareaRef.current
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = content.substring(start, end)
-    
-    let formattedText = ''
-    switch (format) {
-      case 'bold':
-        formattedText = `**${selectedText || 'bold text'}**`
-        break
-      case 'italic':
-        formattedText = `*${selectedText || 'italic text'}*`
-        break
-      case 'code':
-        formattedText = `\`${selectedText || 'code'}\``
-        break
-      case 'link':
-        formattedText = `[${selectedText || 'link text'}](url)`
-        break
-      case 'quote':
-        formattedText = `> ${selectedText || 'quote'}`
-        break
-    }
-    
-    const newContent = content.substring(0, start) + formattedText + content.substring(end)
-    setContent(newContent)
-    
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start + formattedText.length, start + formattedText.length)
-    }, 0)
-  }
-
-  const addMention = () => {
-    const newContent = content + '@'
-    setContent(newContent)
-    textareaRef.current?.focus()
-  }
 
   if (!user) {
     return (
@@ -297,57 +239,6 @@ export function EnhancedCommentForm({
                     {charactersRemaining}
                   </span>
                 )}
-                
-                {showRichText && (
-                  <div className="flex items-center gap-1">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => insertFormatting('bold')}
-                            className="h-6 w-6 p-0"
-                          >
-                            <Bold className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Bold</TooltipContent>
-                      </Tooltip>
-                      
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => insertFormatting('italic')}
-                            className="h-6 w-6 p-0"
-                          >
-                            <Italic className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Italic</TooltipContent>
-                      </Tooltip>
-                      
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => insertFormatting('code')}
-                            className="h-6 w-6 p-0"
-                          >
-                            <Code className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Code</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                )}
               </div>
               
               <div className="flex items-center gap-2">
@@ -450,109 +341,6 @@ export function EnhancedCommentForm({
           />
         </div>
 
-        {/* Formatting Toolbar */}
-        <AnimatePresence>
-          {showRichText && isFocused && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t border-border/50 p-3"
-            >
-              <div className="flex items-center gap-1 flex-wrap">
-                <span className="text-xs text-muted-foreground mr-2">Format:</span>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertFormatting('bold')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Bold className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Bold text</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertFormatting('italic')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Italic className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Italic text</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertFormatting('code')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Code className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Inline code</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertFormatting('link')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Link className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Add link</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertFormatting('quote')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Quote className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Quote</TooltipContent>
-                </Tooltip>
-                
-                <div className="flex-1" />
-                
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={addMention}
-                  className="h-8 px-3 gap-2"
-                >
-                  <AtSign className="h-4 w-4" />
-                  Mention
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Footer */}
         <AnimatePresence>
@@ -627,3 +415,4 @@ export const CompactCommentForm = (props: EnhancedCommentFormProps) => (
 export const MinimalCommentForm = (props: EnhancedCommentFormProps) => (
   <EnhancedCommentForm {...props} variant="minimal" />
 )
+

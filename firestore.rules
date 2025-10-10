@@ -12,20 +12,10 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    function isAdmin() {
-      return isAuthenticated() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
     function isDeveloper() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer';
-    }
-    
-    function isAdminOrDeveloper() {
-      return isAdmin() || isDeveloper();
     }
     
     function isValidUser() {
@@ -39,45 +29,44 @@ service cloud.firestore {
         get(/databases/$(database)/documents/projects/$(projectId)).data.authorId == request.auth.uid;
     }
     
-    function isProjectOwnerOrAdmin(projectId) {
-      return isProjectOwner(projectId) || isAdmin();
+    function isProjectOwnerOrDeveloper(projectId) {
+      return isProjectOwner(projectId) || isDeveloper();
     }
     
     // Users collection
     match /users/{userId} {
-      // Everyone can read basic user data (for public display in comments and reactions), users can read their own data, admins can read all
+      // Everyone can read basic user data (for public display in comments and reactions)
       allow read: if true;
       
-      // Users can create their own document, admins can create any
-      allow create: if isOwner(userId) || isAdmin();
+      // Users can create their own document, developers can create any
+      allow create: if isOwner(userId) || isDeveloper();
       
-      // Users can update their own data (except role), admins can update any
+      // Users can update their own data (except role), developers can update any
       allow update: if (isOwner(userId) && 
                        !('role' in request.resource.data.diff(resource.data).affectedKeys())) ||
-                      isAdmin();
+                      isDeveloper();
       
-      // Only admins can delete users
-      allow delete: if isAdmin();
+      // Only developers can delete users
+      allow delete: if isDeveloper();
     }
     
     // Projects collection
     match /projects/{projectId} {
-      // Everyone can read published projects (no authentication required), developers can read their own (published/unpublished), admins can read all
+      // Everyone can read published projects (no authentication required), developers can read all
       allow read: if resource.data.published == true || 
                      (isAuthenticated() && isProjectOwner(projectId)) || 
-                     (isAuthenticated() && isAdmin());
+                     (isAuthenticated() && isDeveloper());
       
-      // Developers can create their own projects, admins can create any
-      allow create: if isAdminOrDeveloper() && 
-                       (isAdmin() || request.resource.data.authorId == request.auth.uid);
+      // Developers can create projects
+      allow create: if isDeveloper() && request.resource.data.authorId == request.auth.uid;
       
-      // Project owners can update their own projects, admins can update any
+      // Project owners can update their own projects, developers can update any
       // Anyone can increment viewsCount (for tracking views)
-      allow update: if isProjectOwnerOrAdmin(projectId) ||
+      allow update: if isProjectOwnerOrDeveloper(projectId) ||
                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewsCount']));
       
-      // Project owners can delete their own projects, admins can delete any
-      allow delete: if isProjectOwnerOrAdmin(projectId);
+      // Project owners can delete their own projects, developers can delete any
+      allow delete: if isProjectOwnerOrDeveloper(projectId);
     }
     
     // Reactions collection
@@ -110,14 +99,14 @@ service cloud.firestore {
                        request.resource.data.content.size() > 0 &&
                        request.resource.data.content.size() <= 1000;
       
-      // Users can update their own comments (content only)
+      // Users can update their own comments, developers can update any
       allow update: if isAuthenticated() &&
-                       resource.data.userId == request.auth.uid &&
+                       (resource.data.userId == request.auth.uid || isDeveloper()) &&
                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt', 'likesCount', 'repliesCount', 'userLikes']);
       
-      // Users can delete their own comments, admins can delete any
+      // Users can delete their own comments, developers can delete any
       allow delete: if isAuthenticated() &&
-                       (resource.data.userId == request.auth.uid || isAdmin());
+                       (resource.data.userId == request.auth.uid || isDeveloper());
     }
     
     // Views collection (for tracking unique project views)
@@ -132,15 +121,15 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     
-    // Admin-only collections (for future use)
+    // Developer-only collections (for management)
     match /admin/{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if isDeveloper();
     }
     
-    // Analytics collection (read-only for users, write for admins)
+    // Analytics collection (read-only for users, write for developers)
     match /analytics/{document=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isDeveloper();
     }
   }
 }

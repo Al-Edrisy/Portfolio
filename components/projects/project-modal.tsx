@@ -43,7 +43,7 @@ import { useProject } from '@/hooks/projects'
 import { useProjectReactions } from '@/hooks/reactions/use-project-reactions'
 import EnhancedReactionPicker from './reactions/enhanced-reaction-picker'
 import ReactionList from './reactions/reaction-list'
-import { EnhancedCommentForm } from './comments/forms/enhanced-comment-form'
+import EnhancedCommentSystem from './comments/enhanced-comment-system'
 import { useProjectComments } from '@/hooks/comments/use-project-comments'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
@@ -614,62 +614,14 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                 </TabsContent>
 
                   <TabsContent value="comments" className="space-y-6 mt-6">
-                    {/* Enhanced Add Comment */}
-                    <EnhancedCommentForm
-                      projectId={projectId}
-                      onSuccess={() => {
-                        setNewComment('')
-                      }}
-                      placeholder="Share your thoughts about this project..."
-                      showRichText={true}
-                      className="border-primary/20 bg-gradient-to-br from-muted/30 to-muted/50"
-                    />
-
-                    {/* Enhanced Comments List */}
-                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                    {commentsLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : comments.length === 0 ? (
-                        <div className="text-center py-12">
-                          <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
-                          <p className="text-muted-foreground text-lg">No comments yet</p>
-                          <p className="text-muted-foreground/70">Be the first to share your thoughts!</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {comments.map((comment) => (
-                            <motion.div 
-                              key={comment.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="flex gap-4 p-4 bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl border hover:shadow-lg transition-all"
-                            >
-                              <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-primary/20">
-                              <AvatarImage src={comment.user.avatar} />
-                                <AvatarFallback className="text-xs font-semibold">
-                                {comment.user.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <span className="font-semibold text-foreground">
-                                  {comment.user.name}
-                                </span>
-                                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                                  {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-                                </span>
-                              </div>
-                                <p className="text-foreground/90 leading-relaxed">
-                                {comment.content}
-                              </p>
-                            </div>
-                            </motion.div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                    {/* Enhanced Comment System with Replies */}
+                    <div className="max-h-[600px] overflow-y-auto pr-2">
+                      <EnhancedCommentSystem
+                        projectId={projectId}
+                        maxDepth={3}
+                        showCount={true}
+                      />
+                    </div>
                 </TabsContent>
               </Tabs>
               </motion.div>
