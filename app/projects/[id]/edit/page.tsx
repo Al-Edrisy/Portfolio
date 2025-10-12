@@ -8,8 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import Navigation from '@/components/ui/navigation'
-import { UserCursor } from '@/components/ui/custom-cursor'
-import { CursorProvider } from '@/components/ui/custom-cursor'
+// Custom cursor removed - using default browser cursor
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -48,7 +47,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
   if (!user) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -74,15 +72,12 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
   if (loading) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -108,15 +103,12 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
   if (error || !project) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -145,9 +137,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
@@ -164,7 +154,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   ]
 
   return (
-    <CursorProvider>
       <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
         <Navigation />
         <div className="pt-20">
@@ -298,8 +287,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         </div>
-        <UserCursor />
       </main>
-    </CursorProvider>
   )
 }

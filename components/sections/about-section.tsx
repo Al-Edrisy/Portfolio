@@ -5,11 +5,20 @@ import SplitText from "@/components/ui/split-text"
 import ScrollReveal from "@/components/ui/scroll-reveal"
 import RotatingText from "@/components/ui/rotating-text"
 
+// Calculate years of experience dynamically from 2020
+const calculateYearsOfExperience = (): number => {
+  const startYear = 2020
+  const currentYear = new Date().getFullYear()
+  return currentYear - startYear
+}
+
+const yearsOfExperience = calculateYearsOfExperience()
+
 const achievements = [
-  { number: "50+", label: "Projects Completed" },
-  { number: "5+", label: "Years Experience" },
+  { number: "35+", label: "Projects Completed" },
+  { number: `${yearsOfExperience}+`, label: "Years Experience" },
   { number: "20+", label: "Happy Clients" },
-  { number: "15+", label: "Technologies Mastered" },
+  { number: "26", label: "Technologies Mastered" },
 ]
 
 
@@ -46,7 +55,7 @@ export default function AboutSection() {
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">My Story</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  With over 5 years of experience in full-stack development, I specialize in creating innovative digital
+                  With over {yearsOfExperience} years of experience in full-stack development, I specialize in creating innovative digital
                   solutions that bridge the gap between cutting-edge technology and exceptional user experience. My
                   journey began with a fascination for how technology can solve real-world problems.
                 </p>

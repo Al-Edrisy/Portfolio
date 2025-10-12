@@ -7,8 +7,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Edit, Eye, EyeOff, Trash2, Globe, Globe2 } from 'lucide-react'
 import Navigation from '@/components/ui/navigation'
-import { UserCursor } from '@/components/ui/custom-cursor'
-import { CursorProvider } from '@/components/ui/custom-cursor'
+// Custom cursor removed - using default browser cursor
 import { useToggleFeatured } from '@/hooks/projects/mutations'
 import { useDeleteProject } from '@/hooks/projects/mutations'
 import { useTogglePublished } from '@/hooks/projects/mutations/use-toggle-published'
@@ -61,26 +60,22 @@ export default function AdminProjectsPage() {
 
   if (loading) {
     return (
-      <CursorProvider>
-        <main className="min-h-screen bg-background">
-          <Navigation />
-          <div className="pt-20">
-            <div className="container mx-auto px-6 py-8">
-              <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="text-muted-foreground mt-4">Loading projects...</p>
-              </div>
+      <main className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-20">
+          <div className="container mx-auto px-6 py-8">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="text-muted-foreground mt-4">Loading projects...</p>
             </div>
           </div>
-          <UserCursor />
-        </main>
-      </CursorProvider>
+        </div>
+      </main>
     )
   }
 
   return (
-    <CursorProvider>
-      <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
         <Navigation />
         <div className="pt-20">
           <div className="container mx-auto px-6 py-8">
@@ -236,8 +231,6 @@ export default function AdminProjectsPage() {
             )}
           </div>
         </div>
-        <UserCursor />
       </main>
-    </CursorProvider>
   )
 }

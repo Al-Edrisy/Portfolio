@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   MessageCircle, 
@@ -33,6 +33,8 @@ import { cn } from '@/lib/utils'
 
 interface EnhancedCommentSystemProps {
   projectId: string
+  projectTitle?: string
+  projectDescription?: string
   className?: string
   maxDepth?: number
   showCount?: boolean
@@ -55,6 +57,8 @@ interface Comment {
 
 export function EnhancedCommentSystem({
   projectId,
+  projectTitle,
+  projectDescription,
   className,
   maxDepth = 3,
   showCount = true
@@ -69,21 +73,26 @@ export function EnhancedCommentSystem({
     error,
     addComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    getReplies: fetchReplies
   } = useProjectComments(projectId)
 
-  // Filter top-level comments (no parent)
+  // Comments are already top-level only from the hook
   const topLevelComments = useMemo(() => {
-    return comments.filter(comment => !comment.parentCommentId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }, [comments])
 
-  // Get replies for a specific comment
-  const getReplies = useCallback((parentId: string) => {
-    return comments
-      .filter(comment => comment.parentCommentId === parentId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-  }, [comments])
+  // Get replies for a specific comment (async)
+  const [repliesCache, setRepliesCache] = useState<Record<string, Comment[]>>({})
+  
+  const getReplies = useCallback(async (parentId: string) => {
+    if (repliesCache[parentId]) {
+      return repliesCache[parentId]
+    }
+    const replies = await fetchReplies(parentId)
+    setRepliesCache(prev => ({ ...prev, [parentId]: replies }))
+    return replies
+  }, [fetchReplies, repliesCache])
 
   const toggleExpanded = useCallback((commentId: string) => {
     setExpandedComments(prev => {
@@ -102,6 +111,8 @@ export function EnhancedCommentSystem({
       title: "Comment posted!",
       description: "Your comment has been added successfully.",
     })
+    // Clear replies cache to force refresh
+    setRepliesCache({})
   }, [toast])
 
   if (error) {
@@ -135,6 +146,8 @@ export function EnhancedCommentSystem({
       {/* Add Comment Form */}
       <EnhancedCommentForm
         projectId={projectId}
+        projectTitle={projectTitle}
+        projectDescription={projectDescription}
         onSuccess={handleCommentAdded}
         placeholder="Share your thoughts..."
         variant="compact"
@@ -183,10 +196,11 @@ interface CommentThreadProps {
   projectId: string
   depth: number
   maxDepth: number
-  getReplies: (parentId: string) => Comment[]
+  getReplies: (parentId: string) => Promise<Comment[]>
   expanded: boolean
   onToggleExpanded: () => void
   currentUser: any
+  isReply?: boolean
 }
 
 function CommentThread({
@@ -197,23 +211,35 @@ function CommentThread({
   getReplies,
   expanded,
   onToggleExpanded,
-  currentUser
+  currentUser,
+  isReply = false
 }: CommentThreadProps) {
   const [isReplying, setIsReplying] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(comment.content)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [replies, setReplies] = useState<Comment[]>([])
+  const [loadingReplies, setLoadingReplies] = useState(false)
   
   const { toast } = useToast()
   const { updateComment, deleteComment } = useProjectComments(projectId)
   
-  const replies = getReplies(comment.id)
-  const hasReplies = replies.length > 0
+  const hasReplies = (comment.repliesCount ?? 0) > 0 || replies.length > 0
   const canReply = depth < maxDepth
   const isAuthor = currentUser?.id === comment.userId
   const isDeveloper = currentUser?.role === 'developer'
   const canEdit = isAuthor || isDeveloper
   const canDelete = isAuthor || isDeveloper
+
+  // Load replies when expanded
+  useEffect(() => {
+    if (expanded && hasReplies && replies.length === 0) {
+      setLoadingReplies(true)
+      getReplies(comment.id)
+        .then(setReplies)
+        .finally(() => setLoadingReplies(false))
+    }
+  }, [expanded, hasReplies, comment.id, getReplies, replies.length])
 
   const handleEdit = async () => {
     if (!editContent.trim() || editContent === comment.content) {
@@ -265,9 +291,12 @@ function CommentThread({
     }
   }
 
-  const handleReplySuccess = () => {
+  const handleReplySuccess = async () => {
     setIsReplying(false)
-    if (!expanded && hasReplies) {
+    // Refresh replies after adding a new one
+    const updatedReplies = await getReplies(comment.id)
+    setReplies(updatedReplies)
+    if (!expanded) {
       onToggleExpanded()
     }
   }
@@ -279,14 +308,15 @@ function CommentThread({
       exit={{ opacity: 0, y: -10 }}
       className={cn(
         "relative",
-        depth > 0 && "ml-8 md:ml-12 pl-4 border-l-2 border-border/50"
+        isReply && "ml-4"
       )}
     >
       {/* Comment */}
       <div className={cn(
         "group p-4 rounded-lg transition-colors",
         isDeleting && "opacity-50 pointer-events-none",
-        depth === 0 && "bg-muted/30 hover:bg-muted/50"
+        !isReply && "bg-muted/30 hover:bg-muted/50",
+        isReply && "bg-background border border-border/50 hover:border-border"
       )}>
         <div className="flex gap-3">
           {/* Avatar */}
@@ -408,22 +438,28 @@ function CommentThread({
                   </Button>
                 )}
 
-                {hasReplies && (
+                {hasReplies && !isReply && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onToggleExpanded}
                     className="h-7 px-2 text-xs font-medium text-primary"
+                    disabled={loadingReplies}
                   >
-                    {expanded ? (
+                    {loadingReplies ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                        Loading...
+                      </>
+                    ) : expanded ? (
                       <>
                         <ChevronUp className="h-3 w-3 mr-1.5" />
-                        Hide {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+                        Hide replies
                       </>
                     ) : (
                       <>
                         <ChevronDown className="h-3 w-3 mr-1.5" />
-                        Show {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+                        {comment.repliesCount || replies.length} {(comment.repliesCount || replies.length) === 1 ? 'reply' : 'replies'}
                       </>
                     )}
                   </Button>
@@ -462,20 +498,30 @@ function CommentThread({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mt-2 space-y-2"
+            className="mt-3 space-y-3"
           >
             {replies.map((reply) => (
-              <CommentThread
-                key={reply.id}
-                comment={reply}
-                projectId={projectId}
-                depth={depth + 1}
-                maxDepth={maxDepth}
-                getReplies={getReplies}
-                expanded={false}
-                onToggleExpanded={() => {}}
-                currentUser={currentUser}
-              />
+              <div key={reply.id} className="relative">
+                {/* Twitter-style "Replying to" indicator */}
+                <div className="flex items-center gap-2 mb-2 ml-3">
+                  <div className="w-4 h-px bg-border/50"></div>
+                  <span className="text-xs text-muted-foreground">
+                    Replying to <span className="font-medium text-foreground">@{comment.user?.name || 'user'}</span>
+                  </span>
+                </div>
+                
+                <CommentThread
+                  comment={reply}
+                  projectId={projectId}
+                  depth={depth + 1}
+                  maxDepth={maxDepth}
+                  getReplies={getReplies}
+                  expanded={false}
+                  onToggleExpanded={() => {}}
+                  currentUser={currentUser}
+                  isReply={true}
+                />
+              </div>
             ))}
           </motion.div>
         )}

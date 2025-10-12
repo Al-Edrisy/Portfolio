@@ -13,4 +13,5 @@ export { ModernProjectsList } from './modern-projects-list'
 
 // LinkedIn-Style Components
 export { LinkedInStyleProjectCard } from './cards/project-card'
+export { LinkedInStyleProjectCardGSAP } from './cards/project-card-gsap'
 

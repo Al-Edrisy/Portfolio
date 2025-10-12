@@ -13,7 +13,10 @@ export function GlobalErrorHandler() {
       if (
         message.includes('contentScript.js') ||
         message.includes('Cannot read properties of undefined') ||
-        message.includes('sentence')
+        message.includes('sentence') ||
+        message.includes('chrome-extension') ||
+        message.includes('Cache') ||
+        message.includes('sw.js')
       ) {
         return // Suppress these errors
       }
@@ -30,7 +33,10 @@ export function GlobalErrorHandler() {
       if (
         reason.includes('contentScript.js') ||
         reason.includes('sentence') ||
-        reason.includes('Cannot read properties of undefined')
+        reason.includes('Cannot read properties of undefined') ||
+        reason.includes('chrome-extension') ||
+        reason.includes('Cache') ||
+        reason.includes('sw.js')
       ) {
         event.preventDefault()
         return

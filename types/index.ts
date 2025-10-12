@@ -1,6 +1,17 @@
 // Type definitions for the portfolio projects system
 import { User as FirebaseUser } from 'firebase/auth'
 
+// Export AI-related types
+export type {
+  CommentTone,
+  CommentToneConfig,
+  AICommentGenerateRequest,
+  AICommentGenerateResponse,
+  AIRateLimitInfo,
+  AIGenerationError,
+  AIGenerationErrorResponse
+} from './ai'
+
 export interface Project {
   id: string
   title: string

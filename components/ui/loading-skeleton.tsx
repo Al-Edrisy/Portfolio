@@ -21,78 +21,62 @@ export function Skeleton({ className }: SkeletonProps) {
   )
 }
 
-// Project card skeleton - matches new card design with comments preview
+// Project card skeleton - Optimized and cleaner
 export function ProjectCardSkeleton() {
   return (
-    <div className="bg-background border-[3px] border-border rounded-lg overflow-hidden h-full flex flex-col">
+    <div className="bg-card border-2 border-border rounded-lg overflow-hidden h-full flex flex-col">
       {/* Header - Author skeleton */}
-      <div className="p-4 pb-2">
+      <div className="p-3 md:p-4 pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-16 rounded-full" />
-              </div>
-              <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Skeleton className="h-4 w-24 md:w-32 mb-2" />
+              <Skeleton className="h-3 w-20 md:w-24" />
             </div>
           </div>
-          <Skeleton className="h-8 w-8 rounded-md" />
         </div>
       </div>
 
       {/* Content skeleton */}
-      <div className="px-4 pb-2">
-        {/* Title skeleton */}
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        
-        {/* Description skeleton */}
-        <div className="space-y-2 mb-4">
+      <div className="px-3 md:px-4 pb-2">
+        <Skeleton className="h-5 md:h-6 w-3/4 mb-2" />
+        <div className="space-y-2 mb-3">
           <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-4/5" />
+        </div>
+      </div>
+      
+      {/* Tech stack skeleton */}
+      <div className="px-3 md:px-4 pb-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <Skeleton className="h-7 w-16 rounded-md" />
+          <Skeleton className="h-7 w-20 rounded-md" />
+          <Skeleton className="h-7 w-14 rounded-md" />
         </div>
       </div>
       
       {/* Image skeleton */}
-      <div className="px-4 pb-4">
-        <Skeleton className="h-48 w-full rounded-md" />
-      </div>
-      
-      {/* Tech stack skeleton */}
-      <div className="px-4 py-3 border-t-[3px] border-border">
-        <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-6 w-16 rounded-md" />
-          <Skeleton className="h-6 w-20 rounded-md" />
-          <Skeleton className="h-6 w-14 rounded-md" />
-          <Skeleton className="h-6 w-18 rounded-md" />
-        </div>
+      <div className="px-3 md:px-4 pb-3">
+        <Skeleton className="h-40 md:h-48 w-full rounded-lg" />
       </div>
       
       {/* Engagement stats skeleton */}
-      <div className="px-4 py-2 border-t-[3px] border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-16" />
-          </div>
+      <div className="px-3 md:px-4 py-2 border-t border-border">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-20" />
         </div>
       </div>
       
       {/* Actions skeleton */}
-      <div className="px-4 py-2 border-t-[3px] border-border">
+      <div className="px-3 md:px-4 py-2 md:py-3 border-t border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <Skeleton className="h-10 w-16 rounded-lg" />
+            <Skeleton className="h-10 w-14 rounded-lg" />
             <Skeleton className="h-10 w-20 rounded-lg" />
-            <Skeleton className="h-10 w-16 rounded-lg" />
           </div>
-          <Skeleton className="h-10 w-16 rounded-lg" />
+          <Skeleton className="h-10 w-20 rounded-lg" />
         </div>
       </div>
     </div>
@@ -203,8 +187,8 @@ export function ProjectCardSkeletonWithComments() {
   )
 }
 
-// Projects grid skeleton
-export function ProjectsGridSkeleton({ count = 6 }: { count?: number }) {
+// Projects grid skeleton - optimized with fewer loaders
+export function ProjectsGridSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, index) => (
@@ -212,7 +196,7 @@ export function ProjectsGridSkeleton({ count = 6 }: { count?: number }) {
           key={index}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
         >
           <ProjectCardSkeleton />
         </motion.div>

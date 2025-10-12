@@ -19,6 +19,8 @@ const navItems = [
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up')
+  const [lastScrollY, setLastScrollY] = useState(0)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
@@ -32,14 +34,45 @@ export default function Navigation() {
     setMounted(true)
   }, [])
 
+  // Enhanced scroll behavior - hide on scroll down, show on scroll up
   useEffect(() => {
+    let ticking = false
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          const scrollDifference = Math.abs(currentScrollY - lastScrollY)
+          
+          // Only trigger if scroll difference is significant (prevents jitter)
+          if (scrollDifference > 5) {
+            // Determine scroll direction - only hide after scrolling past 150px
+            if (currentScrollY > lastScrollY && currentScrollY > 150) {
+              setScrollDirection('down')
+            } else if (currentScrollY < lastScrollY) {
+              setScrollDirection('up')
+            }
+            
+            setLastScrollY(currentScrollY)
+          }
+          
+          // Set scrolled state for backdrop
+          setIsScrolled(currentScrollY > 20)
+          
+          // Close mobile menu on scroll down
+          if (isMobileMenuOpen && currentScrollY > lastScrollY) {
+            setIsMobileMenuOpen(false)
+          }
+          
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [lastScrollY, isMobileMenuOpen])
 
   const isActiveRoute = (href: string) => {
     return pathname === href
@@ -53,48 +86,49 @@ export default function Navigation() {
     <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm" 
+          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm" 
           : "bg-transparent"
       }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ 
+        opacity: 1,
+        y: scrollDirection === 'down' && isScrolled && !isMobileMenuOpen ? -100 : 0 
+      }}
+      transition={{ 
+        opacity: { duration: 0.3 },
+        y: { duration: 0.4, ease: "easeInOut" }
+      }}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+        <div className="flex items-center justify-between h-16 md:h-18 lg:h-20">
+          {/* Logo - Improved touch target */}
+          <Link href="/" className="flex-shrink-0 -ml-2 md:ml-0">
             <motion.div
-              className="text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground hover:text-primary transition-colors duration-200 px-2 py-1 rounded-md"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Salih Ben Otman
+              Al-Edrisy
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation - Centered */}
+          {/* Desktop Navigation - Centered with improved spacing */}
           <div className="hidden lg:flex items-center justify-center flex-1 px-8">
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               {navItems.map((item) => (
                 <Link key={item.name} href={item.href}>
                   <motion.div
-                    className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-md ${
+                    className={`relative px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${
                       isActiveRoute(item.href)
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
                     }`}
                     whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     {item.name}
                     {isActiveRoute(item.href) && (
-                      <motion.div
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-                        layoutId="activeIndicator"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
                     )}
                   </motion.div>
                 </Link>
@@ -104,7 +138,7 @@ export default function Navigation() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-            {canManageProjects && (
+            {mounted && canManageProjects && (
               <div className="flex items-center gap-1 mr-1">
                 <Link href="/projects/create">
                   <motion.button
@@ -145,12 +179,12 @@ export default function Navigation() {
               </motion.button>
             )}
 
-            <AuthButton />
+            {mounted && <AuthButton />}
 
             <Link href="/contact">
               <motion.button
-                className="ml-2 px-5 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors duration-200 shadow-sm"
-                whileHover={{ scale: 1.02 }}
+                className="ml-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg"
+                whileHover={{ scale: 1.05, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >
                 Hire Me
@@ -158,13 +192,14 @@ export default function Navigation() {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button - Improved touch target */}
           <motion.button
-            className="lg:hidden p-2 text-foreground rounded-md hover:bg-accent/50 transition-colors"
+            className="lg:hidden p-3 -mr-2 text-foreground rounded-lg hover:bg-accent transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Toggle menu"
+            aria-expanded={isMobileMenuOpen}
           >
             <div className="w-5 h-5 flex flex-col justify-center items-center gap-1">
               <motion.span
@@ -215,20 +250,23 @@ export default function Navigation() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.2 }}
-                      className={`text-left py-3 px-4 rounded-md transition-colors duration-200 ${
+                      className={`relative text-left py-3 px-4 rounded-md transition-colors duration-200 ${
                         isActiveRoute(item.href)
                           ? "text-primary bg-primary/10 font-medium"
                           : "text-foreground hover:bg-accent/50"
                       }`}
                     >
                       {item.name}
+                      {isActiveRoute(item.href) && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                      )}
                     </motion.div>
                   </Link>
                 ))}
               </div>
 
               {/* Developer Actions */}
-              {canManageProjects && (
+              {mounted && canManageProjects && (
                 <div className="space-y-1 py-3 border-t border-border/50">
                   <Link href="/projects/create" onClick={closeMobileMenu}>
                     <motion.div
@@ -276,9 +314,11 @@ export default function Navigation() {
                   )}
                 </div>
 
-                <div className="px-4">
-                  <AuthButton />
-                </div>
+                {mounted && (
+                  <div className="px-4">
+                    <AuthButton />
+                  </div>
+                )}
 
                 <div className="px-4">
                   <Link href="/contact" onClick={closeMobileMenu}>

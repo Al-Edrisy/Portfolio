@@ -11,22 +11,29 @@ import ClickSpark from "@/components/ui/click-spark"
 const contactMethods = [
   {
     icon: "📧",
-    label: "Email",
+    label: "Personal Email",
+    value: "salehfree33@gmail.com",
+    href: "mailto:salehfree33@gmail.com",
+    description: "Drop me a line anytime",
+  },
+  {
+    icon: "🎓",
+    label: "University Email",
     value: "salih.otman@final.edu.tr",
     href: "mailto:salih.otman@final.edu.tr",
-    description: "Drop me a line anytime",
+    description: "Academic inquiries",
   },
   {
     icon: "📱",
     label: "Phone",
-    value: "+1 (555) 123-4567",
-    href: "tel:+15551234567",
+    value: "+218 92 152 70 18",
+    href: "tel:+218921527018",
     description: "Let's have a conversation",
   },
   {
     icon: "📍",
     label: "Location",
-    value: "San Francisco, CA",
+    value: "Libya",
     href: "#",
     description: "Available for remote work",
   },
@@ -67,22 +74,50 @@ export default function ContactSection() {
     message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear status when user starts typing
+    if (submitStatus !== 'idle') {
+      setSubmitStatus('idle')
+      setErrorMessage("")
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitStatus('idle')
+    setErrorMessage("")
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-    console.log("Form submitted:", formData)
-    setIsSubmitting(false)
-    setFormData({ name: "", email: "", subject: "", message: "" })
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        setFormData({ name: "", email: "", subject: "", message: "" })
+      } else {
+        setSubmitStatus('error')
+        setErrorMessage(data.error || 'Failed to send message')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      setSubmitStatus('error')
+      setErrorMessage('Network error. Please check your connection and try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -264,6 +299,27 @@ export default function ContactSection() {
                 />
               </div>
 
+              {/* Status Messages */}
+              {submitStatus === 'success' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-center"
+                >
+                  ✅ Message sent successfully! I'll get back to you within 24 hours.
+                </motion.div>
+              )}
+
+              {submitStatus === 'error' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-center"
+                >
+                  ❌ {errorMessage}
+                </motion.div>
+              )}
+
               <ClickSpark sparkColor="rgb(16, 185, 129)" sparkCount={12} sparkRadius={20}>
                 <StarBorder
                   as="button"
@@ -293,7 +349,7 @@ export default function ContactSection() {
           className="text-center pt-12 border-t border-border"
         >
           <p className="text-muted-foreground mb-4">
-            © {new Date().getFullYear()} Salih Ben Otman. Built with Next.js, TypeScript, and lots of ☕
+            © {new Date().getFullYear()} Al-Edrisy. Built with Next.js, TypeScript, and lots of ☕
           </p>
           <div className="flex justify-center space-x-6 text-sm text-muted-foreground">
             <motion.a href="#" className="hover:text-primary transition-colors duration-200" whileHover={{ y: -2 }}>

@@ -267,8 +267,8 @@ export default function EnhancedReactionPicker({
           onClick={() => setIsOpen(!isOpen)}
           disabled={isReacting}
           className={cn(
-            "flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-2 rounded-lg transition-all duration-200",
-            "hover:bg-accent active:scale-95 min-h-[44px] md:min-h-0",
+            "flex items-center justify-center p-2 rounded-lg transition-all duration-200",
+            "hover:bg-accent active:scale-95 min-h-[44px] md:min-h-0 w-10 h-10",
             currentUserReaction 
               ? cn(
                   reactionConfig[currentUserReaction].bgColor,
@@ -278,11 +278,9 @@ export default function EnhancedReactionPicker({
               : "text-muted-foreground hover:text-foreground",
             isReacting && "opacity-50 cursor-not-allowed"
           )}
+          title={currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}
         >
           <TriggerIcon className="h-5 w-5 md:h-4 md:w-4" />
-          <span className="hidden sm:inline text-sm">
-            {currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}
-          </span>
         </button>
 
         <AnimatePresence>

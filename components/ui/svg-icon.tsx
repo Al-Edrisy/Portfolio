@@ -10,6 +10,7 @@ interface SvgIconProps {
   size?: "sm" | "md" | "lg" | "xl"
   animated?: boolean
   hoverEffect?: boolean
+  style?: React.CSSProperties
 }
 
 const sizeClasses = {
@@ -32,7 +33,8 @@ export default function SvgIcon({
   className = "", 
   size = "md", 
   animated = false,
-  hoverEffect = false 
+  hoverEffect = false,
+  style 
 }: SvgIconProps) {
   const [svgContent, setSvgContent] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
@@ -82,7 +84,8 @@ export default function SvgIcon({
       onMouseLeave={() => setIsHovered(false)}
       style={{ 
         width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '48px',
-        height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '48px'
+        height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '48px',
+        ...style
       }}
       dangerouslySetInnerHTML={{ 
         __html: svgContent.replace(

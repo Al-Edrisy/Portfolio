@@ -18,10 +18,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { AICommentGenerator } from '../ai/ai-comment-generator'
 
 interface EnhancedCommentFormProps {
   projectId: string
   parentCommentId?: string
+  projectTitle?: string
+  projectDescription?: string
   onSuccess?: () => void
   onCancel?: () => void
   placeholder?: string
@@ -33,6 +36,8 @@ interface EnhancedCommentFormProps {
 export function EnhancedCommentForm({
   projectId,
   parentCommentId,
+  projectTitle,
+  projectDescription,
   onSuccess,
   onCancel,
   placeholder = "Share your thoughts...",
@@ -49,6 +54,13 @@ export function EnhancedCommentForm({
   const { user } = useAuth()
   const { createComment, loading, error } = useCreateComment()
   const { toast } = useToast()
+
+  // Handle AI-generated comment
+  const handleAICommentGenerated = (generatedComment: string) => {
+    setContent(generatedComment)
+    setIsFocused(true)
+    setIsExpanded(true)
+  }
 
   const characterLimit = 1000
   const charactersRemaining = characterLimit - content.length
@@ -227,6 +239,18 @@ export function EnhancedCommentForm({
               className="min-h-[60px] resize-none text-sm border-2 focus:border-primary/50 transition-all duration-200"
             />
             
+            {/* AI Generator - Only show for top-level comments with project info */}
+            {!parentCommentId && projectTitle && projectDescription && (
+              <div className="mb-2">
+                <AICommentGenerator
+                  projectTitle={projectTitle}
+                  projectDescription={projectDescription}
+                  onCommentGenerated={handleAICommentGenerated}
+                  disabled={loading}
+                />
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {hasContent && (

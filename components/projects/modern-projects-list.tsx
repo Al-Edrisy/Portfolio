@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import { LinkedInStyleProjectCard } from './cards/project-card'
+import { LinkedInStyleProjectCardGSAP } from './cards/project-card-gsap'
 import { useProjects } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
@@ -25,6 +25,12 @@ export function ModernProjectsList() {
   const router = useRouter()
   const { isDeveloper } = useAuth()
   const { toast } = useToast()
+  const [isClient, setIsClient] = useState(false)
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   // Removed connection status check as it was causing false positives
   // const { isOnline } = useNetworkStatus()
   // const { isConnected, retry } = useFirebaseConnection()
@@ -157,7 +163,7 @@ export function ModernProjectsList() {
       <div>
         {loading ? (
           <div className="grid gap-6 grid-cols-1 max-w-2xl mx-auto">
-            {[...Array(6)].map((_, i) => (
+            {[...Array(3)].map((_, i) => (
               <ProjectCardSkeleton key={i} />
             ))}
           </div>
@@ -176,11 +182,11 @@ export function ModernProjectsList() {
             <div className="grid gap-6 grid-cols-1 max-w-2xl mx-auto">
               <AnimatePresence>
                 {sortedProjects.map((project, index) => (
-                  <LinkedInStyleProjectCard
+                  <LinkedInStyleProjectCardGSAP
                     key={project.id}
                     project={project}
                     index={index}
-                    showAdminControls={isDeveloper}
+                    showAdminControls={isClient && isDeveloper}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onTogglePublished={handleTogglePublished}

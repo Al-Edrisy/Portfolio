@@ -4,13 +4,19 @@ import ProjectsSection from "@/components/sections/projects-section"
 import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
-import { CursorProvider, UserCursor } from "@/components/ui/custom-cursor"
+// Custom cursor removed - using default browser cursor
 import { FeedbackTrigger } from "@/components/feedback"
 
 export const metadata: Metadata = {
-  title: "Projects - Salih Ben Otman",
-  description: "Explore Salih Ben Otman's portfolio of innovative digital solutions, AI integrations, and exceptional user experiences across various industries.",
-  keywords: "Projects, Portfolio, AI Chatbot, Analytics Dashboard, Design Tools, CMS, Banking App, E-commerce",
+  title: "Projects Portfolio - Al-Edrisy (Salih Ben Otman) | 50+ Completed Projects",
+  description: "Explore Al-Edrisy's (Salih Ben Otman) portfolio of 50+ completed software development projects. Featuring AI chatbots, analytics dashboards, collaborative design tools, CMS platforms, banking apps, e-commerce solutions, and modern web applications. Built with React, Next.js, TypeScript, Node.js, and AI integrations. Professional showcase of full-stack development expertise.",
+  keywords: "Software Development Projects, Portfolio Projects, AI Chatbot Development, Analytics Dashboard, SaaS Applications, E-commerce Development, Banking App, CMS Development, React Projects, Next.js Applications, TypeScript Projects, Full Stack Projects, Web Application Development, UI/UX Design Portfolio, Modern Web Development",
+  openGraph: {
+    title: "Projects Portfolio - Al-Edrisy (Salih Ben Otman) | 50+ Completed Projects",
+    description: "Explore 50+ professional software development projects: AI chatbots, dashboards, design tools, CMS, banking apps, and e-commerce solutions built with React, Next.js, and TypeScript.",
+    url: "https://salihbenotman.dev/projects",
+    type: "website",
+  },
 }
 
 function LoadingFallback() {
@@ -27,19 +33,16 @@ function LoadingFallback() {
 export default function ProjectsPage() {
   return (
     <ErrorBoundary>
-      <CursorProvider>
-        <main className="min-h-screen bg-background">
-          <Navigation />
-          <div className="pt-20">
-            <Suspense fallback={<LoadingFallback />}>
-              <ProjectsSection />
-            </Suspense>
-          </div>
-          <UserCursor />
-          {/* Feedback drawer trigger - shows when user scrolls 70% of page */}
-          <FeedbackTrigger triggerScrollPercentage={70} />
-        </main>
-      </CursorProvider>
+      <main className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-20">
+          <Suspense fallback={<LoadingFallback />}>
+            <ProjectsSection />
+          </Suspense>
+        </div>
+        {/* Feedback drawer trigger - shows when user scrolls 70% of page */}
+        <FeedbackTrigger triggerScrollPercentage={70} />
+      </main>
     </ErrorBoundary>
   )
 }

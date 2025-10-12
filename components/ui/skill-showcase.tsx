@@ -128,7 +128,7 @@ const SkillCard: React.FC<SkillShowcaseProps> = ({ skill, index, isActive, onSel
       onClick={onSelect}
       style={{ perspective: '1000px' }}
     >
-      <div className={`relative bg-card/80 backdrop-blur-xl border rounded-2xl p-6 transition-all duration-300 ${
+      <div className={`relative bg-card/80 backdrop-blur-xl border rounded-xl md:rounded-2xl p-5 md:p-8 transition-all duration-300 min-h-[280px] md:min-h-[320px] ${
         isActive 
           ? 'border-primary/50 shadow-2xl shadow-primary/20 scale-105' 
           : 'border-border/50 hover:border-primary/30 shadow-lg hover:shadow-xl'
@@ -144,17 +144,21 @@ const SkillCard: React.FC<SkillShowcaseProps> = ({ skill, index, isActive, onSel
         {/* Content */}
         <div className="relative z-10">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <div 
               ref={iconRef}
-              className={`p-3 rounded-xl skill-icon-container ${
-                skill.icon.includes('openai-logo') || skill.icon.includes('next-3')
-                  ? 'skill-icon-container'
+              className={`p-3 md:p-4 rounded-lg md:rounded-xl skill-icon-container relative transition-colors duration-300 ${
+                skill.icon.includes('next-3') || skill.icon.includes('github') || skill.icon.includes('vercel') || skill.icon.includes('notion')
+                  ? 'bg-white dark:bg-gray-100'
+                  : skill.icon.includes('openai-logo')
+                  ? 'bg-white dark:bg-gray-100'
                   : ''
               }`}
               data-icon={skill.icon.includes('openai-logo') ? 'openai' : skill.icon.includes('next-3') ? 'next' : ''}
               style={{ 
-                backgroundColor: `${skill.color}20`,
+                backgroundColor: skill.icon.includes('openai-logo') || skill.icon.includes('next-3') || skill.icon.includes('github') || skill.icon.includes('vercel') || skill.icon.includes('notion') 
+                  ? undefined 
+                  : `${skill.color}20`,
                 border: `2px solid ${skill.color}40`
               }}
             >
@@ -162,34 +166,49 @@ const SkillCard: React.FC<SkillShowcaseProps> = ({ skill, index, isActive, onSel
                 src={skill.icon} 
                 alt={skill.name}
                 size="lg"
-                className="transition-all duration-300"
-                style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
+                className={`transition-all duration-300 ${
+                  skill.icon.includes('github') || skill.icon.includes('vercel') || skill.icon.includes('notion')
+                    ? 'invert-0'
+                    : ''
+                } ${
+                  skill.icon.includes('next-3')
+                    ? 'invert dark:invert-0'
+                    : ''
+                } ${
+                  skill.icon.includes('openai')
+                    ? 'invert-0'
+                    : ''
+                }`}
+                style={{ 
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                }}
               />
             </div>
             
             {skill.featured && (
-              <div className="px-2 py-1 bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/30">
-                Featured
+              <div className="px-1.5 md:px-2 py-0.5 md:py-1 bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/30">
+                <span className="hidden sm:inline">Featured</span>
+                <span className="sm:hidden">★</span>
               </div>
             )}
           </div>
 
           {/* Skill info */}
-          <div className="mb-4">
-            <h3 className="text-xl font-bold text-foreground mb-1">{skill.name}</h3>
-            <span className="text-sm text-muted-foreground">{skill.category}</span>
+          <div className="mb-4 md:mb-5">
+            <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{skill.name}</h3>
+            <span className="text-sm md:text-base text-muted-foreground font-medium">{skill.category}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-foreground">Proficiency</span>
-              <span className="text-sm font-bold text-primary">{skill.proficiency}%</span>
+          <div className="mb-4 md:mb-5">
+            <div className="flex justify-between items-center mb-2 md:mb-3">
+              <span className="text-sm md:text-base font-semibold text-foreground">Proficiency</span>
+              <span className="text-sm md:text-base font-bold text-primary">{skill.proficiency}%</span>
             </div>
-            <div className="w-full bg-muted/30 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted/30 rounded-full h-2 md:h-2.5 overflow-hidden">
               <div 
                 ref={progressRef}
-                className="h-2 rounded-full transition-all duration-300"
+                className="h-2 md:h-2.5 rounded-full transition-all duration-300"
                 style={{ 
                   background: `linear-gradient(90deg, ${skill.color}, ${skill.color}80)`,
                   boxShadow: `0 0 10px ${skill.color}40`
@@ -199,7 +218,7 @@ const SkillCard: React.FC<SkillShowcaseProps> = ({ skill, index, isActive, onSel
           </div>
 
           {/* Description */}
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
             {skill.description}
           </p>
         </div>
@@ -271,7 +290,7 @@ const SkillsShowcase: React.FC<SkillsShowcaseProps> = ({ categories }) => {
       />
 
       {/* Skills Grid */}
-      <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
         {currentSkills.map((skill, index) => (
           <SkillCard
             key={`${activeCategory}-${index}`}

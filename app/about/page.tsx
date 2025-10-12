@@ -5,10 +5,25 @@ import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 
+// Calculate years of experience dynamically from 2020
+const calculateYearsOfExperience = (): number => {
+  const startYear = 2020
+  const currentYear = new Date().getFullYear()
+  return currentYear - startYear
+}
+
+const yearsOfExperience = calculateYearsOfExperience()
+
 export const metadata: Metadata = {
-  title: "About - Salih Ben Otman",
-  description: "Learn more about Salih Ben Otman, a UI/UX Engineer and AI Systems Builder with 5+ years of experience in full-stack development and AI integrations.",
-  keywords: "About Salih Ben Otman, UI/UX Engineer, AI Systems Builder, Full-Stack Developer, Experience",
+  title: "About Al-Edrisy (Salih Ben Otman) - Professional Background & Experience",
+  description: `Learn about Al-Edrisy (Salih Ben Otman), a professional Full Stack Software Developer & UI/UX Engineer with ${yearsOfExperience}+ years experience. Bachelor of Science in Software Engineering from FIU. Expertise in React, Next.js, TypeScript, Node.js, AI integrations (OpenAI, Langflow), and modern web development. 50+ completed projects, certified in full-stack development and database mastery.`,
+  keywords: "About Salih Ben Otman, About Al-Edrisy, Software Developer Background, Full Stack Developer Experience, UI/UX Engineer, FIU Software Engineering, Developer Education, Professional Certifications, React Expert, Next.js Specialist, TypeScript Developer, AI Integration Expert",
+  openGraph: {
+    title: "About Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer",
+    description: `Professional Full Stack Developer with ${yearsOfExperience}+ years experience, Bachelor of Science in Software Engineering, certified in full-stack development and database mastery.`,
+    url: "https://salihbenotman.dev/about",
+    type: "profile",
+  },
 }
 
 function LoadingFallback() {

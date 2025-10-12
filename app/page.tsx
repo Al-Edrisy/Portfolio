@@ -8,9 +8,15 @@ import { FeedbackSection } from "@/components/feedback"
 import { GitHubActivitySection } from "@/components/sections/github-activity-section"
 
 export const metadata: Metadata = {
-  title: "Salih Ben Otman - UI/UX Engineer & AI Systems Builder",
-  description: "Portfolio of Salih Ben Otman, a UI/UX Engineer and AI Systems Builder with 5+ years of experience in full-stack development, AI integrations, and modern web technologies.",
-  keywords: "UI/UX Engineer, AI Systems Builder, Full-Stack Developer, React, Next.js, OpenAI, Langflow, TypeScript",
+  title: "Home - Al-Edrisy (Salih Ben Otman) | Full Stack Software Developer Portfolio",
+  description: "Welcome to Al-Edrisy's portfolio. Professional Full Stack Software Developer with 5+ years experience in React, Next.js, TypeScript, Node.js, and AI integrations. Explore 50+ completed projects, technical skills, and innovative digital solutions. Specializing in modern web development and scalable system architecture.",
+  keywords: "Salih Ben Otman, Al-Edrisy, Software Developer Portfolio, Full Stack Developer, React Developer, Next.js Developer, TypeScript, UI/UX Engineer, Web Development, AI Integration, OpenAI, Modern Web Technologies",
+  openGraph: {
+    title: "Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer Portfolio",
+    description: "Professional Software Developer Portfolio - 5+ years experience in Full Stack Development, 50+ completed projects. Expert in React, Next.js, TypeScript, and AI integrations.",
+    url: "https://salihbenotman.dev",
+    type: "website",
+  },
 }
 
 function LoadingFallback() {

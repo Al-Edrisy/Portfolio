@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import { LinkedInStyleProjectCard } from './cards/project-card'
+import { LinkedInStyleProjectCardGSAP } from './cards/project-card-gsap'
 import { useProjects } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, ChevronDown, Grid, List, Filter } from 'lucide-react'
+import { Search, ChevronDown, Grid, List, Filter, RefreshCw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectCardSkeleton } from '@/components/ui/loading-skeleton'
@@ -85,26 +85,26 @@ export function ProjectsList() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Filters and Search */}
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="mb-6 md:mb-8 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               type="text"
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-10 md:h-11"
             />
           </div>
 
           {/* Category Filter */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <Filter className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-full sm:w-[200px] h-10 md:h-11">
+              <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -118,11 +118,13 @@ export function ProjectsList() {
           </Select>
 
           {/* View Mode Toggle */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:gap-2">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="icon"
               onClick={() => setViewMode('grid')}
+              className="h-10 w-10 md:h-11 md:w-11"
+              aria-label="Grid view"
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -130,6 +132,8 @@ export function ProjectsList() {
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="icon"
               onClick={() => setViewMode('list')}
+              className="h-10 w-10 md:h-11 md:w-11"
+              aria-label="List view"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -181,13 +185,13 @@ export function ProjectsList() {
         </motion.div>
       )}
 
-      {/* Loading State */}
+      {/* Loading State - Optimized with fewer skeletons */}
       {loading && projects.length === 0 && (
         <div className={viewMode === 'grid' 
           ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
           : "space-y-4"
         }>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3].map((i) => (
             <ProjectCardSkeleton key={i} />
           ))}
         </div>
@@ -223,23 +227,15 @@ export function ProjectsList() {
               : "space-y-4"
             }>
               {projects.map((project, index) => (
-                <motion.div
+                <LinkedInStyleProjectCardGSAP 
                   key={project.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <LinkedInStyleProjectCard 
-                    project={project} 
-                    index={index}
-                    showAdminControls={isAdmin}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onTogglePublished={handleTogglePublished}
-                  />
-                </motion.div>
+                  project={project} 
+                  index={index}
+                  showAdminControls={isAdmin}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onTogglePublished={handleTogglePublished}
+                />
               ))}
             </div>
           </AnimatePresence>

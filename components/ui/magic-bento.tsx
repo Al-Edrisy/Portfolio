@@ -29,45 +29,54 @@ export interface BentoProps {
 
 const DEFAULT_PARTICLE_COUNT = 12
 const DEFAULT_SPOTLIGHT_RADIUS = 300
-const DEFAULT_GLOW_COLOR = "132, 0, 255"
+const DEFAULT_GLOW_COLOR = "16, 185, 129"
 const MOBILE_BREAKPOINT = 768
+
+// Calculate years of experience dynamically from 2020
+const calculateYearsOfExperience = (): number => {
+  const startYear = 2020
+  const currentYear = new Date().getFullYear()
+  return currentYear - startYear
+}
+
+const yearsOfExperience = calculateYearsOfExperience()
 
 const cardData: BentoCardProps[] = [
   {
-    color: "#060010",
-    title: "Analytics",
-    description: "Track user behavior",
-    label: "Insights",
+    color: "hsl(var(--primary))",
+    title: "Team Leadership",
+    description: `Leading development teams with ${yearsOfExperience}+ years experience`,
+    label: "Leadership",
   },
   {
-    color: "#060010",
-    title: "Dashboard",
-    description: "Centralized data view",
-    label: "Overview",
+    color: "hsl(var(--secondary))",
+    title: "Full Stack Mastery",
+    description: "95% proficiency in Node.js & Python backend development",
+    label: "Expert",
   },
   {
-    color: "#060010",
+    color: "hsl(var(--accent))",
+    title: "AI Integration",
+    description: "Specialized in OpenAI, TensorFlow, and modern AI systems",
+    label: "Innovation",
+  },
+  {
+    color: "hsl(var(--primary))",
+    title: "Frontend Excellence",
+    description: "93% proficiency in React, Next.js, and TypeScript",
+    label: "Frontend",
+  },
+  {
+    color: "hsl(var(--secondary))",
+    title: "Cloud & DevOps",
+    description: "Expert in Firebase, AWS, Docker, and deployment strategies",
+    label: "Infrastructure",
+  },
+  {
+    color: "hsl(var(--accent))",
     title: "Collaboration",
-    description: "Work together seamlessly",
+    description: "Proven track record in team projects and client collaboration",
     label: "Teamwork",
-  },
-  {
-    color: "#060010",
-    title: "Automation",
-    description: "Streamline workflows",
-    label: "Efficiency",
-  },
-  {
-    color: "#060010",
-    title: "Integration",
-    description: "Connect favorite tools",
-    label: "Connectivity",
-  },
-  {
-    color: "#060010",
-    title: "Security",
-    description: "Enterprise-grade protection",
-    label: "Protection",
   },
 ]
 
@@ -548,12 +557,12 @@ const MagicBento: React.FC<BentoProps> = ({
             --glow-intensity: 0;
             --glow-radius: 200px;
             --glow-color: ${glowColor};
-            --border-color: #392e4e;
-            --background-dark: #060010;
-            --white: hsl(0, 0%, 100%);
-            --purple-primary: rgba(132, 0, 255, 1);
-            --purple-glow: rgba(132, 0, 255, 0.2);
-            --purple-border: rgba(132, 0, 255, 0.8);
+            --border-color: hsl(var(--border));
+            --background-dark: hsl(var(--card));
+            --white: hsl(var(--card-foreground));
+            --primary-color: hsl(var(--primary));
+            --primary-glow: hsl(var(--primary) / 0.2);
+            --primary-border: hsl(var(--primary) / 0.8);
           }
           
           .card-responsive {
@@ -614,7 +623,7 @@ const MagicBento: React.FC<BentoProps> = ({
           }
           
           .card--border-glow:hover {
-            box-shadow: 0 4px 20px rgba(46, 24, 78, 0.4), 0 0 30px rgba(${glowColor}, 0.2);
+            box-shadow: 0 4px 20px hsl(var(--border) / 0.4), 0 0 30px rgba(${glowColor}, 0.2);
           }
           
           .particle::before {
@@ -630,7 +639,7 @@ const MagicBento: React.FC<BentoProps> = ({
           }
           
           .particle-container:hover {
-            box-shadow: 0 4px 20px rgba(46, 24, 78, 0.2), 0 0 30px rgba(${glowColor}, 0.2);
+            box-shadow: 0 4px 20px hsl(var(--border) / 0.2), 0 0 30px rgba(${glowColor}, 0.2);
           }
           
           .text-clamp-1 {
@@ -685,9 +694,9 @@ const MagicBento: React.FC<BentoProps> = ({
             }`
 
             const cardStyle = {
-              backgroundColor: card.color || "var(--background-dark)",
-              borderColor: "var(--border-color)",
-              color: "var(--white)",
+              backgroundColor: card.color || "hsl(var(--card))",
+              borderColor: "hsl(var(--border))",
+              color: "hsl(var(--card-foreground))",
               "--glow-x": "50%",
               "--glow-y": "50%",
               "--glow-intensity": "0",
@@ -707,15 +716,15 @@ const MagicBento: React.FC<BentoProps> = ({
                   clickEffect={clickEffect}
                   enableMagnetism={enableMagnetism}
                 >
-                  <div className="card__header flex justify-between gap-3 relative text-white">
-                    <span className="card__label text-base">{card.label}</span>
+                  <div className="card__header flex justify-between gap-3 relative text-card-foreground">
+                    <span className="card__label text-base font-medium">{card.label}</span>
                   </div>
-                  <div className="card__content flex flex-col relative text-white">
-                    <h3 className={`card__title font-normal text-base m-0 mb-1 ${textAutoHide ? "text-clamp-1" : ""}`}>
+                  <div className="card__content flex flex-col relative text-card-foreground">
+                    <h3 className={`card__title font-bold text-lg m-0 mb-2 ${textAutoHide ? "text-clamp-1" : ""}`}>
                       {card.title}
                     </h3>
                     <p
-                      className={`card__description text-xs leading-5 opacity-90 ${textAutoHide ? "text-clamp-2" : ""}`}
+                      className={`card__description text-sm leading-relaxed opacity-90 ${textAutoHide ? "text-clamp-2" : ""}`}
                     >
                       {card.description}
                     </p>
@@ -839,14 +848,14 @@ const MagicBento: React.FC<BentoProps> = ({
                   el.addEventListener("click", handleClick)
                 }}
               >
-                <div className="card__header flex justify-between gap-3 relative text-white">
-                  <span className="card__label text-base">{card.label}</span>
+                <div className="card__header flex justify-between gap-3 relative text-card-foreground">
+                  <span className="card__label text-base font-medium">{card.label}</span>
                 </div>
-                <div className="card__content flex flex-col relative text-white">
-                  <h3 className={`card__title font-normal text-base m-0 mb-1 ${textAutoHide ? "text-clamp-1" : ""}`}>
+                <div className="card__content flex flex-col relative text-card-foreground">
+                  <h3 className={`card__title font-bold text-lg m-0 mb-2 ${textAutoHide ? "text-clamp-1" : ""}`}>
                     {card.title}
                   </h3>
-                  <p className={`card__description text-xs leading-5 opacity-90 ${textAutoHide ? "text-clamp-2" : ""}`}>
+                  <p className={`card__description text-sm leading-relaxed opacity-90 ${textAutoHide ? "text-clamp-2" : ""}`}>
                     {card.description}
                   </p>
                 </div>

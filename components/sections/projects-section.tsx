@@ -1,8 +1,8 @@
 "use client"
 
 import { motion } from "motion/react"
+import { useState, useEffect } from "react"
 import SplitText from "@/components/ui/split-text"
-import StarBorder from "@/components/ui/star-border"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Plus, Edit } from "lucide-react"
@@ -11,10 +11,16 @@ import { ModernProjectsList } from "@/components/projects/modern-projects-list"
 
 export default function ProjectsSection() {
   const { user } = useAuth()
+  const [isClient, setIsClient] = useState(false)
+
+  // Prevent hydration mismatch by only showing auth-dependent content after hydration
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Check if user can manage projects
-  const canManageProjects = user?.role === 'developer' || user?.role === 'admin'
-  const isAdmin = user?.role === 'admin'
+  const canManageProjects = isClient && (user?.role === 'developer' || user?.role === 'admin')
+  const isAdmin = isClient && user?.role === 'admin'
 
   return (
     <section id="projects" className="py-8 bg-muted/30 relative overflow-hidden">
@@ -68,46 +74,6 @@ export default function ProjectsSection() {
         <div className="max-w-4xl mx-auto">
           <ModernProjectsList />
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
-          <div className="bg-card border border-border rounded-2xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-semibold text-card-foreground mb-4">Interested in Working Together?</h3>
-            <p className="text-muted-foreground mb-6 text-pretty">
-              I'm always excited to take on new challenges and create innovative solutions. Let's discuss how we can
-              bring your ideas to life.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <StarBorder
-                as="button"
-                color="rgb(16, 185, 129)"
-                speed="4s"
-                className="px-6 py-3"
-                onClick={() => {
-                  const element = document.getElementById("contact")
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" })
-                  }
-                }}
-              >
-                Start a Project
-              </StarBorder>
-              <motion.a
-                href="/projects"
-                className="text-primary hover:text-primary/80 transition-colors duration-200 font-medium"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                View All Projects →
-              </motion.a>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   )

@@ -8,10 +8,13 @@ import { useAuth } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AICommentGenerator } from '../ai/ai-comment-generator'
 
 interface CommentFormProps {
   projectId: string
   parentCommentId?: string
+  projectTitle?: string
+  projectDescription?: string
   onSuccess?: () => void
   onCancel?: () => void
   placeholder?: string
@@ -22,6 +25,8 @@ interface CommentFormProps {
 export function CommentForm({
   projectId,
   parentCommentId,
+  projectTitle,
+  projectDescription,
   onSuccess,
   onCancel,
   placeholder = "Write a comment...",
@@ -32,6 +37,12 @@ export function CommentForm({
   const [isFocused, setIsFocused] = useState(false)
   const { user } = useAuth()
   const { createComment, loading, error } = useCreateComment()
+
+  // Handle AI-generated comment
+  const handleAICommentGenerated = (generatedComment: string) => {
+    setContent(generatedComment)
+    setIsFocused(true)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,59 +138,73 @@ export function CommentForm({
           exit={{ opacity: 0, height: 0 }}
           className="border-t border-gray-200 dark:border-gray-700 px-4 py-3"
         >
-          <div className="flex items-center justify-between gap-3">
-            {/* Character Count */}
-            <div className="flex-1">
-              {content.length > 0 && (
-                <span className={cn(
-                  "text-xs font-medium",
-                  isOverLimit 
-                    ? "text-red-500" 
-                    : isNearLimit 
-                      ? "text-orange-500" 
-                      : "text-gray-400 dark:text-gray-500"
-                )}>
-                  {charactersRemaining} characters remaining
-                </span>
-              )}
-              {error && (
-                <p className="text-xs text-red-500 mt-1">{error}</p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {onCancel && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancel}
+          <div className="flex flex-col gap-3">
+            {/* AI Generator - Only show for top-level comments with project info */}
+            {!parentCommentId && projectTitle && projectDescription && (
+              <div className="flex items-center gap-2">
+                <AICommentGenerator
+                  projectTitle={projectTitle}
+                  projectDescription={projectDescription}
+                  onCommentGenerated={handleAICommentGenerated}
                   disabled={loading}
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Cancel
-                </Button>
-              )}
+                />
+              </div>
+            )}
 
-              <Button
-                type="submit"
-                size="sm"
-                disabled={!content.trim() || loading || isOverLimit}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Posting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    {parentCommentId ? 'Reply' : 'Comment'}
-                  </>
+            <div className="flex items-center justify-between gap-3">
+              {/* Character Count */}
+              <div className="flex-1">
+                {content.length > 0 && (
+                  <span className={cn(
+                    "text-xs font-medium",
+                    isOverLimit 
+                      ? "text-red-500" 
+                      : isNearLimit 
+                        ? "text-orange-500" 
+                        : "text-gray-400 dark:text-gray-500"
+                  )}>
+                    {charactersRemaining} characters remaining
+                  </span>
                 )}
-              </Button>
+                {error && (
+                  <p className="text-xs text-red-500 mt-1">{error}</p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                {onCancel && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </Button>
+                )}
+
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!content.trim() || loading || isOverLimit}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      {parentCommentId ? 'Reply' : 'Comment'}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </motion.div>

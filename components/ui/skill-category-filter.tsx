@@ -54,19 +54,19 @@ const SkillCategoryFilter: React.FC<SkillCategoryFilterProps> = ({
   }, [])
 
   return (
-    <div ref={filterRef} className="flex flex-wrap justify-center gap-3 mb-12">
+    <div ref={filterRef} className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-12 px-2">
       {/* All Skills Option */}
       <button
         onClick={() => onCategoryChange(-1)}
-        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+        className={`px-3 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold text-sm md:text-base transition-all duration-300 ${
           activeCategory === -1
             ? 'bg-primary text-primary-foreground shadow-lg scale-105'
             : 'bg-card/50 text-foreground hover:bg-card/80 border border-border/50 hover:scale-105'
         }`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <span>All Skills</span>
-          <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+          <span className="text-xs bg-primary/20 text-primary px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
             {allSkillsCount}
           </span>
         </div>
@@ -77,15 +77,15 @@ const SkillCategoryFilter: React.FC<SkillCategoryFilterProps> = ({
         <button
           key={index}
           onClick={() => onCategoryChange(index)}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+          className={`px-3 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold text-sm md:text-base transition-all duration-300 ${
             activeCategory === index
               ? 'bg-primary text-primary-foreground shadow-lg scale-105'
               : 'bg-card/50 text-foreground hover:bg-card/80 border border-border/50 hover:scale-105'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <span>{category.title}</span>
-            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="truncate max-w-[120px] md:max-w-none">{category.title}</span>
+            <span className="text-xs bg-primary/20 text-primary px-1.5 md:px-2 py-0.5 md:py-1 rounded-full flex-shrink-0">
               {category.skills.length}
             </span>
           </div>

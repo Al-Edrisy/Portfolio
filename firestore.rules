@@ -19,6 +19,12 @@ service cloud.firestore {
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
     
+    function isDeveloperOrAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['developer', 'admin'];
+    }
+    
     function isValidUser() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid));
@@ -99,11 +105,15 @@ service cloud.firestore {
       
       // Users can update their own comments, developers can update any
       allow update: if isAuthenticated() &&
-                       (resource.data.userId == request.auth.uid || isDeveloper());
+                       (resource.data.userId == request.auth.uid || isDeveloperOrAdmin());
       
       // Users can delete their own comments, developers can delete any
+      // Allow deletion if user is authenticated and either owns the comment or is a developer
+      // Also allow deletion if user document doesn't exist yet (new users)
       allow delete: if isAuthenticated() &&
-                       (resource.data.userId == request.auth.uid || isDeveloper());
+                       (resource.data.userId == request.auth.uid || 
+                        isDeveloperOrAdmin() ||
+                        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) == false));
     }
     
     // Feedback collection

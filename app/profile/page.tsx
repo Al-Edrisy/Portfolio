@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import Navigation from '@/components/ui/navigation'
-import { UserCursor } from '@/components/ui/custom-cursor'
-import { CursorProvider } from '@/components/ui/custom-cursor'
+// Custom cursor removed - using default browser cursor
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -111,7 +110,6 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -122,9 +120,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
@@ -144,7 +140,6 @@ export default function ProfilePage() {
   const draftProjects = projects.filter(p => !p.published)
 
   return (
-    <CursorProvider>
       <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <Navigation />
         <div className="pt-20">
@@ -315,7 +310,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        <UserCursor />
 
         {/* Delete Account Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -340,7 +334,6 @@ export default function ProfilePage() {
           </AlertDialogContent>
         </AlertDialog>
       </main>
-    </CursorProvider>
   )
 }
 

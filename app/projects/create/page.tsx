@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import Navigation from '@/components/ui/navigation'
-import { UserCursor } from '@/components/ui/custom-cursor'
-import { CursorProvider } from '@/components/ui/custom-cursor'
+// Custom cursor removed - using default browser cursor
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -72,7 +71,6 @@ export default function CreateProjectPage() {
   // Show loading state while checking authentication
   if (authLoading || isCheckingAuth) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -98,16 +96,13 @@ export default function CreateProjectPage() {
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
   // Show login redirect if no user after auth loads
   if (!user) {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -133,9 +128,7 @@ export default function CreateProjectPage() {
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
@@ -143,7 +136,6 @@ export default function CreateProjectPage() {
   const isDevelopment = process.env.NODE_ENV === 'development'
   if (!isDevelopment && user.role !== 'developer' && user.role !== 'admin') {
     return (
-      <CursorProvider>
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <Navigation />
           <div className="pt-20">
@@ -177,9 +169,7 @@ export default function CreateProjectPage() {
               </div>
             </div>
           </div>
-          <UserCursor />
         </main>
-      </CursorProvider>
     )
   }
 
@@ -196,7 +186,6 @@ export default function CreateProjectPage() {
   ]
 
   return (
-    <CursorProvider>
       <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
         <Navigation />
         <div className="pt-20">
@@ -401,8 +390,6 @@ export default function CreateProjectPage() {
             </div>
           </div>
         </div>
-        <UserCursor />
       </main>
-    </CursorProvider>
   )
 }

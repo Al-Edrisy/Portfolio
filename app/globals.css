@@ -3,14 +3,11 @@
 /* Import skills animations */
 @import '../styles/skills-animations.css';
 
-/* Custom Cursor Styles - Only apply when custom cursor is active */
-body.custom-cursor-active,
-body.custom-cursor-active *,
-body.custom-cursor-active *:hover,
-body.custom-cursor-active *:focus,
-body.custom-cursor-active *:active {
-  cursor: none !important;
-}
+/* Rounded favicon and app icon styling - 25% border radius */
+/* Note: Favicons are rendered by the browser and cannot be styled directly with CSS */
+/* For rounded app icons, ensure PNG versions are created with rounded corners */
+
+/* Custom cursor removed - using default browser cursor for better UX and compatibility */
 
 /* Circular Orbital Animations */
 @keyframes spin {

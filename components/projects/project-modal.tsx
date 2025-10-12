@@ -1,56 +1,43 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { 
   X,
-  ExternalLink, 
-  Github, 
-  Calendar, 
-  User, 
-  Tag,
   Loader2,
   MessageCircle,
   Heart,
-  ThumbsUp,
-  Star,
-  Rocket,
   ChevronLeft,
   ChevronRight,
-  Send,
-  Eye,
-  Code,
   Globe,
   Image as ImageIcon,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Zap,
-  TrendingUp,
-  Users,
-  Clock,
-  Award,
-  ArrowUpRight
+  Github,
+  ArrowUpRight,
+  Calendar,
+  Tag,
+  Eye,
+  Code2
 } from 'lucide-react'
 import { useProject } from '@/hooks/projects'
 import { useProjectReactions } from '@/hooks/reactions/use-project-reactions'
 import EnhancedReactionPicker from './reactions/enhanced-reaction-picker'
-import ReactionList from './reactions/reaction-list'
 import EnhancedCommentSystem from './comments/enhanced-comment-system'
-import { useProjectComments } from '@/hooks/comments/use-project-comments'
-import { useAuth } from '@/contexts/auth-context'
-import { useToast } from '@/hooks/use-toast'
-import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { ReactionType } from '@/types'
 import { useIncrementView } from '@/hooks/projects'
+import { formatDistanceToNow } from 'date-fns'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface ProjectModalProps {
   projectId: string
@@ -58,29 +45,15 @@ interface ProjectModalProps {
 
 export default function ProjectModal({ projectId }: ProjectModalProps) {
   const router = useRouter()
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('reactions')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [showImageModal, setShowImageModal] = useState(false)
-  const [newComment, setNewComment] = useState('')
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [startY, setStartY] = useState(0)
-  const [deltaY, setDeltaY] = useState(0)
 
   const { project, loading, error } = useProject(projectId)
   const { 
     reactions, 
     userReactions, 
-    reactionCounts, 
-    loading: reactionsLoading 
+    reactionCounts
   } = useProjectReactions(projectId)
-  
-  const { 
-    comments, 
-    addComment, 
-    loading: commentsLoading 
-  } = useProjectComments(projectId)
 
   const { incrementView } = useIncrementView()
 
@@ -110,29 +83,6 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
     }
   }, [])
 
-  // Swipe down to close on mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartY(e.touches[0].clientY)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const currentY = e.touches[0].clientY
-    const delta = currentY - startY
-    
-    // Only allow pulling down from top
-    if (delta > 0) {
-      setDeltaY(delta)
-    }
-  }
-
-  const handleTouchEnd = () => {
-    // If swiped down more than 150px, close modal
-    if (deltaY > 150) {
-      handleClose()
-    }
-    setDeltaY(0)
-  }
-
   const handleClose = () => {
     router.back()
   }
@@ -140,38 +90,6 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
   const getCurrentUserReaction = () => {
     return userReactions.length > 0 ? userReactions[0].type : null
   }
-
-  const handleAddComment = async () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to comment on projects.",
-        variant: "destructive",
-      })
-      return
-    }
-    
-    if (!newComment.trim()) {
-      toast({
-        title: "Invalid comment",
-        description: "Comment cannot be empty.",
-        variant: "destructive",
-      })
-      return
-    }
-    
-    try {
-      await addComment(newComment.trim())
-      setNewComment('')
-      toast({
-        title: "Comment posted!",
-        description: "Your comment has been added successfully.",
-      })
-    } catch (error) {
-      console.error('Error adding comment:', error)
-    }
-  }
-
 
   const nextImage = () => {
     if (project?.images && project.images.length > 0) {
@@ -193,15 +111,92 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
     return (
       <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 0.4,
+            ease: [0.4, 0, 0.2, 1]
+          }}
+          className="relative"
         >
-          <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-white" />
-            <div className="absolute inset-0 rounded-full border-2 border-white/20"></div>
-        </div>
-          <p className="text-white/90 text-lg font-medium">Loading project...</p>
+          {/* Animated Background Glow */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-primary/20 blur-3xl"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          {/* Main Content */}
+          <div className="relative text-center">
+            {/* Spinner Container */}
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              {/* Outer Ring */}
+              <motion.div
+                className="absolute inset-0 rounded-full border-4 border-primary/30"
+                animate={{ rotate: 360 }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+              
+              {/* Inner Spinner */}
+              <motion.div
+                className="absolute inset-2 rounded-full border-4 border-transparent border-t-primary border-r-primary"
+                animate={{ rotate: -360 }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+              
+              {/* Center Icon */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center"
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Loader2 className="h-8 w-8 text-primary" />
+              </motion.div>
+            </div>
+            
+            {/* Text */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <p className="text-white text-xl font-semibold mb-2">Loading Project</p>
+              <motion.p 
+                className="text-white/60 text-sm"
+                animate={{
+                  opacity: [0.6, 1, 0.6]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                Please wait...
+              </motion.p>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     )
@@ -248,52 +243,54 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
         aria-label="Close modal"
       />
       
-      {/* Modal Content */}
+      {/* Modal Content - Sidebar Layout */}
       <div className="relative h-full flex items-end md:items-center justify-center md:p-6">
         <motion.div
-          initial={{ opacity: 0, y: "100%" }}
-          animate={{ opacity: 1, y: deltaY > 0 ? deltaY : 0 }}
-          exit={{ opacity: 0, y: "100%" }}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full md:max-w-6xl bg-background md:rounded-2xl shadow-2xl overflow-hidden h-[95vh] md:h-auto md:max-h-[95vh] rounded-t-3xl md:rounded-b-2xl border md:border-border/50"
+          className="relative w-full max-w-7xl bg-background rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden h-[95vh] border-t md:border border-border/50 flex flex-col md:flex-row"
           onClick={(e) => e.stopPropagation()}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
-          {/* Mobile drag indicator */}
-          <div 
-            className="md:hidden sticky top-0 z-20 bg-background pt-3 pb-2 flex justify-center cursor-grab active:cursor-grabbing"
-          >
-            <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+          {/* LEFT SIDE - Image Gallery */}
+          <div className="relative md:w-1/2 lg:w-3/5 bg-muted/30 flex flex-col h-[40vh] md:h-auto">
+            {/* Close Button */}
+            <div className="absolute top-4 right-4 z-20 md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-background/90 backdrop-blur-sm hover:bg-background h-10 w-10 rounded-full shadow-lg"
+                onClick={handleClose}
+              >
+                <X className="h-5 w-5" />
+              </Button>
           </div>
 
-          {/* Header Actions */}
-          <div className="absolute top-4 right-4 z-20 flex gap-2">
+            {/* Desktop Close Button */}
+            <div className="hidden md:block absolute top-4 right-4 z-20">
           <Button
             variant="ghost"
             size="icon"
-              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 h-10 w-10"
+                className="bg-background/90 backdrop-blur-sm hover:bg-background h-10 w-10 rounded-full shadow-lg"
             onClick={handleClose}
           >
-              <X className="h-5 w-5 text-muted-foreground" />
+              <X className="h-5 w-5" />
           </Button>
           </div>
 
-          {/* Scrollable Content */}
-          <div className="h-full md:max-h-[95vh] overflow-y-auto overscroll-contain">
-            {/* Hero Section with Enhanced Visual */}
-            <div className="relative h-80 md:h-96 overflow-hidden group">
+            {/* Image Display */}
+            <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted/80 overflow-hidden group">
               {projectImages.length > 0 ? (
                 <>
                   <motion.img
                     key={currentImageIndex}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
                     src={projectImages[currentImageIndex]}
                     alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-contain p-2 md:p-4"
                   />
                   
                   {/* Image Navigation */}
@@ -302,7 +299,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground h-12 w-12 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={prevImage}
                       >
                         <ChevronLeft className="h-6 w-6" />
@@ -310,274 +307,225 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground h-12 w-12 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={nextImage}
                       >
                         <ChevronRight className="h-6 w-6" />
                       </Button>
-                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                        {projectImages.map((_, index) => (
-                          <button
-                            key={index}
-                            className={cn(
-                              "h-2 rounded-full transition-all duration-300",
-                              index === currentImageIndex 
-                                ? "bg-white w-8 shadow-lg" 
-                                : "bg-white/50 w-2 hover:bg-white/70"
-                            )}
-                            onClick={() => setCurrentImageIndex(index)}
-                          />
-                        ))}
-                      </div>
                     </>
                   )}
                 </>
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted flex items-center justify-center">
-                  <div className="text-center">
-                    <ImageIcon className="h-20 w-20 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground/70">No preview available</p>
+                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                  <ImageIcon className="h-20 w-20 mb-4 opacity-40" />
+                  <p className="text-sm">No images available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Image Thumbnails */}
+            {projectImages.length > 1 && (
+              <div className="hidden md:block bg-background/95 backdrop-blur-sm border-t border-border p-4">
+                <div className="w-full overflow-x-auto scrollbar-hide">
+                  <style jsx>{`
+                    .scrollbar-hide::-webkit-scrollbar {
+                      display: none;
+                    }
+                    .scrollbar-hide {
+                      -ms-overflow-style: none;
+                      scrollbar-width: none;
+                    }
+                  `}</style>
+                  <div className="flex gap-2 pb-1">
+                    {projectImages.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={cn(
+                          "relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all",
+                          index === currentImageIndex 
+                            ? "border-primary ring-2 ring-primary/20" 
+                            : "border-transparent hover:border-muted-foreground/30"
+                        )}
+                      >
+                        <img
+                          src={image}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {index === currentImageIndex && (
+                          <div className="absolute inset-0 bg-primary/10" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-center mt-3 text-xs text-muted-foreground">
+                  {currentImageIndex + 1} / {projectImages.length}
                   </div>
                 </div>
               )}
               
-              {/* Enhanced gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
-              {/* Floating Category Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="absolute bottom-6 left-6"
-              >
-                <Badge className="bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 text-sm font-medium shadow-lg border-0">
-                  <Sparkles className="h-3 w-3 mr-2" />
+            {/* Mobile Image Counter */}
+            {projectImages.length > 1 && (
+              <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium">
+                {currentImageIndex + 1} / {projectImages.length}
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT SIDE - Fixed Sidebar with Scrollable Content */}
+          <div className="md:w-1/2 lg:w-2/5 flex flex-col bg-background">
+            {/* Fixed Header */}
+            <div className="flex-shrink-0 p-6 border-b border-border bg-background">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 leading-tight break-words">
+                    {project.title}
+                  </h1>
+                  <Badge variant="secondary" className="text-xs">
                 {project.category}
               </Badge>
-              </motion.div>
-
-              {/* Floating Stats */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="absolute bottom-6 right-6 flex gap-3"
-              >
-                <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-2 text-white text-sm">
-                  <Eye className="h-4 w-4" />
-                  {project.viewsCount || 0}
                 </div>
-                <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-2 text-white text-sm">
-                  <Heart className="h-4 w-4" />
-                  {totalReactions}
-                </div>
-              </motion.div>
             </div>
 
-            {/* Enhanced Content */}
-            <div className="p-6 md:p-8 space-y-6 pb-safe">
-              {/* Project Header with Better Typography */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex-1 pr-16 md:pr-0">
-                    <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      {project.title}
-                    </h1>
-                    <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-4">
-                      {isExpanded ? project.description : project.description.substring(0, 250) + (project.description.length > 250 ? '...' : '')}
-                    </p>
-                    {project.description.length > 250 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-0 h-auto text-primary hover:text-primary/80 font-medium"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                      >
-                        {isExpanded ? (
-                          <>
-                            Show less <ChevronUp className="h-4 w-4 ml-1" />
-                          </>
-                        ) : (
-                          <>
-                            Show more <ChevronDown className="h-4 w-4 ml-1" />
-                          </>
-                        )}
-                      </Button>
-                    )}
+              {/* Quick Stats */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  <span>{project.views || 0}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Heart className="h-4 w-4" />
+                  <span>{totalReactions}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Comments</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
+              <style jsx>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+                }
+                .scrollbar-hide {
+                  -ms-overflow-style: none;
+                  scrollbar-width: none;
+                }
+              `}</style>
+              <div className="p-6 space-y-6">
+                {/* Description */}
+              <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                    About This Project
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {project.description}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Project Info */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Project Details
+                  </h3>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4 flex-shrink-0" />
+                      <span className="text-xs">
+                        Created {formatDistanceToNow(project.createdAt, { addSuffix: true })}
+                      </span>
+                    </div>
+                    
+                {project.tech && project.tech.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Code2 className="h-4 w-4 flex-shrink-0" />
+                          <span className="text-xs font-medium">Technologies</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 pl-6">
+                  {project.tech.map((tech) => (
+                            <Badge key={tech} variant="outline" className="text-xs px-2 py-0.5">
+                        {tech}
+                      </Badge>
+                    ))}
+                        </div>
+                  </div>
+                )}
                   </div>
                 </div>
 
-                {/* Enhanced Tech Stack */}
-                {project.tech && project.tech.length > 0 && (
-                  <div className="flex flex-wrap gap-3">
-                    {project.tech.map((tech, index) => (
-                      <motion.div
-                        key={tech}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 + index * 0.05 }}
-                      >
-                        <Badge variant="secondary" className="text-sm px-4 py-2 bg-secondary/80 hover:bg-secondary transition-colors">
-                          <Code className="h-3 w-3 mr-2" />
-                        {tech}
-                      </Badge>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
+                <Separator />
 
-              {/* Enhanced Action Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-col sm:flex-row gap-4"
-              >
+                {/* Action Buttons - Icon Only */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">Links</h3>
+                  <div className="flex items-center gap-2">
                   {project.link && (
-                  <Button asChild size="lg" className="flex-1 h-12 text-base font-medium group">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button asChild size="icon" className="h-10 w-10 rounded-full">
                       <a href={project.link} target="_blank" rel="noopener noreferrer">
-                      <Globe className="h-5 w-5 mr-2" />
-                        View Live Project
-                      <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                <Globe className="h-4 w-4" />
                       </a>
                     </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View Live Project</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                   )}
                   {project.github && (
-                  <Button asChild variant="outline" size="lg" className="flex-1 h-12 text-base font-medium group border-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button asChild size="icon" variant="outline" className="h-10 w-10 rounded-full">
                       <a href={project.github} target="_blank" rel="noopener noreferrer">
-                      <Github className="h-5 w-5 mr-2" />
-                        View Source Code
-                      <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                <Github className="h-4 w-4" />
                       </a>
                     </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View Source Code</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                   )}
-              </motion.div>
+              </div>
+                </div>
 
-              {/* Enhanced Tabs */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+                <Separator />
+
+                {/* Interactions Tabs */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/50 p-1">
-                    <TabsTrigger value="overview" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Overview
-                    </TabsTrigger>
-                    <TabsTrigger value="reactions" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                      <Heart className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Reactions</span>
-                    <span className="sm:hidden">React</span>
-                      <span className="ml-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">
+                  <TabsList className="grid w-full grid-cols-2 h-10 bg-muted/50">
+                    <TabsTrigger value="reactions" className="text-xs font-medium">
+                      <Heart className="h-3.5 w-3.5 mr-1.5" />
+                      Reactions
+                    {totalReactions > 0 && (
+                        <span className="ml-1.5 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
                         {totalReactions}
                       </span>
+                    )}
                   </TabsTrigger>
-                    <TabsTrigger value="comments" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Comments</span>
-                    <span className="sm:hidden">Chat</span>
-                      <span className="ml-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">
-                        {comments.length}
-                      </span>
+                    <TabsTrigger value="comments" className="text-xs font-medium">
+                      <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                      Comments
                   </TabsTrigger>
                 </TabsList>
 
-                  <TabsContent value="overview" className="space-y-6 mt-6">
-                    {/* Enhanced Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <motion.div 
-                        whileHover={{ scale: 1.02 }}
-                        className="text-center p-6 bg-gradient-to-br from-muted/50 to-muted rounded-xl border hover:shadow-lg transition-all"
-                      >
-                        <div className="text-3xl font-bold text-primary mb-2">{totalReactions}</div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <Heart className="h-4 w-4" />
-                          Reactions
-                        </div>
-                      </motion.div>
-                      <motion.div 
-                        whileHover={{ scale: 1.02 }}
-                        className="text-center p-6 bg-gradient-to-br from-muted/50 to-muted rounded-xl border hover:shadow-lg transition-all"
-                      >
-                        <div className="text-3xl font-bold text-primary mb-2">{comments.length}</div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <MessageCircle className="h-4 w-4" />
-                          Comments
-                    </div>
-                      </motion.div>
-                      <motion.div 
-                        whileHover={{ scale: 1.02 }}
-                        className="text-center p-6 bg-gradient-to-br from-muted/50 to-muted rounded-xl border hover:shadow-lg transition-all"
-                      >
-                        <div className="text-3xl font-bold text-primary mb-2">{project.tech?.length || 0}</div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <Code className="h-4 w-4" />
-                          Technologies
-                    </div>
-                      </motion.div>
-                      <motion.div 
-                        whileHover={{ scale: 1.02 }}
-                        className="text-center p-6 bg-gradient-to-br from-muted/50 to-muted rounded-xl border hover:shadow-lg transition-all"
-                      >
-                        <div className="text-3xl font-bold text-primary mb-2">{projectImages.length}</div>
-                        <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                          <ImageIcon className="h-4 w-4" />
-                          Images
-                    </div>
-                      </motion.div>
-                    </div>
-
-                    {/* Enhanced Project Info */}
-                    <div className="space-y-4 p-6 bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl border">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-full">
-                          <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                      <div>
-                          <div className="text-sm font-medium text-foreground">Created</div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-2">
-                          {formatDistanceToNow(project.createdAt, { addSuffix: true })}
-                            <Clock className="h-3 w-3" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-full">
-                          <Tag className="h-5 w-5 text-primary" />
-                    </div>
-                      <div>
-                          <div className="text-sm font-medium text-foreground">Category</div>
-                        <div className="text-sm text-muted-foreground">{project.category}</div>
-                        </div>
-                      </div>
-                      {project.authorName && (
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-primary/10 rounded-full">
-                            <Users className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-foreground">Author</div>
-                            <div className="text-sm text-muted-foreground">{project.authorName}</div>
-                      </div>
-                    </div>
-                      )}
-                  </div>
-                </TabsContent>
-
-                  <TabsContent value="reactions" className="space-y-6 mt-6">
-                    {/* Enhanced Reaction Picker */}
-                    <div className="flex flex-col gap-4 p-6 border-2 rounded-xl bg-gradient-to-br from-muted/30 to-muted/50">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        <span className="text-lg font-semibold">React to this project</span>
-                      </div>
+                  <TabsContent value="reactions" className="mt-4 space-y-4">
+                    {/* Reaction Picker */}
                       <EnhancedReactionPicker
                         projectId={projectId}
                         currentUserReaction={getCurrentUserReaction()}
@@ -586,45 +534,87 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                           // Reactions will refresh automatically via the hook
                         }}
                       />
+
+                    {/* People Who Reacted - Compact Display */}
+                    {Object.entries(reactionCounts).some(([_, count]) => count > 0) && (
+                      <div className="space-y-2.5 pt-4 border-t border-border">
+                        {Object.entries(reactionCounts)
+                          .filter(([_, count]) => count > 0)
+                          .sort(([, a], [, b]) => b - a) // Sort by count, highest first
+                          .map(([type, count]) => {
+                            const reactionEmojis: Record<string, string> = {
+                              like: '👍',
+                              love: '❤️',
+                              fire: '🔥',
+                              wow: '😮',
+                              laugh: '😂',
+                              idea: '💡',
+                              rocket: '🚀',
+                              clap: '👏'
+                            }
+                            
+                            // Get users who used this reaction type
+                            const usersWithReaction = reactions.filter(r => r.type === type)
+                            
+                            return (
+                              <div key={type} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
+                                {/* Reaction Emoji */}
+                                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted/50 flex-shrink-0">
+                                  <span className="text-lg">{reactionEmojis[type] || '👍'}</span>
                     </div>
 
-                    {/* Enhanced Reaction Summary */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {Object.entries(reactionCounts).map(([type, count]) => (
-                        <motion.div 
-                          key={type}
-                          whileHover={{ scale: 1.02 }}
-                          className="text-center p-4 bg-gradient-to-br from-muted/50 to-muted rounded-xl border hover:shadow-lg transition-all"
-                        >
-                          <div className="text-2xl font-bold text-primary mb-1">{count}</div>
-                          <div className="text-sm text-muted-foreground capitalize">{type}</div>
-                        </motion.div>
-                      ))}
+                                {/* User Avatars - Stacked */}
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <div className="flex -space-x-2 mr-2">
+                                    {usersWithReaction.slice(0, 4).map((reaction) => (
+                                      <TooltipProvider key={reaction.id}>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Avatar className="h-7 w-7 ring-2 ring-background hover:scale-110 transition-transform cursor-pointer">
+                                              <AvatarImage src={reaction.user.avatar} />
+                                              <AvatarFallback className="text-xs">
+                                                {reaction.user.name[0]}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p className="text-xs">{reaction.user.name}</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    ))}
+                                    {count > 4 && (
+                                      <div className="h-7 w-7 rounded-full bg-muted ring-2 ring-background flex items-center justify-center">
+                                        <span className="text-[10px] font-semibold text-muted-foreground">
+                                          +{count - 4}
+                                        </span>
+                                      </div>
+                                    )}
                   </div>
 
-                    {/* All Reactions List */}
-                    <div className="mt-6">
-                      <ReactionList
-                        reactions={reactions}
-                        loading={reactionsLoading}
-                        variant="modal"
-                        maxVisible={8}
-                      />
+                                  {/* Count */}
+                                  <span className="text-xs font-medium text-muted-foreground ml-auto">
+                                    {count}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          })}
                   </div>
+                    )}
                 </TabsContent>
 
-                  <TabsContent value="comments" className="space-y-6 mt-6">
-                    {/* Enhanced Comment System with Replies */}
-                    <div className="max-h-[600px] overflow-y-auto pr-2">
+                  <TabsContent value="comments" className="mt-4">
                       <EnhancedCommentSystem
                         projectId={projectId}
+                        projectTitle={project?.title}
+                        projectDescription={project?.description}
                         maxDepth={3}
                         showCount={true}
                       />
-                    </div>
                 </TabsContent>
               </Tabs>
-              </motion.div>
+              </div>
             </div>
           </div>
         </motion.div>

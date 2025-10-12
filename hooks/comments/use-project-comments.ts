@@ -27,7 +27,7 @@ export function useProjectComments(projectId: string) {
   const { user } = useAuth()
   const { toast } = useToast()
 
-  // Load comments
+  // Load comments (only top-level comments, not replies)
   useEffect(() => {
     if (!projectId) {
       setComments([])
@@ -38,6 +38,7 @@ export function useProjectComments(projectId: string) {
     const q = query(
       collection(db, 'comments'),
       where('projectId', '==', projectId),
+      where('parentCommentId', '==', null),
       orderBy('createdAt', 'desc')
     )
 
@@ -226,9 +227,9 @@ export function useProjectComments(projectId: string) {
     }
 
     try {
-      // Check if user owns this comment or is admin
+      // Check if user owns this comment or is admin/developer
       const comment = comments.find(c => c.id === commentId)
-      if (!comment || (comment.userId !== user.id && user.role !== 'admin')) {
+      if (!comment || (comment.userId !== user.id && user.role !== 'admin' && user.role !== 'developer')) {
         toast({
           title: "Permission denied",
           description: "You can only delete your own comments.",
@@ -282,31 +283,43 @@ export function useProjectComments(projectId: string) {
       const snapshot = await getDocs(q)
       const replies = await Promise.all(
         snapshot.docs.map(async (commentDoc) => {
-          const data = doc.data()
-          
-          // Get user data
-          const userDoc = await getDoc(doc(db, 'users', data.userId))
-          const userData = userDoc.exists() ? userDoc.data() : null
-          
-          return {
-            id: doc.id,
-            projectId: data.projectId,
-            userId: data.userId,
-            content: data.content,
-            parentCommentId: data.parentCommentId,
-            createdAt: data.createdAt?.toDate() || new Date(),
-            updatedAt: data.updatedAt?.toDate() || new Date(),
-            likes: data.likes,
-            repliesCount: data.repliesCount,
-            user: {
-              name: userData?.name || 'Unknown User',
-              avatar: userData?.avatar || '',
-            },
-          } as Comment
+          try {
+            const data = commentDoc.data()
+            
+            // Get user data safely with error handling
+            let userData = null
+            try {
+              const userDoc = await getDoc(doc(db, 'users', data.userId))
+              userData = userDoc.exists() ? userDoc.data() : null
+            } catch (userError) {
+              console.error('Error fetching user data:', userError)
+            }
+            
+            return {
+              id: commentDoc.id,
+              projectId: data.projectId || '',
+              userId: data.userId || '',
+              content: data.content || '',
+              parentCommentId: data.parentCommentId || null,
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
+              likes: data.likes || 0,
+              repliesCount: data.repliesCount || 0,
+              user: {
+                name: userData?.name || 'Unknown User',
+                avatar: userData?.avatar || '',
+              },
+            } as Comment
+          } catch (docError) {
+            console.error('Error processing comment document:', docError)
+            // Return a default comment object to prevent breaking the entire reply list
+            return null
+          }
         })
       )
 
-      return replies
+      // Filter out any null values from failed document processing
+      return replies.filter((reply): reply is Comment => reply !== null)
     } catch (err: any) {
       console.error('Error getting replies:', err)
       return []
