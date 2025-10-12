@@ -16,7 +16,12 @@ export interface Project {
   id: string
   title: string
   description: string
-  image: string
+  image: string // Cover image (backward compatibility)
+  images?: {
+    cover: string
+    gallery: string[]
+    thumbnails?: string[]
+  }
   tech: string[]
   categories: string[] // Support multiple categories
   category?: string // Deprecated: Keep for backward compatibility

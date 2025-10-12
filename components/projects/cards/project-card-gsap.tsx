@@ -44,6 +44,7 @@ import ReactionList from '../reactions/reaction-list'
 import EnhancedCommentSystem from '../comments/enhanced-comment-system'
 import { useIncrementView } from '@/hooks/projects'
 import { getTechIconOrText } from '@/lib/tech-icon-mapper'
+import { CompactImageGallery } from '../gallery/image-gallery'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -444,31 +445,59 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
           </div>
         )}
 
-        {/* Project Image with Parallax - Optimized with lazy loading */}
-        {project.image && (
+        {/* Project Images Gallery - Display all images */}
+        {(project.image || project.images?.gallery?.length) && (
           <div className="px-3 md:px-4 pb-3 overflow-hidden">
-            <div 
-              className="relative w-full aspect-video overflow-hidden rounded-lg bg-muted group/image cursor-pointer"
-              onClick={handleProjectClick}
-            >
-              <div ref={imageRef} className="w-full h-full">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
+            {/* Get all images to display */}
+            {(() => {
+              const allImages = project.images?.gallery || [project.image].filter(Boolean)
               
-              {/* View Project Overlay Hint */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
-                <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
-                  <p className="text-white text-sm font-medium">Click to view project</p>
-                </div>
-              </div>
-            </div>
+              if (allImages.length === 1) {
+                // Single image - show with parallax effect
+                return (
+                  <div 
+                    className="relative w-full aspect-video overflow-hidden rounded-lg bg-muted group/image cursor-pointer"
+                    onClick={handleProjectClick}
+                  >
+                    <div ref={imageRef} className="w-full h-full">
+                      <img
+                        src={allImages[0]}
+                        alt={project.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* View Project Overlay Hint */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
+                      <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <p className="text-white text-sm font-medium">Click to view project</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              } else {
+                // Multiple images - show gallery
+                return (
+                  <div ref={imageRef} className="relative">
+                    <CompactImageGallery
+                      images={allImages}
+                      onImageClick={handleProjectClick}
+                      aspectRatio="video"
+                      className="cursor-pointer"
+                    />
+                    {/* Gallery indicator */}
+                    {allImages.length > 1 && (
+                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                        {allImages.length} images
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+            })()}
           </div>
         )}
 
