@@ -37,41 +37,50 @@ export default function Navigation() {
   // Enhanced scroll behavior - hide on scroll down, show on scroll up
   useEffect(() => {
     let ticking = false
+    let timeoutId: NodeJS.Timeout
     
     const handleScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          const scrollDifference = Math.abs(currentScrollY - lastScrollY)
-          
-          // Only trigger if scroll difference is significant (prevents jitter)
-          if (scrollDifference > 5) {
-            // Determine scroll direction - only hide after scrolling past 150px
-            if (currentScrollY > lastScrollY && currentScrollY > 150) {
-              setScrollDirection('down')
-            } else if (currentScrollY < lastScrollY) {
-              setScrollDirection('up')
+        ticking = true
+        
+        // Debounce for better performance
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          window.requestAnimationFrame(() => {
+            const currentScrollY = window.scrollY
+            const scrollDifference = Math.abs(currentScrollY - lastScrollY)
+            
+            // Only trigger if scroll difference is significant (prevents jitter)
+            if (scrollDifference > 10) {
+              // Determine scroll direction - only hide after scrolling past 150px
+              if (currentScrollY > lastScrollY && currentScrollY > 150) {
+                setScrollDirection('down')
+              } else if (currentScrollY < lastScrollY) {
+                setScrollDirection('up')
+              }
+              
+              setLastScrollY(currentScrollY)
             }
             
-            setLastScrollY(currentScrollY)
-          }
-          
-          // Set scrolled state for backdrop
-          setIsScrolled(currentScrollY > 20)
-          
-          // Close mobile menu on scroll down
-          if (isMobileMenuOpen && currentScrollY > lastScrollY) {
-            setIsMobileMenuOpen(false)
-          }
-          
-          ticking = false
-        })
-        ticking = true
+            // Set scrolled state for backdrop
+            setIsScrolled(currentScrollY > 20)
+            
+            // Close mobile menu on scroll down
+            if (isMobileMenuOpen && currentScrollY > lastScrollY) {
+              setIsMobileMenuOpen(false)
+            }
+            
+            ticking = false
+          })
+        }, 10)
       }
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      clearTimeout(timeoutId)
+    }
   }, [lastScrollY, isMobileMenuOpen])
 
   const isActiveRoute = (href: string) => {
@@ -84,7 +93,7 @@ export default function Navigation() {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 will-change-transform ${
         isScrolled 
           ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm" 
           : "bg-transparent"
@@ -95,40 +104,40 @@ export default function Navigation() {
         y: scrollDirection === 'down' && isScrolled && !isMobileMenuOpen ? -100 : 0 
       }}
       transition={{ 
-        opacity: { duration: 0.3 },
-        y: { duration: 0.4, ease: "easeInOut" }
+        opacity: { duration: 0.2 },
+        y: { duration: 0.3, ease: "easeInOut" }
       }}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-18 lg:h-20">
-          {/* Logo - Improved touch target */}
-          <Link href="/" className="flex-shrink-0 -ml-2 md:ml-0">
+      <nav className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-18 lg:h-20">
+          {/* Logo - Improved touch target and responsiveness */}
+          <Link href="/" className="flex-shrink-0 -ml-1 sm:-ml-2 md:ml-0">
             <motion.div
-              className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground hover:text-primary transition-colors duration-200 px-2 py-1 rounded-md"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-foreground hover:text-primary transition-colors duration-200 px-2 py-1 rounded-md"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
               Al-Edrisy
             </motion.div>
           </Link>
 
           {/* Desktop Navigation - Centered with improved spacing */}
-          <div className="hidden lg:flex items-center justify-center flex-1 px-8">
-            <div className="flex items-center space-x-2">
+          <div className="hidden lg:flex items-center justify-center flex-1 px-4 lg:px-8">
+            <div className="flex items-center space-x-1 lg:space-x-2">
               {navItems.map((item) => (
                 <Link key={item.name} href={item.href}>
                   <motion.div
-                    className={`relative px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${
+                    className={`relative px-3 lg:px-4 py-2 lg:py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${
                       isActiveRoute(item.href)
                         ? "text-primary bg-primary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                     }`}
-                    whileHover={{ y: -2 }}
+                    whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     {item.name}
                     {isActiveRoute(item.href) && (
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                      <span className="absolute bottom-0.5 lg:bottom-1 left-1/2 -translate-x-1/2 w-6 lg:w-8 h-0.5 bg-primary rounded-full" />
                     )}
                   </motion.div>
                 </Link>
@@ -137,12 +146,12 @@ export default function Navigation() {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-1.5 lg:gap-2 flex-shrink-0">
             {mounted && canManageProjects && (
               <div className="flex items-center gap-1 mr-1">
                 <Link href="/projects/create">
                   <motion.button
-                    className="px-3 py-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/30 hover:border-primary/50 rounded-md hover:bg-primary/5"
+                    className="px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/30 hover:border-primary/50 rounded-md hover:bg-primary/5"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -152,7 +161,7 @@ export default function Navigation() {
                 {isAdmin && (
                   <Link href="/admin/projects">
                     <motion.button
-                      className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 hover:bg-accent/50 rounded-md"
+                      className="px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 hover:bg-accent/50 rounded-md"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -166,9 +175,9 @@ export default function Navigation() {
             {mounted && (
               <motion.button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-2 rounded-md hover:bg-accent/50 transition-colors duration-200"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="p-1.5 lg:p-2 rounded-md hover:bg-accent/50 transition-colors duration-200"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
@@ -183,8 +192,8 @@ export default function Navigation() {
 
             <Link href="/contact">
               <motion.button
-                className="ml-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg"
-                whileHover={{ scale: 1.05, y: -1 }}
+                className="ml-1.5 lg:ml-2 px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-primary-foreground rounded-lg text-xs lg:text-sm font-medium hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg"
+                whileHover={{ scale: 1.03, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >
                 Hire Me
@@ -192,12 +201,12 @@ export default function Navigation() {
             </Link>
           </div>
 
-          {/* Mobile menu button - Improved touch target */}
+          {/* Mobile menu button - Improved touch target and accessibility */}
           <motion.button
-            className="lg:hidden p-3 -mr-2 text-foreground rounded-lg hover:bg-accent transition-colors"
+            className="lg:hidden p-2.5 sm:p-3 -mr-1 sm:-mr-2 text-foreground rounded-lg hover:bg-accent transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             aria-label="Toggle menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -207,58 +216,58 @@ export default function Navigation() {
                   rotate: isMobileMenuOpen ? 45 : 0,
                   y: isMobileMenuOpen ? 4 : 0,
                 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full will-change-transform"
+                transition={{ duration: 0.2, ease: "easeInOut" }}
               />
               <motion.span
                 animate={{
                   opacity: isMobileMenuOpen ? 0 : 1,
                   scale: isMobileMenuOpen ? 0 : 1,
                 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full will-change-transform"
+                transition={{ duration: 0.2, ease: "easeInOut" }}
               />
               <motion.span
                 animate={{
                   rotate: isMobileMenuOpen ? -45 : 0,
                   y: isMobileMenuOpen ? -4 : 0,
                 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full will-change-transform"
+                transition={{ duration: 0.2, ease: "easeInOut" }}
               />
             </div>
           </motion.button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
+      {/* Mobile Menu - Optimized for performance */}
+      <AnimatePresence mode="wait">
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="lg:hidden bg-background/95 backdrop-blur-lg border-t border-border/50"
           >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
               {/* Navigation Links */}
-              <div className="space-y-1 mb-4">
+              <div className="space-y-0.5 sm:space-y-1 mb-3 sm:mb-4">
                 {navItems.map((item, index) => (
                   <Link key={item.name} href={item.href} onClick={closeMobileMenu}>
                     <motion.div
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.2 }}
-                      className={`relative text-left py-3 px-4 rounded-md transition-colors duration-200 ${
+                      transition={{ delay: index * 0.04, duration: 0.15, ease: "easeOut" }}
+                      className={`relative text-left py-2.5 sm:py-3 px-3 sm:px-4 rounded-md transition-colors duration-200 ${
                         isActiveRoute(item.href)
                           ? "text-primary bg-primary/10 font-medium"
-                          : "text-foreground hover:bg-accent/50"
+                          : "text-foreground hover:bg-accent/50 active:bg-accent"
                       }`}
                     >
                       {item.name}
                       {isActiveRoute(item.href) && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 sm:h-6 bg-primary rounded-r-full" />
                       )}
                     </motion.div>
                   </Link>

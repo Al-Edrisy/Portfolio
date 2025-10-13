@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { 
   X, 
@@ -8,58 +8,41 @@ import {
   ChevronRight, 
   ZoomIn, 
   ZoomOut, 
-  RotateCw,
   Download,
-  ExternalLink,
   Maximize2,
-  Minimize2,
-  Loader2,
-  AlertCircle,
-  Move,
-  Hand
+  Minimize2
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface ImageGalleryModalProps {
   images: string[]
-  currentIndex: number
+  initialIndex?: number
   isOpen: boolean
   onClose: () => void
-  onIndexChange?: (index: number) => void
-  className?: string
+  projectTitle?: string
 }
 
 export function ImageGalleryModal({
   images,
-  currentIndex,
+  initialIndex = 0,
   isOpen,
   onClose,
-  onIndexChange,
-  className
+  projectTitle = 'Project'
 }: ImageGalleryModalProps) {
-  const [index, setIndex] = useState(currentIndex)
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [zoom, setZoom] = useState(1)
-  const [rotation, setRotation] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [isLoading, setIsLoading] = useState(true)
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
-  const [errors, setErrors] = useState<Set<number>>(new Set())
-  const containerRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
-
-  // Update index when currentIndex prop changes
-  useEffect(() => {
-    setIndex(currentIndex)
-  }, [currentIndex])
-
-  // Reset zoom and rotation when image changes
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  
+  // Reset zoom when changing images
   useEffect(() => {
     setZoom(1)
-    setRotation(0)
-    setDragOffset({ x: 0, y: 0 })
-  }, [index])
+  }, [currentIndex])
+
+  // Update current index when initialIndex changes
+  useEffect(() => {
+    setCurrentIndex(initialIndex)
+  }, [initialIndex])
 
   // Keyboard navigation
   useEffect(() => {
@@ -71,124 +54,61 @@ export function ImageGalleryModal({
           onClose()
           break
         case 'ArrowLeft':
-          e.preventDefault()
-          goToPrevious()
+          handlePrevious()
           break
         case 'ArrowRight':
-          e.preventDefault()
-          goToNext()
-          break
-        case 'Home':
-          e.preventDefault()
-          goToFirst()
-          break
-        case 'End':
-          e.preventDefault()
-          goToLast()
+          handleNext()
           break
         case '+':
         case '=':
-          e.preventDefault()
-          setZoom(prev => Math.min(prev + 0.25, 3))
+          handleZoomIn()
           break
         case '-':
-          e.preventDefault()
-          setZoom(prev => Math.max(prev - 0.25, 0.25))
-          break
-        case '0':
-          e.preventDefault()
-          setZoom(1)
-          setRotation(0)
-          setDragOffset({ x: 0, y: 0 })
-          break
-        case 'r':
-        case 'R':
-          e.preventDefault()
-          setRotation(prev => (prev + 90) % 360)
+          handleZoomOut()
           break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, index, images.length])
+  }, [isOpen, currentIndex, zoom])
 
-  // Navigation functions
-  const goToPrevious = useCallback(() => {
-    if (images.length <= 1) return
-    const newIndex = (index - 1 + images.length) % images.length
-    setIndex(newIndex)
-    onIndexChange?.(newIndex)
-  }, [index, images.length, onIndexChange])
-
-  const goToNext = useCallback(() => {
-    if (images.length <= 1) return
-    const newIndex = (index + 1) % images.length
-    setIndex(newIndex)
-    onIndexChange?.(newIndex)
-  }, [index, images.length, onIndexChange])
-
-  const goToFirst = useCallback(() => {
-    setIndex(0)
-    onIndexChange?.(0)
-  }, [onIndexChange])
-
-  const goToLast = useCallback(() => {
-    const lastIndex = images.length - 1
-    setIndex(lastIndex)
-    onIndexChange?.(lastIndex)
-  }, [images.length, onIndexChange])
-
-  // Image loading handlers
-  const handleImageLoad = (imgIndex: number) => {
-    setLoadedImages(prev => new Set([...prev, imgIndex]))
-    setErrors(prev => {
-      const newErrors = new Set(prev)
-      newErrors.delete(imgIndex)
-      return newErrors
-    })
-    setIsLoading(false)
-  }
-
-  const handleImageError = (imgIndex: number) => {
-    setErrors(prev => new Set([...prev, imgIndex]))
-    setIsLoading(false)
-  }
-
-  // Zoom and pan handlers
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -0.1 : 0.1
-    setZoom(prev => Math.max(0.25, Math.min(3, prev + delta)))
-  }
-
-  const handlePanStart = () => {
-    setIsDragging(true)
-  }
-
-  const handlePan = (event: any, info: PanInfo) => {
-    if (zoom > 1) {
-      setDragOffset(prev => ({
-        x: prev.x + info.delta.x,
-        y: prev.y + info.delta.y
-      }))
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
     }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % images.length)
+  }, [images.length])
+
+  const handlePrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+  }, [images.length])
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.5, 3))
   }
 
-  const handlePanEnd = () => {
-    setIsDragging(false)
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.5, 0.5))
   }
 
-  // Download handler
   const handleDownload = async () => {
     try {
-      const imageUrl = images[index]
-      const response = await fetch(imageUrl)
+      const response = await fetch(images[currentIndex])
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `image-${index + 1}.jpg`
+      link.download = `${projectTitle}-image-${currentIndex + 1}.jpg`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -198,287 +118,203 @@ export function ImageGalleryModal({
     }
   }
 
-  // Open in new tab
-  const handleOpenInNewTab = () => {
-    window.open(images[index], '_blank')
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen)
   }
 
-  const currentImage = images[index]
-  const hasError = errors.has(index)
-  const isLoaded = loadedImages.has(index)
+  // Swipe handling
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeThreshold = 50
+    if (info.offset.x > swipeThreshold) {
+      handlePrevious()
+    } else if (info.offset.x < -swipeThreshold) {
+      handleNext()
+    }
+  }
+
+  if (!isOpen) return null
+
+  const currentImage = images[currentIndex]
 
   return (
     <AnimatePresence>
-      {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/90 backdrop-blur-sm",
-            className
-          )}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              onClose()
-            }
-          }}
-        >
-          {/* Header */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 text-white">
-            <div className="flex items-center gap-4">
-              <h3 className="text-lg font-semibold">
-                {index + 1} of {images.length}
-              </h3>
-              {isDragging && (
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Move className="w-4 h-4" />
-                  <span>Dragging</span>
-                </div>
+        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        {/* Header Controls */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-sm font-medium">
+              {currentIndex + 1} / {images.length}
+            </span>
+            {projectTitle && (
+              <span className="text-sm text-gray-300 hidden sm:inline">
+                • {projectTitle}
+              </span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={handleOpenInNewTab}
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleZoomOut()
+              }}
+              disabled={zoom <= 0.5}
+              className="text-white hover:bg-white/20"
+            >
+              <ZoomOut className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleZoomIn()
+              }}
+              disabled={zoom >= 3}
                 className="text-white hover:bg-white/20"
               >
-                <ExternalLink className="w-4 h-4" />
+              <ZoomIn className="h-5 w-5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleFullscreen()
+              }}
+              className="text-white hover:bg-white/20 hidden sm:flex"
+            >
+              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
               </Button>
+            
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={handleDownload}
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDownload()
+              }}
                 className="text-white hover:bg-white/20"
               >
-                <Download className="w-4 h-4" />
+              <Download className="h-5 w-5" />
               </Button>
+            
               <Button
                 variant="ghost"
-                size="sm"
+              size="icon"
                 onClick={onClose}
                 className="text-white hover:bg-white/20"
               >
-                <X className="w-4 h-4" />
+              <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          {/* Image Container */}
-          <div 
-            ref={containerRef}
-            className="relative flex-1 flex items-center justify-center p-16"
-            onWheel={handleWheel}
+        {/* Main Image */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center p-4 sm:p-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <motion.div
+            key={currentIndex}
+            drag={zoom === 1}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.1}
+            onDragEnd={handleDragEnd}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+              "relative max-w-full max-h-full cursor-grab active:cursor-grabbing",
+              isFullscreen && "w-full h-full"
+            )}
+            style={{
+              transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+              transition: 'transform 0.2s ease-out'
+            }}
           >
-            {/* Navigation Arrows */}
+            <img
+              src={currentImage}
+              alt={`${projectTitle} - Image ${currentIndex + 1}`}
+              className={cn(
+                "max-w-full max-h-full object-contain select-none",
+                isFullscreen ? "w-full h-full object-cover" : ""
+              )}
+              draggable={false}
+            />
+          </motion.div>
+        </div>
+
+        {/* Navigation Buttons */}
             {images.length > 1 && (
               <>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                >
-                  <ChevronLeft className="w-6 h-6" />
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePrevious()
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12 rounded-full"
+            >
+              <ChevronLeft className="h-8 w-8" />
                 </Button>
 
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                >
-                  <ChevronRight className="w-6 h-6" />
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleNext()
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12 rounded-full"
+            >
+              <ChevronRight className="h-8 w-8" />
                 </Button>
               </>
             )}
 
-            {/* Image */}
-            <motion.div
-              drag={zoom > 1}
-              dragConstraints={containerRef}
-              onDragStart={handlePanStart}
-              onDrag={handlePan}
-              onDragEnd={handlePanEnd}
-              dragElastic={0}
-              className="relative max-w-full max-h-full"
-            >
-              {isLoading && !isLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <Loader2 className="w-8 h-8 animate-spin text-white" />
-                </div>
-              )}
-
-              {hasError && (
-                <div className="flex items-center justify-center w-96 h-96 text-white">
-                  <div className="text-center">
-                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg">Failed to load image</p>
-                    <p className="text-sm text-gray-400 mt-2">Image may be unavailable or corrupted</p>
-                  </div>
-                </div>
-              )}
-
-              {!hasError && (
-                <motion.img
-                  ref={imageRef}
+        {/* Thumbnail Strip */}
+        {images.length > 1 && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+            <div className="flex gap-2 overflow-x-auto pb-2 justify-center scrollbar-hide">
+              {images.map((image, index) => (
+                <button
                   key={index}
-                  src={currentImage}
-                  alt={`Gallery image ${index + 1}`}
-                  onLoad={() => handleImageLoad(index)}
-                  onError={() => handleImageError(index)}
-                  className={cn(
-                    "max-w-full max-h-full object-contain",
-                    "transition-opacity duration-300",
-                    isLoaded ? "opacity-100" : "opacity-0",
-                    zoom > 1 ? "cursor-move" : "cursor-default"
-                  )}
-                  style={{
-                    transform: `scale(${zoom}) rotate(${rotation}deg) translate(${dragOffset.x}px, ${dragOffset.y}px)`,
-                    transformOrigin: 'center center'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCurrentIndex(index)
                   }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isLoaded ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                />
-              )}
-            </motion.div>
-          </div>
-
-          {/* Controls */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between p-4 text-white">
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex gap-2 max-w-xs overflow-x-auto">
-                {images.map((image, imgIndex) => (
-                  <button
-                    key={imgIndex}
-                    onClick={() => {
-                      setIndex(imgIndex)
-                      onIndexChange?.(imgIndex)
-                    }}
-                    className={cn(
-                      "relative flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2",
-                      imgIndex === index 
-                        ? "border-white" 
-                        : "border-gray-600 hover:border-gray-400"
+                  className={cn(
+                    "flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden transition-all",
+                    "border-2",
+                    index === currentIndex
+                      ? "border-white scale-110"
+                      : "border-transparent opacity-60 hover:opacity-100"
                     )}
                   >
                     <img
                       src={image}
-                      alt={`Thumbnail ${imgIndex + 1}`}
+                    alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </button>
                 ))}
-              </div>
-            )}
-
-            {/* Zoom and Rotation Controls */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setZoom(prev => Math.max(0.25, prev - 0.25))}
-                disabled={zoom <= 0.25}
-                className="text-white hover:bg-white/20"
-              >
-                <ZoomOut className="w-4 h-4" />
-              </Button>
-
-              <span className="text-sm min-w-[60px] text-center">
-                {Math.round(zoom * 100)}%
-              </span>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setZoom(prev => Math.min(3, prev + 0.25))}
-                disabled={zoom >= 3}
-                className="text-white hover:bg-white/20"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setRotation(prev => (prev + 90) % 360)}
-                className="text-white hover:bg-white/20"
-              >
-                <RotateCw className="w-4 h-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setZoom(1)
-                  setRotation(0)
-                  setDragOffset({ x: 0, y: 0 })
-                }}
-                className="text-white hover:bg-white/20"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </Button>
             </div>
           </div>
-
-          {/* Instructions */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-5">
-            <div className="text-center text-white/50 text-sm pointer-events-none">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Hand className="w-4 h-4" />
-                <span>Use mouse wheel to zoom</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <Move className="w-4 h-4" />
-                <span>Drag to pan when zoomed</span>
-              </div>
-            </div>
-          </div>
+        )}
         </motion.div>
-      )}
     </AnimatePresence>
   )
-}
-
-// Hook for managing gallery modal state
-export function useImageGalleryModal(images: string[]) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [currentIndex, setCurrentIndex] = useState(0)
-
-  const openModal = useCallback((index: number = 0) => {
-    setCurrentIndex(index)
-    setIsOpen(true)
-  }, [])
-
-  const closeModal = useCallback(() => {
-    setIsOpen(false)
-  }, [])
-
-  const nextImage = useCallback(() => {
-    if (images.length <= 1) return
-    setCurrentIndex(prev => (prev + 1) % images.length)
-  }, [images.length])
-
-  const previousImage = useCallback(() => {
-    if (images.length <= 1) return
-    setCurrentIndex(prev => (prev - 1 + images.length) % images.length)
-  }, [images.length])
-
-  return {
-    isOpen,
-    currentIndex,
-    openModal,
-    closeModal,
-    nextImage,
-    previousImage
-  }
 }

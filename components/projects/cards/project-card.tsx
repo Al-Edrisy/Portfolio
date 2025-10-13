@@ -53,6 +53,7 @@ import { CompactCommentForm } from '../comments/forms/enhanced-comment-form'
 import EnhancedCommentSystem from '../comments/enhanced-comment-system'
 import { LinkedInMediaGallery } from '../gallery/linkedin-media-gallery'
 import { CompactImageGallery } from '../gallery/image-gallery'
+import { HoverPreviewGallery } from '../gallery/hover-preview-gallery'
 import { useIncrementView } from '@/hooks/projects'
 
 interface LinkedInStyleProjectCardProps {
@@ -333,53 +334,22 @@ const LinkedInStyleProjectCard = memo(function LinkedInStyleProjectCard({
         )}
 
         {/* Project Images Gallery - Display all images */}
-        {(project.image || project.images?.gallery?.length) && (
+        {(project.image || project.images?.length) && (
           <div className="px-3 md:px-4 pb-3">
-            {/* Get all images to display */}
             {(() => {
-              const allImages = project.images?.gallery || [project.image].filter(Boolean)
+              const allImages = project.images || (project.image ? [project.image] : [])
               
-              if (allImages.length === 1) {
-                // Single image - show with hover effect
-                return (
-                  <div 
-                    className="relative w-full aspect-video overflow-hidden rounded-lg bg-muted group/image cursor-pointer"
-                    onClick={handleProjectClick}
-                  >
-                    <img
-                      src={allImages[0]}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* View Project Overlay Hint */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
-                      <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
-                        <p className="text-white text-sm font-medium">Click to view project</p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              } else {
-                // Multiple images - show gallery
-                return (
-                  <div className="relative">
-                    <CompactImageGallery
-                      images={allImages}
-                      onImageClick={handleProjectClick}
-                      aspectRatio="video"
-                      className="cursor-pointer"
-                    />
-                    {/* Gallery indicator */}
-                    {allImages.length > 1 && (
-                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-                        {allImages.length} images
-                      </div>
-                    )}
-                  </div>
-                )
-              }
+              return (
+                <div onClick={handleProjectClick} className="cursor-pointer">
+                  <HoverPreviewGallery
+                    images={allImages}
+                    projectTitle={project.title}
+                    aspectRatio="video"
+                    showViewAllButton={false}
+                    className="hover:scale-[1.02] transition-transform duration-200"
+                  />
+                </div>
+              )
             })()}
           </div>
         )}

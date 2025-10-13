@@ -48,6 +48,8 @@ import { cn } from '@/lib/utils'
 import { Project } from '@/types'
 import { ReactionType } from '@/types'
 import Navigation from '@/components/ui/navigation'
+import { ImageGalleryModal } from '@/components/projects/gallery/image-gallery-modal'
+import { HoverPreviewGallery } from '@/components/projects/gallery/hover-preview-gallery'
 import { useIncrementView } from '@/hooks/projects'
 
 interface ProjectPageClientProps {
@@ -192,7 +194,16 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
     )
   }
 
-  const projectImages = project.images || (project.image ? [project.image] : [])
+  // Handle both new structure (images array) and legacy (image)
+  const projectImages = project.images && project.images.length > 0 
+    ? project.images 
+    : project.image 
+      ? [project.image] 
+      : []
+  
+  const coverImage = projectImages[0] // First image is always the cover
+  const galleryImages = projectImages.slice(1) // Rest are gallery images
+
   const totalReactions = Object.values(reactionCounts).reduce((sum, count) => sum + count, 0)
 
   return (
@@ -419,41 +430,57 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
                         </div>
                       </CardContent>
                     </Card>
+
+    {/* Project Images Preview */}
+    {projectImages.length > 0 && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Project Images ({projectImages.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <HoverPreviewGallery
+            images={projectImages}
+            projectTitle={project.title}
+            aspectRatio="video"
+            showViewAllButton={true}
+          />
+        </CardContent>
+      </Card>
+    )}
                   </TabsContent>
 
                   <TabsContent value="images">
                     <Card>
                       <CardHeader>
+                        <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
                           <ImageIcon className="h-5 w-5" />
                           Project Gallery
                         </CardTitle>
+                          {projectImages.length > 0 && (
+                            <span className="text-sm text-muted-foreground">
+                              {projectImages.length} {projectImages.length === 1 ? 'image' : 'images'}
+                            </span>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent>
                         {projectImages.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {projectImages.map((image, index) => (
-                              <div
-                                key={index}
-                                className="relative aspect-video overflow-hidden rounded-lg cursor-pointer group"
-                                onClick={() => {
-                                  setCurrentImageIndex(index)
-                                  setShowImageModal(true)
-                                }}
-                              >
-                                <img
-                                  src={image}
-                                  alt={`${project.title} - Image ${index + 1}`}
-                                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                              </div>
-                            ))}
-                          </div>
+                          <HoverPreviewGallery
+                            images={projectImages}
+                            projectTitle={project.title}
+                            aspectRatio="video"
+                            showViewAllButton={false}
+                            className="max-w-4xl mx-auto"
+                          />
                         ) : (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No images available for this project.</p>
+                          <div className="text-center py-16 text-muted-foreground">
+                            <ImageIcon className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                            <p className="text-lg font-medium mb-1">No images available</p>
+                            <p className="text-sm">This project doesn't have any images yet.</p>
                           </div>
                         )}
                       </CardContent>
@@ -667,48 +694,14 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
         </div>
       </div>
 
-      {/* Image Modal */}
-      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
-              onClick={() => setShowImageModal(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            
-            {projectImages.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            
-            <img
-              src={projectImages[currentImageIndex]}
-              alt={`${project.title} - Image ${currentImageIndex + 1}`}
-              className="w-full h-auto max-h-[80vh] object-contain"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        images={projectImages}
+        initialIndex={currentImageIndex}
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        projectTitle={project.title}
+      />
     </>
   )
 }

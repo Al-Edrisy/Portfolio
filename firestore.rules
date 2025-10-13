@@ -149,6 +149,21 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     
+    // Contacts collection (from contact form)
+    match /contacts/{contactId} {
+      // Only developers can read contacts
+      allow read: if isDeveloper();
+      
+      // Anyone can create a contact submission (no authentication required for contact form)
+      allow create: if true;
+      
+      // Only developers can update contacts (to mark as read/replied)
+      allow update: if isDeveloper();
+      
+      // Only developers can delete contacts
+      allow delete: if isDeveloper();
+    }
+    
     // Developer-only collections (for management)
     match /admin/{document=**} {
       allow read, write: if isDeveloper();

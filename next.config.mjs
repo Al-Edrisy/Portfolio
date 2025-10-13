@@ -7,27 +7,43 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: false, // Enable image optimization for better performance
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 60 * 60 * 24 * 30, // Cache for 30 days
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'media.licdn.com',
         pathname: '/dms/image/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
     ],
   },
-  // Optimize Fast Refresh
+  // Optimize Fast Refresh and performance
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: [
+      'lucide-react', 
+      '@radix-ui/react-icons',
+      'motion/react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-tooltip',
+    ],
   },
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  reactStrictMode: true,
+  productionBrowserSourceMaps: false, // Disable source maps in production for performance
   // Simplified webpack config to avoid bundling issues
   webpack: (config, { dev, isServer }) => {
     // Fix Firebase bundling issues

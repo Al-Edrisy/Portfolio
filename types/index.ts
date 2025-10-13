@@ -16,12 +16,8 @@ export interface Project {
   id: string
   title: string
   description: string
-  image: string // Cover image (backward compatibility)
-  images?: {
-    cover: string
-    gallery: string[]
-    thumbnails?: string[]
-  }
+  image?: string // Legacy field - kept for backward compatibility
+  images?: string[] // Array of image URLs - first is cover, rest are gallery
   tech: string[]
   categories: string[] // Support multiple categories
   category?: string // Deprecated: Keep for backward compatibility
@@ -182,8 +178,8 @@ export interface ApiResponse<T> {
 export interface ProjectFormData {
   title: string
   description: string
-  image: string
-  images?: string[]
+  image?: string // Legacy field
+  images?: string[] // Array of image URLs
   longDescription?: string
   tech: string[]
   categories: string[] // Support multiple categories

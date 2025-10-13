@@ -8,14 +8,62 @@ import { FeedbackSection } from "@/components/feedback"
 import { GitHubActivitySection } from "@/components/sections/github-activity-section"
 
 export const metadata: Metadata = {
-  title: "Home - Al-Edrisy (Salih Ben Otman) | Full Stack Software Developer Portfolio",
-  description: "Welcome to Al-Edrisy's portfolio. Professional Full Stack Software Developer with 5+ years experience in React, Next.js, TypeScript, Node.js, and AI integrations. Explore 50+ completed projects, technical skills, and innovative digital solutions. Specializing in modern web development and scalable system architecture.",
-  keywords: "Salih Ben Otman, Al-Edrisy, Software Developer Portfolio, Full Stack Developer, React Developer, Next.js Developer, TypeScript, UI/UX Engineer, Web Development, AI Integration, OpenAI, Modern Web Technologies",
+  title: "Al-Edrisy (Salih Ben Otman) - Full Stack Developer | React, Next.js, AI Integration Expert",
+  description: "Full Stack Software Developer with 5+ years building modern web applications. Specialized in React, Next.js, TypeScript, Node.js, and AI integrations. View 50+ completed projects, hire for freelance work.",
+  keywords: [
+    "Salih Ben Otman",
+    "Al-Edrisy",
+    "Full Stack Developer",
+    "React Developer",
+    "Next.js Expert",
+    "TypeScript Developer",
+    "UI/UX Engineer",
+    "AI Integration",
+    "OpenAI Developer",
+    "Web Development Portfolio",
+    "Freelance Developer",
+    "Software Engineer for Hire",
+    "Modern Web Applications",
+    "Scalable Web Solutions",
+  ],
+  authors: [{ name: "Al-Edrisy (Salih Ben Otman)", url: "https://salihbenotman.dev" }],
+  creator: "Al-Edrisy",
   openGraph: {
-    title: "Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer Portfolio",
-    description: "Professional Software Developer Portfolio - 5+ years experience in Full Stack Development, 50+ completed projects. Expert in React, Next.js, TypeScript, and AI integrations.",
+    title: "Al-Edrisy - Full Stack Developer Portfolio",
+    description: "Professional Software Developer with 5+ years experience. Expert in React, Next.js, TypeScript, and AI integrations. 50+ completed projects.",
     url: "https://salihbenotman.dev",
+    siteName: "Al-Edrisy Portfolio",
     type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Al-Edrisy - Full Stack Software Developer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Al-Edrisy - Full Stack Developer",
+    description: "Full Stack Developer specializing in React, Next.js, TypeScript & AI. 50+ projects completed.",
+    creator: "@salihbenotman",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://salihbenotman.dev",
   },
 }
 
@@ -35,9 +83,11 @@ export default function Home() {
     <ErrorBoundary>
       <main className="min-h-screen bg-background">
         <Navigation />
+        <HeroSection />
         <Suspense fallback={<LoadingFallback />}>
-          <HeroSection />
           <GitHubActivitySection />
+        </Suspense>
+        <Suspense fallback={<LoadingFallback />}>
           <FeedbackSection />
         </Suspense>
       </main>

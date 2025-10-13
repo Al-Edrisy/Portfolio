@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState, useEffect, Suspense } from "react"
 import { motion } from "motion/react"
 import Image from "next/image"
 import Prism from "@/components/ui/prism"
@@ -12,6 +12,7 @@ import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 
 export default function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(true)
 
   // Calculate years of experience dynamically from 2020
   const calculateYearsOfExperience = (): number => {
@@ -22,36 +23,59 @@ export default function HeroSection() {
 
   const yearsOfExperience = calculateYearsOfExperience()
 
-  const scrollToProjects = () => {
-    const element = document.getElementById("projects")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+  // Pause Prism animation when scrolled away for better performance
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting)
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    if (heroRef.current) {
+      observer.observe(heroRef.current)
     }
+
+    return () => {
+      if (heroRef.current) {
+        observer.unobserve(heroRef.current)
+      }
+    }
+  }, [])
+
+  const navigateToProjects = () => {
+    window.location.href = '/projects'
   }
 
-  const scrollToContact = () => {
-    const element = document.getElementById("contact")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
+  const navigateToContact = () => {
+    window.location.href = '/contact'
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" ref={heroRef}>
-      <div className="absolute inset-0 z-0">
-        <Prism
-          animationType="rotate"
-          timeScale={0.2}
-          height={3}
-          baseWidth={5}
-          scale={3}
-          hueShift={0} // Neutral colors
-          colorFrequency={0.8}
-          noise={0.2}
-          glow={0.8}
-          bloom={1}
-        />
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden will-change-transform" ref={heroRef}>
+      {/* Lazy load Prism background for better performance */}
+      {isVisible ? (
+        <div className="absolute inset-0 z-0">
+          <Suspense fallback={<div className="absolute inset-0 bg-gradient-to-br from-background via-muted/10 to-background" />}>
+            <Prism
+              animationType="rotate"
+              timeScale={0.3}
+              height={3}
+              baseWidth={5}
+              scale={3}
+              hueShift={0}
+              colorFrequency={0.8}
+              noise={0.2}
+              glow={0.6}
+              bloom={0.8}
+            />
+          </Suspense>
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/10 to-background" />
+      )}
 
       {/* Gradient overlay for better text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background/70 z-10" />
@@ -61,22 +85,23 @@ export default function HeroSection() {
         <div className="relative flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 min-h-screen">
           {/* Left Side - Profile Image with 3D Effect */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="absolute top-30 left-8 lg:left-12 order-1 lg:order-1"
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            className="absolute top-24 sm:top-30 left-4 sm:left-8 lg:left-12 order-1 lg:order-1"
           >
             <CardContainer className="inter-var" containerClassName="py-0">
               <CardBody className="w-auto h-auto">
                 <CardItem translateZ="100" className="w-full">
-                  <div className="relative w-48 h-48 rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl">
                     <Image
                       src="https://media.licdn.com/dms/image/v2/D4E03AQFM9J33eiWAsQ/profile-displayphoto-shrink_800_800/B4EZhDaJ4wHgAc-/0/1753477588378?e=1762992000&v=beta&t=reJ_IQNrpYVuIrSNvDOpUPWRbMK-bx3F-1kSWSfrslk"
                       alt="Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer"
                       fill
                       className="object-cover grayscale"
                       priority
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 30vw, 20vw"
+                      quality={85}
+                      sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px"
                     />
                   </div>
                 </CardItem>
@@ -101,8 +126,8 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="mb-6 sm:mb-8"
+              transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+              className="mb-6 sm:mb-8 will-change-transform"
             >
               <div className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-4">
                 <TextType
@@ -121,34 +146,34 @@ export default function HeroSection() {
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              className="text-base sm:text-lg text-muted-foreground max-w-2xl lg:max-w-none mb-8 sm:mb-12 text-pretty leading-relaxed"
+              transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+              className="text-base sm:text-lg text-muted-foreground max-w-2xl lg:max-w-none mb-8 sm:mb-12 text-pretty leading-relaxed will-change-transform"
             >
-              I craft exceptional digital experiences through innovative design and cutting-edge AI integrations. From
-              concept to deployment, I build scalable solutions that drive real business results.
+              Every project starts with a question: what if technology could think smarter?
+              I design and engineer products that make intelligence feel effortless and intuitive.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+              transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 will-change-transform"
             >
               <StarBorder
                 as="button"
                 color="currentColor"
                 speed="5s"
-                className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto text-primary"
-                onClick={scrollToProjects}
+                className="text-sm sm:text-base lg:text-lg px-5 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 w-full sm:w-auto text-primary"
+                onClick={navigateToProjects}
               >
                 View My Work
               </StarBorder>
 
               <motion.button
-                className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border border-border rounded-[20px] text-foreground hover:bg-muted transition-colors duration-200 w-full sm:w-auto"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={scrollToContact}
+                className="text-sm sm:text-base lg:text-lg px-5 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 border border-border rounded-[20px] text-foreground hover:bg-muted transition-colors duration-200 w-full sm:w-auto"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={navigateToContact}
               >
                 Get In Touch
               </motion.button>
@@ -156,11 +181,11 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Floating circular text - hidden on mobile */}
+        {/* Floating circular text - hidden on mobile and tablets for performance */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 1.5 }}
+          transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
           className="absolute bottom-20 right-4 sm:right-10 hidden xl:block"
         >
           <CircularText

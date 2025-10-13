@@ -41,28 +41,22 @@ const contactMethods = [
 
 const socialLinks = [
   {
+    name: "GitHub",
+    href: "https://github.com/Al-Edrisy",
+    icon: "🐙",
+    color: "hover:text-gray-800 dark:hover:text-gray-300",
+  },
+  {
     name: "LinkedIn",
-    href: "#",
+    href: "https://www.linkedin.com/in/salih-otman-a565a2242",
     icon: "💼",
     color: "hover:text-blue-600",
   },
   {
-    name: "GitHub",
-    href: "#",
-    icon: "🐙",
-    color: "hover:text-gray-800",
-  },
-  {
-    name: "Twitter",
-    href: "#",
-    icon: "🐦",
-    color: "hover:text-blue-400",
-  },
-  {
-    name: "Dribbble",
-    href: "#",
-    icon: "🏀",
-    color: "hover:text-pink-500",
+    name: "Facebook",
+    href: "https://www.facebook.com/share/14GHt7scAjF/?mibextid=wwXIfr",
+    icon: "📘",
+    color: "hover:text-blue-500",
   },
 ]
 
@@ -193,6 +187,8 @@ export default function ContactSection() {
                   <ClickSpark key={social.name} sparkColor="rgb(16, 185, 129)" sparkCount={6}>
                     <motion.a
                       href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       initial={{ opacity: 0, scale: 0.8 }}
                       whileInView={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -200,6 +196,7 @@ export default function ContactSection() {
                       className={`flex items-center justify-center w-12 h-12 bg-card border border-border rounded-xl text-2xl ${social.color} transition-all duration-200 hover:shadow-lg hover:scale-110`}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label={`Visit my ${social.name} profile`}
                     >
                       {social.icon}
                     </motion.a>

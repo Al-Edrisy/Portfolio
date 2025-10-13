@@ -9,6 +9,7 @@ import { AuthErrorHandler } from "@/components/auth/auth-error-handler"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 import { GlobalErrorHandler } from "@/components/ui/global-error-handler"
+import { UnregisterServiceWorker } from "@/components/unregister-service-worker"
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -89,7 +90,6 @@ export const metadata: Metadata = {
     "User Experience Design",
     "User Interface Design",
     "Mobile-First Design",
-    "Progressive Web Apps",
     "Single Page Applications",
     
     // Service-based Keywords
@@ -225,9 +225,9 @@ export default function RootLayout({
           }
         },
         "sameAs": [
-          "https://github.com/salihbenotman",
-          "https://linkedin.com/in/salihbenotman",
-          "https://twitter.com/salihbenotman"
+          "https://github.com/Al-Edrisy",
+          "https://www.linkedin.com/in/salih-otman-a565a2242",
+          "https://www.facebook.com/share/14GHt7scAjF"
         ],
         "email": "salehfree33@gmail.com",
         "telephone": "+218 92 152 70 18"
@@ -282,14 +282,27 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* DNS Prefetch for faster resource loading */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://media.licdn.com" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+        
+        {/* Preconnect for critical resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Viewport optimization for mobile */}
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        <UnregisterServiceWorker />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
