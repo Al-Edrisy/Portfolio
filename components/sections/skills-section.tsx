@@ -47,7 +47,7 @@ const skillCategories = [
       },
       {
         name: "TypeScript",
-        icon: "/svg_tech_stack_icons/Programming Languages/typescript.svg",
+        icon: "/svg_tech_stack_icons/Programming_Languages/typescript.svg",
         category: "Frontend",
         proficiency: 88,
         description: "Type-safe JavaScript for robust applications",
@@ -79,7 +79,7 @@ const skillCategories = [
     skills: [
       {
         name: "Node.js",
-        icon: "/svg_tech_stack_icons/Programming Languages/nodejs-1.svg",
+        icon: "/svg_tech_stack_icons/Programming_Languages/nodejs-1.svg",
         category: "Backend",
         proficiency: 95,
         description: "Server-side JavaScript runtime for scalable applications",
@@ -88,7 +88,7 @@ const skillCategories = [
       },
       {
         name: "Python",
-        icon: "/svg_tech_stack_icons/Programming Languages/python-5.svg",
+        icon: "/svg_tech_stack_icons/Programming_Languages/python-5.svg",
         category: "Backend",
         proficiency: 95,
         description: "Versatile language for backend services and automation",
@@ -97,7 +97,7 @@ const skillCategories = [
       },
       {
         name: "C",
-        icon: "/svg_tech_stack_icons/Programming Languages/c.svg",
+        icon: "/svg_tech_stack_icons/Programming_Languages/c.svg",
         category: "System Programming",
         proficiency: 80,
         description: "Low-level system programming and performance optimization",
@@ -105,7 +105,7 @@ const skillCategories = [
       },
       {
         name: "Swift",
-        icon: "/svg_tech_stack_icons/Programming Languages/swift-15.svg",
+        icon: "/svg_tech_stack_icons/Programming_Languages/swift-15.svg",
         category: "Mobile",
         proficiency: 70,
         description: "iOS native app development",
@@ -113,7 +113,7 @@ const skillCategories = [
       },
       {
         name: "Docker",
-        icon: "/svg_tech_stack_icons/Tools & Services/docker-3.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/docker-3.svg",
         category: "DevOps",
         proficiency: 82,
         description: "Containerization and orchestration",
@@ -128,7 +128,7 @@ const skillCategories = [
     skills: [
       {
         name: "Firebase",
-        icon: "/svg_tech_stack_icons/Cloud & Infrastructure/firebase-2.svg",
+        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/firebase-2.svg",
         category: "Cloud",
         proficiency: 87,
         description: "Backend-as-a-Service for rapid app development",
@@ -146,7 +146,7 @@ const skillCategories = [
       },
       {
         name: "AWS",
-        icon: "/svg_tech_stack_icons/Cloud & Infrastructure/aws-2.svg",
+        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/aws-2.svg",
         category: "Cloud",
         proficiency: 82,
         description: "Cloud infrastructure and deployment strategies",
@@ -155,7 +155,7 @@ const skillCategories = [
       },
       {
         name: "Google Cloud",
-        icon: "/svg_tech_stack_icons/Cloud & Infrastructure/google-cloud-3.svg",
+        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/google-cloud-3.svg",
         category: "Cloud",
         proficiency: 75,
         description: "Google's cloud platform for scalable applications",
@@ -186,7 +186,7 @@ const skillCategories = [
     skills: [
       {
         name: "OpenAI API",
-        icon: "/svg_tech_stack_icons/AI & ML/openai-logo-1.svg",
+        icon: "/svg_tech_stack_icons/AI_ML/openai-logo-1.svg",
         category: "AI",
         proficiency: 78,
         description: "AI integration and prompt engineering",
@@ -211,7 +211,7 @@ const skillCategories = [
       },
       {
         name: "Hugging Face",
-        icon: "/svg_tech_stack_icons/AI & ML/huggingface-1.svg",
+        icon: "/svg_tech_stack_icons/AI_ML/huggingface-1.svg",
         category: "AI",
         proficiency: 65,
         description: "Transformer models and NLP pipelines",
@@ -226,7 +226,7 @@ const skillCategories = [
     skills: [
       {
         name: "GitHub",
-        icon: "/svg_tech_stack_icons/Tools & Services/github-2.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/github-2.svg",
         category: "Version Control",
         proficiency: 87,
         description: "Collaborative development and CI/CD",
@@ -235,7 +235,7 @@ const skillCategories = [
       },
       {
         name: "Postman",
-        icon: "/svg_tech_stack_icons/Tools & Services/postman.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/postman.svg",
         category: "API Testing",
         proficiency: 80,
         description: "API development and testing platform",
@@ -243,7 +243,7 @@ const skillCategories = [
       },
       {
         name: "Jenkins",
-        icon: "/svg_tech_stack_icons/Tools & Services/jenkins-1.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/jenkins-1.svg",
         category: "CI/CD",
         proficiency: 70,
         description: "Automated build and deployment pipelines",
@@ -251,7 +251,7 @@ const skillCategories = [
       },
       {
         name: "Jira",
-        icon: "/svg_tech_stack_icons/Tools & Services/jira-1.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/jira-1.svg",
         category: "Project Management",
         proficiency: 75,
         description: "Agile project management and issue tracking",
@@ -259,7 +259,7 @@ const skillCategories = [
       },
       {
         name: "Slack",
-        icon: "/svg_tech_stack_icons/Tools & Services/slack-new-logo.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/slack-new-logo.svg",
         category: "Communication",
         proficiency: 85,
         description: "Team communication and collaboration platform",
@@ -267,7 +267,7 @@ const skillCategories = [
       },
       {
         name: "Notion",
-        icon: "/svg_tech_stack_icons/Tools & Services/notion-2.svg",
+        icon: "/svg_tech_stack_icons/Tools_Services/notion-2.svg",
         category: "Documentation",
         proficiency: 80,
         description: "All-in-one workspace for notes and documentation",
@@ -312,9 +312,9 @@ export default function SkillsSection() {
     const createFloatingIcon = () => {
       const icons = [
         "/svg_tech_stack_icons/Frameworks/react-2.svg",
-        "/svg_tech_stack_icons/Programming Languages/typescript.svg",
-        "/svg_tech_stack_icons/Tools & Services/docker-3.svg",
-        "/svg_tech_stack_icons/AI & ML/openai-logo-1.svg"
+        "/svg_tech_stack_icons/Programming_Languages/typescript.svg",
+        "/svg_tech_stack_icons/Tools_Services/docker-3.svg",
+        "/svg_tech_stack_icons/AI_ML/openai-logo-1.svg"
       ]
       
       const icon = document.createElement('div')

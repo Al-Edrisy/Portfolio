@@ -116,7 +116,7 @@ The `tech-icon-mapper.ts` utility maps technology names to their corresponding S
 import { getTechIconOrText } from '@/lib/tech-icon-mapper'
 
 const { iconPath, displayName, hasIcon } = getTechIconOrText('React')
-// iconPath: '/svg_tech_stack_icons/Frameworks/react-2.svg'
+// iconPath: '/svg_tech_stack_icons/Frameworks/react-2.svg' (no change needed)
 // displayName: 'React'
 // hasIcon: true
 ```

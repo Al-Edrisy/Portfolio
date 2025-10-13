@@ -10,17 +10,17 @@ type TechIconMap = {
 // Comprehensive mapping of tech names (case-insensitive) to icon paths
 const techIconMapping: TechIconMap = {
   // Programming Languages
-  'typescript': '/svg_tech_stack_icons/Programming Languages/typescript.svg',
-  'ts': '/svg_tech_stack_icons/Programming Languages/typescript.svg',
-  'python': '/svg_tech_stack_icons/Programming Languages/python-5.svg',
-  'py': '/svg_tech_stack_icons/Programming Languages/python-5.svg',
-  'c': '/svg_tech_stack_icons/Programming Languages/c.svg',
-  'c++': '/svg_tech_stack_icons/Programming Languages/c-1.svg',
-  'cpp': '/svg_tech_stack_icons/Programming Languages/c-1.svg',
-  'node': '/svg_tech_stack_icons/Programming Languages/nodejs-1.svg',
-  'nodejs': '/svg_tech_stack_icons/Programming Languages/nodejs-1.svg',
-  'node.js': '/svg_tech_stack_icons/Programming Languages/nodejs-1.svg',
-  'swift': '/svg_tech_stack_icons/Programming Languages/swift-15.svg',
+  'typescript': '/svg_tech_stack_icons/Programming_Languages/typescript.svg',
+  'ts': '/svg_tech_stack_icons/Programming_Languages/typescript.svg',
+  'python': '/svg_tech_stack_icons/Programming_Languages/python-5.svg',
+  'py': '/svg_tech_stack_icons/Programming_Languages/python-5.svg',
+  'c': '/svg_tech_stack_icons/Programming_Languages/c.svg',
+  'c++': '/svg_tech_stack_icons/Programming_Languages/c-1.svg',
+  'cpp': '/svg_tech_stack_icons/Programming_Languages/c-1.svg',
+  'node': '/svg_tech_stack_icons/Programming_Languages/nodejs-1.svg',
+  'nodejs': '/svg_tech_stack_icons/Programming_Languages/nodejs-1.svg',
+  'node.js': '/svg_tech_stack_icons/Programming_Languages/nodejs-1.svg',
+  'swift': '/svg_tech_stack_icons/Programming_Languages/swift-15.svg',
   
   // Frameworks
   'react': '/svg_tech_stack_icons/Frameworks/react-2.svg',
@@ -43,28 +43,28 @@ const techIconMapping: TechIconMap = {
   'postgres': '/svg_tech_stack_icons/Databases/postgresql.svg',
   
   // Cloud & Infrastructure
-  'aws': '/svg_tech_stack_icons/Cloud & Infrastructure/aws-2.svg',
-  'amazon web services': '/svg_tech_stack_icons/Cloud & Infrastructure/aws-2.svg',
-  'firebase': '/svg_tech_stack_icons/Cloud & Infrastructure/firebase-2.svg',
-  'gcp': '/svg_tech_stack_icons/Cloud & Infrastructure/google-cloud-3.svg',
-  'google cloud': '/svg_tech_stack_icons/Cloud & Infrastructure/google-cloud-3.svg',
+  'aws': '/svg_tech_stack_icons/Cloud_Infrastructure/aws-2.svg',
+  'amazon web services': '/svg_tech_stack_icons/Cloud_Infrastructure/aws-2.svg',
+  'firebase': '/svg_tech_stack_icons/Cloud_Infrastructure/firebase-2.svg',
+  'gcp': '/svg_tech_stack_icons/Cloud_Infrastructure/google-cloud-3.svg',
+  'google cloud': '/svg_tech_stack_icons/Cloud_Infrastructure/google-cloud-3.svg',
   
   // Tools & Services
-  'docker': '/svg_tech_stack_icons/Tools & Services/docker-3.svg',
-  'github': '/svg_tech_stack_icons/Tools & Services/github-2.svg',
-  'git': '/svg_tech_stack_icons/Tools & Services/github-2.svg',
-  'jenkins': '/svg_tech_stack_icons/Tools & Services/jenkins-1.svg',
-  'jira': '/svg_tech_stack_icons/Tools & Services/jira-1.svg',
-  'notion': '/svg_tech_stack_icons/Tools & Services/notion-2.svg',
-  'postman': '/svg_tech_stack_icons/Tools & Services/postman.svg',
-  'slack': '/svg_tech_stack_icons/Tools & Services/slack-new-logo.svg',
+  'docker': '/svg_tech_stack_icons/Tools_Services/docker-3.svg',
+  'github': '/svg_tech_stack_icons/Tools_Services/github-2.svg',
+  'git': '/svg_tech_stack_icons/Tools_Services/github-2.svg',
+  'jenkins': '/svg_tech_stack_icons/Tools_Services/jenkins-1.svg',
+  'jira': '/svg_tech_stack_icons/Tools_Services/jira-1.svg',
+  'notion': '/svg_tech_stack_icons/Tools_Services/notion-2.svg',
+  'postman': '/svg_tech_stack_icons/Tools_Services/postman.svg',
+  'slack': '/svg_tech_stack_icons/Tools_Services/slack-new-logo.svg',
   
   // AI & ML
-  'huggingface': '/svg_tech_stack_icons/AI & ML/huggingface-1.svg',
-  'hugging face': '/svg_tech_stack_icons/AI & ML/huggingface-1.svg',
-  'openai': '/svg_tech_stack_icons/AI & ML/openai-logo-1.svg',
-  'chatgpt': '/svg_tech_stack_icons/AI & ML/openai-logo-1.svg',
-  'gpt': '/svg_tech_stack_icons/AI & ML/openai-logo-1.svg',
+  'huggingface': '/svg_tech_stack_icons/AI_ML/huggingface-1.svg',
+  'hugging face': '/svg_tech_stack_icons/AI_ML/huggingface-1.svg',
+  'openai': '/svg_tech_stack_icons/AI_ML/openai-logo-1.svg',
+  'chatgpt': '/svg_tech_stack_icons/AI_ML/openai-logo-1.svg',
+  'gpt': '/svg_tech_stack_icons/AI_ML/openai-logo-1.svg',
   
   // Animation
   'gsap': '/svg_tech_stack_icons/Animation/gsap-greensock.svg',
