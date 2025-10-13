@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
+// Custom 404 page for App Router
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted">
