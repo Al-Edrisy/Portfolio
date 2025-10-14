@@ -23,11 +23,13 @@ yarn-error.log*
 *firebase-adminsdk*.json
 *.json
 !package.json
-!package-lock.json
 !components.json
 !firebase.json
 !firestore.indexes.json
 !tsconfig.json
+
+# Lock files (generated during build)
+package-lock.json
 
 # vercel
 .vercel
