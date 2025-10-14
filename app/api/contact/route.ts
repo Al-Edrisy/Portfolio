@@ -52,15 +52,6 @@ export async function POST(request: NextRequest) {
     // Try to send email if SMTP is configured (optional - won't fail if not configured)
     const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS
     
-    // Debug log to check env vars
-    console.log('SMTP Config Check:', {
-      SMTP_USER: process.env.SMTP_USER ? 'SET' : 'NOT SET',
-      SMTP_PASS: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
-      SMTP_HOST: process.env.SMTP_HOST || 'NOT SET',
-      SMTP_PORT: process.env.SMTP_PORT || 'NOT SET',
-      smtpConfigured
-    })
-    
     if (!smtpConfigured) {
       console.log('SMTP not configured - email will not be sent, but contact saved to database')
       return NextResponse.json(
@@ -80,16 +71,9 @@ export async function POST(request: NextRequest) {
           pass: process.env.SMTP_PASS,
         },
         // Add additional options for better compatibility
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
         tls: {
-          rejectUnauthorized: false,
-          minVersion: 'TLSv1'
-        },
-        // Enable debug logging
-        logger: true,
-        debug: true
+          rejectUnauthorized: false
+        }
       })
 
       // Skip verification to improve response time - emails will be sent asynchronously
