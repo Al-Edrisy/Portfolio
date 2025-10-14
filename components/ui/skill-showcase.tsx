@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import SvgIcon from "@/components/ui/svg-icon"
 import SkillCategoryFilter from "@/components/ui/skill-category-filter"
+import SkillSearch from "@/components/ui/skill-search"
 
 interface Skill {
   name: string
@@ -246,6 +247,7 @@ interface SkillsShowcaseProps {
 const SkillsShowcase: React.FC<SkillsShowcaseProps> = ({ categories }) => {
   const [activeCategory, setActiveCategory] = useState(-1) // -1 means "All" is selected by default
   const [activeSkill, setActiveSkill] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -270,37 +272,90 @@ const SkillsShowcase: React.FC<SkillsShowcaseProps> = ({ categories }) => {
     })
   }, [])
 
-  // Get skills based on selected category
-  const currentSkills = activeCategory === -1 
-    ? categories.flatMap(category => category.skills)
-    : categories[activeCategory]?.skills || []
+  // Get all skills from all categories
+  const allSkills = categories.flatMap(category => category.skills)
 
-  const handleCategoryChange = (index: number) => {
+  // Filter skills based on search query
+  const filteredSkills = searchQuery.length > 0 
+    ? allSkills.filter(skill =>
+        skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : []
+
+  // Get skills based on search or selected category
+  const currentSkills = searchQuery.length > 0 
+    ? filteredSkills
+    : activeCategory === -1 
+      ? allSkills
+      : categories[activeCategory]?.skills || []
+
+  const handleCategoryChange = useCallback((index: number) => {
     setActiveCategory(index)
     setActiveSkill(0)
-  }
+    setSearchQuery("") // Clear search when category changes
+  }, [])
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query)
+    if (query.length > 0) {
+      setActiveCategory(-1) // Reset category filter when searching
+    }
+  }, [])
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      {/* Category Filter */}
-      <SkillCategoryFilter
+      {/* Search Component */}
+      <SkillSearch
         categories={categories}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
       />
 
+      {/* Category Filter - Hide when searching */}
+      {searchQuery.length === 0 && (
+        <SkillCategoryFilter
+          categories={categories}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      )}
+
       {/* Skills Grid */}
-      <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
-        {currentSkills.map((skill, index) => (
-          <SkillCard
-            key={`${activeCategory}-${index}`}
-            skill={skill}
-            index={index}
-            isActive={activeSkill === index}
-            onSelect={() => setActiveSkill(index)}
-          />
-        ))}
-      </div>
+      {currentSkills.length > 0 ? (
+        <div 
+          ref={containerRef} 
+          id="skills-grid"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8"
+          role="tabpanel"
+          aria-label={`Displaying ${currentSkills.length} skills`}
+        >
+          {currentSkills.map((skill, index) => (
+            <SkillCard
+              key={`${activeCategory}-${index}`}
+              skill={skill}
+              index={index}
+              isActive={activeSkill === index}
+              onSelect={() => setActiveSkill(index)}
+            />
+          ))}
+        </div>
+      ) : searchQuery.length > 0 ? (
+        <div className="text-center py-16">
+          <div className="max-w-md mx-auto">
+            <div className="mb-4">
+              <svg className="w-16 h-16 mx-auto text-muted-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No skills found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search terms or browse by category instead.
+            </p>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -308,7 +308,12 @@ export default function SkillsSection() {
   useEffect(() => {
     if (!sectionRef.current) return
 
-    // Create floating tech icons animation
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    
+    if (prefersReducedMotion) return
+
+    // Create floating tech icons animation (optimized)
     const createFloatingIcon = () => {
       const icons = [
         "/svg_tech_stack_icons/Frameworks/react-2.svg",
@@ -318,24 +323,28 @@ export default function SkillsSection() {
       ]
       
       const icon = document.createElement('div')
-      icon.className = 'absolute pointer-events-none opacity-20'
+      icon.className = 'absolute pointer-events-none opacity-10'
       icon.style.left = `${Math.random() * 100}%`
       icon.style.top = '100%'
-      icon.innerHTML = `<img src="${icons[Math.floor(Math.random() * icons.length)]}" alt="" class="w-8 h-8" />`
+      icon.innerHTML = `<img src="${icons[Math.floor(Math.random() * icons.length)]}" alt="" class="w-6 h-6" loading="lazy" />`
       
       sectionRef.current?.appendChild(icon)
       
       gsap.to(icon, {
         y: -window.innerHeight - 100,
-        rotation: 360,
-        duration: 8 + Math.random() * 4,
+        rotation: 180, // Reduced rotation for better performance
+        duration: 12 + Math.random() * 6, // Slower animation
         ease: "none",
-        onComplete: () => icon.remove()
+        onComplete: () => {
+          if (icon.parentNode) {
+            icon.parentNode.removeChild(icon)
+          }
+        }
       })
     }
 
-    // Create floating icons periodically
-    const interval = setInterval(createFloatingIcon, 3000)
+    // Create floating icons less frequently for better performance
+    const interval = setInterval(createFloatingIcon, 5000) // Increased interval
     createFloatingIcon() // Initial icon
 
     return () => clearInterval(interval)
@@ -344,15 +353,34 @@ export default function SkillsSection() {
   return (
     <section ref={sectionRef} id="skills" className="min-h-screen bg-background relative overflow-hidden">
       {/* Skills Showcase */}
-      <div className="pt-32 pb-24">
+      <div className="pt-24 md:pt-32 pb-16 md:pb-24">
         <div className="container mx-auto px-4">
+          <header className="text-center mb-12 md:mb-16">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Technical Skills
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
+              Explore my expertise across modern web technologies, frameworks, and development tools
+            </p>
+          </header>
           <SkillsShowcase categories={skillCategories} />
         </div>
       </div>
 
       {/* Magic Bento Grid */}
-      <div className="py-20">
+      <div className="py-16 md:py-24">
         <div className="container mx-auto px-4">
+          {/* Section Header */}
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Technical Expertise in Action
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Explore the technologies and methodologies I use to build scalable, modern applications. 
+              Each card represents a key aspect of my development approach.
+            </p>
+          </div>
+
           <div className="flex justify-center">
             <MagicBento
               textAutoHide={true}
@@ -363,7 +391,7 @@ export default function SkillsSection() {
               enableMagnetism={true}
               clickEffect={true}
               spotlightRadius={300}
-              particleCount={8}
+              particleCount={typeof window !== 'undefined' && window.innerWidth < 768 ? 4 : 8}
               glowColor="16, 185, 129"
             />
           </div>
@@ -371,65 +399,59 @@ export default function SkillsSection() {
       </div>
 
       {/* Call to Action */}
-      <div className="pb-24">
+      <div className="pb-16 md:pb-24">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <div className="bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 border border-primary/20 rounded-3xl p-8 md:p-16 relative overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl" />
+            <div className="bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 border border-primary/10 rounded-2xl md:rounded-3xl p-6 md:p-10 lg:p-12 relative overflow-hidden">
+              {/* Decorative elements - reduced opacity */}
+              <div className="absolute top-0 right-0 w-32 md:w-48 h-32 md:h-48 bg-primary/10 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-32 md:w-48 h-32 md:h-48 bg-secondary/10 rounded-full blur-3xl" />
               
               <div className="relative z-10 text-center">
-                <h3 className="text-3xl md:text-5xl font-black mb-6">
-                  <span className="text-foreground">Ready to </span>
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    collaborate
-                  </span>
-                  <span className="text-foreground">?</span>
+                <h3 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 text-foreground">
+                  Ready to collaborate?
                 </h3>
                 
-                <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base md:text-lg text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
                   Let's combine these skills to create something extraordinary for your next project. 
-                  I bring <strong>{yearsOfExperience}+ years of experience</strong>, <strong>team leadership</strong>, and 
+                  I bring <strong>{yearsOfExperience}+ years of experience</strong> and 
                   <strong>full-stack expertise</strong> to every collaboration.
                 </p>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                  <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                    <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{yearsOfExperience}+</div>
-                    <div className="text-sm text-muted-foreground">Years Experience</div>
+                {/* Simplified Stats */}
+                <div className="flex justify-center items-center gap-6 md:gap-8 mb-8 md:mb-10 text-sm md:text-base text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span>{yearsOfExperience}+ Years Experience</span>
                   </div>
-                  <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                    <div className="text-2xl md:text-3xl font-bold text-primary mb-1">35+</div>
-                    <div className="text-sm text-muted-foreground">Projects Delivered</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                    <span>35+ Projects Delivered</span>
                   </div>
-                  <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                    <div className="text-2xl md:text-3xl font-bold text-primary mb-1">100%</div>
-                    <div className="text-sm text-muted-foreground">Client Satisfaction</div>
-                  </div>
-                  <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                    <div className="text-2xl md:text-3xl font-bold text-primary mb-1">24h</div>
-                    <div className="text-sm text-muted-foreground">Response Time</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span>100% Client Satisfaction</span>
                   </div>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center">
                   <button
-                    className="px-8 md:px-10 py-3 md:py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-base md:text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                    className="group relative px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl font-bold text-base md:text-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-300 hover:scale-105 shadow-xl shadow-primary/25 hover:shadow-primary/40 flex items-center justify-center gap-3 overflow-hidden"
                     onClick={() => router.push('/contact')}
                   >
-                    <span>Start a Project</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Button glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span className="relative z-10">Start a Project</span>
+                    <svg className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </button>
                 
                   <button
-                    className="px-8 md:px-10 py-3 md:py-4 bg-card/50 backdrop-blur-sm border border-border/60 text-foreground rounded-2xl font-bold text-base md:text-lg hover:bg-card/80 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                    className="group relative px-8 md:px-12 py-4 md:py-5 bg-background/80 backdrop-blur-sm border-2 border-primary/20 text-foreground rounded-2xl font-bold text-base md:text-lg hover:bg-background/90 hover:border-primary/40 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
                     onClick={handleDownloadCV}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span>Download CV</span>
@@ -437,8 +459,8 @@ export default function SkillsSection() {
                 </div>
 
                 {/* Contact Info */}
-                <div className="mt-8 pt-8 border-t border-border/50">
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
+                <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-border/50">
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 text-xs md:text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

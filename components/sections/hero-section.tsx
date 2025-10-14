@@ -136,8 +136,10 @@ export default function HeroSection() {
                     `Full-Stack Developer with ${yearsOfExperience}+ Years Experience`,
                     "Specialist in OpenAI, Langflow & Modern Web Tech",
                   ]}
-                  typingSpeed={60}
-                  pauseDuration={2000}
+                  typingSpeed={75}
+                  pauseDuration={1500}
+                  showCursor={true}
+                  cursorCharacter="|"
                   className="font-medium"
                 />
               </div>
