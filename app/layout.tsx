@@ -305,7 +305,8 @@ export default function RootLayout({
               {children}
             </Suspense>
             <Toaster />
-            {process.env.NODE_ENV === 'production' && <Analytics />}
+            {/* Only load Vercel Analytics when deployed on Vercel */}
+            {process.env.NODE_ENV === 'production' && process.env.VERCEL && <Analytics />}
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -76,9 +76,7 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Verify transporter configuration
-      await transporter.verify()
-      console.log('SMTP transporter verified successfully')
+      // Skip verification to improve response time - emails will be sent asynchronously
 
       // Email content
       const mailOptions = {
@@ -178,9 +176,10 @@ export async function POST(request: NextRequest) {
         `,
       }
 
-      // Send email
-      await transporter.sendMail(mailOptions)
-      console.log('Contact notification email sent successfully')
+      // Send email asynchronously (fire-and-forget for better performance)
+      transporter.sendMail(mailOptions)
+        .then(() => console.log('Contact notification email sent successfully'))
+        .catch(err => console.error('Error sending notification email:', err))
 
       // Send auto-reply to the user
       const autoReplyOptions = {
@@ -263,10 +262,12 @@ export async function POST(request: NextRequest) {
         `,
       }
 
-      // Send auto-reply (don't wait for it to complete)
-      transporter.sendMail(autoReplyOptions).catch(console.error)
-      console.log('Auto-reply email queued')
+      // Send auto-reply asynchronously (don't wait for it to complete)
+      transporter.sendMail(autoReplyOptions)
+        .then(() => console.log('Auto-reply email sent successfully'))
+        .catch(err => console.error('Error sending auto-reply:', err))
 
+      // Return success immediately without waiting for emails
       return NextResponse.json(
         { message: 'Message sent successfully! Check your email for confirmation.' },
         { status: 200 }
