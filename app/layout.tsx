@@ -9,7 +9,6 @@ import { AuthErrorHandler } from "@/components/auth/auth-error-handler"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 import { GlobalErrorHandler } from "@/components/ui/global-error-handler"
-import { UnregisterServiceWorker } from "@/components/unregister-service-worker"
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -179,6 +178,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 }
 
 export default function RootLayout({
@@ -281,28 +284,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* DNS Prefetch for faster resource loading */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-        <link rel="dns-prefetch" href="https://media.licdn.com" />
-        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
-        
-        {/* Preconnect for critical resources */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* Viewport optimization for mobile */}
-        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        {/* JSON-LD structured data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-      </head>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <UnregisterServiceWorker />
+        
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
