@@ -14,6 +14,7 @@
     "init-database": "node scripts/init-database.js",
     "setup-firestore": "node scripts/setup-firestore.js",
     "test-firestore": "node scripts/test-firestore.js",
+    "test-smtp": "node scripts/test-smtp.js",
     "firebase:emulator": "firebase emulators:start --only firestore",
     "firebase:deploy-rules": "firebase deploy --only firestore:rules"
   },
