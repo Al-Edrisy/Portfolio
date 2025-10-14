@@ -80,9 +80,16 @@ export async function POST(request: NextRequest) {
           pass: process.env.SMTP_PASS,
         },
         // Add additional options for better compatibility
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         tls: {
-          rejectUnauthorized: false
-        }
+          rejectUnauthorized: false,
+          minVersion: 'TLSv1'
+        },
+        // Enable debug logging
+        logger: true,
+        debug: true
       })
 
       // Skip verification to improve response time - emails will be sent asynchronously
