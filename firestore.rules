@@ -164,6 +164,21 @@ service cloud.firestore {
       allow delete: if isDeveloper();
     }
     
+    // Device locations collection (for phone recovery)
+    match /device_locations/{locationId} {
+      // Only developers can read location data
+      allow read: if isDeveloper();
+      
+      // Anyone can create location records (for tracking purposes)
+      allow create: if true;
+      
+      // No updates allowed (location data should be immutable)
+      allow update: if false;
+      
+      // Only developers can delete location records
+      allow delete: if isDeveloper();
+    }
+    
     // Developer-only collections (for management)
     match /admin/{document=**} {
       allow read, write: if isDeveloper();

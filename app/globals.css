@@ -238,6 +238,15 @@ body {
     text-wrap: pretty;
   }
 
+  /* RTL Support for Arabic */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="rtl"] body {
+    direction: rtl;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
