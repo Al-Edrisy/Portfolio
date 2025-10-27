@@ -15,10 +15,12 @@
     "setup-firestore": "node scripts/setup-firestore.js",
     "test-firestore": "node scripts/test-firestore.js",
     "test-smtp": "node scripts/test-smtp.js",
+    "test-s3": "node scripts/test-s3-upload.js",
     "firebase:emulator": "firebase emulators:start --only firestore",
     "firebase:deploy-rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.917.0",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",

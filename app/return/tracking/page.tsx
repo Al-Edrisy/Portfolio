@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MapPin, Calendar, Globe, Monitor, User, Mail, Phone } from 'lucide-react'
+import { MapPin, Calendar, Globe, Monitor, User, Mail, Phone, Image as ImageIcon } from 'lucide-react'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import Link from 'next/link'
@@ -25,6 +25,7 @@ interface LocationRecord {
   }
   timestamp?: any
   createdAt?: string
+  imageUrl?: string
 }
 
 export default function TrackingPage() {
@@ -137,12 +138,12 @@ export default function TrackingPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                With Contact Info
+                With Images
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {records.filter(r => r.formData?.contactInfo).length}
+                {records.filter(r => r.imageUrl).length}
               </div>
             </CardContent>
           </Card>
@@ -177,6 +178,9 @@ export default function TrackingPage() {
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Device
+                      </th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Image
                       </th>
                     </tr>
                   </thead>
@@ -260,6 +264,21 @@ export default function TrackingPage() {
                             </div>
                           ) : (
                             <span className="text-gray-400">Unknown</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-sm">
+                          {record.imageUrl ? (
+                            <a
+                              href={record.imageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:underline"
+                            >
+                              <ImageIcon className="w-4 h-4" />
+                              <span className="text-xs">View Image</span>
+                            </a>
+                          ) : (
+                            <span className="text-gray-400 text-xs">No image</span>
                           )}
                         </td>
                       </tr>
