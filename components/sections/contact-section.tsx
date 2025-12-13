@@ -346,7 +346,7 @@ export default function ContactSection() {
           className="text-center pt-12 border-t border-border"
         >
           <p className="text-muted-foreground mb-4">
-            © {new Date().getFullYear()} Al-Edrisy. Built with Next.js, TypeScript, and lots of ☕
+            © {new Date().getFullYear()} Salih Ben Otman. Built with Next.js, TypeScript, and lots of ☕
           </p>
           <div className="flex justify-center space-x-6 text-sm text-muted-foreground">
             <motion.a href="#" className="hover:text-primary transition-colors duration-200" whileHover={{ y: -2 }}>

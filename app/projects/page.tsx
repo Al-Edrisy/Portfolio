@@ -8,11 +8,11 @@ import Navigation from "@/components/ui/navigation"
 import { FeedbackTrigger } from "@/components/feedback"
 
 export const metadata: Metadata = {
-  title: "Projects Portfolio - Al-Edrisy (Salih Ben Otman) | 50+ Completed Projects",
-  description: "Explore Al-Edrisy's (Salih Ben Otman) portfolio of 50+ completed software development projects. Featuring AI chatbots, analytics dashboards, collaborative design tools, CMS platforms, banking apps, e-commerce solutions, and modern web applications. Built with React, Next.js, TypeScript, Node.js, and AI integrations. Professional showcase of full-stack development expertise.",
+  title: "Projects Portfolio - Salih Ben Otman | 50+ Completed Projects",
+  description: "Explore Salih Ben Otman's portfolio of 50+ completed software development projects. Featuring AI chatbots, analytics dashboards, collaborative design tools, CMS platforms, banking apps, e-commerce solutions, and modern web applications. Built with React, Next.js, TypeScript, Node.js, and AI integrations. Professional showcase of full-stack development expertise.",
   keywords: "Software Development Projects, Portfolio Projects, AI Chatbot Development, Analytics Dashboard, SaaS Applications, E-commerce Development, Banking App, CMS Development, React Projects, Next.js Applications, TypeScript Projects, Full Stack Projects, Web Application Development, UI/UX Design Portfolio, Modern Web Development",
   openGraph: {
-    title: "Projects Portfolio - Al-Edrisy (Salih Ben Otman) | 50+ Completed Projects",
+    title: "Projects Portfolio - Salih Ben Otman | 50+ Completed Projects",
     description: "Explore 50+ professional software development projects: AI chatbots, dashboards, design tools, CMS, banking apps, and e-commerce solutions built with React, Next.js, and TypeScript.",
     url: "https://salihbenotman.dev/projects",
     type: "website",

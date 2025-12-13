@@ -18,6 +18,7 @@ export interface Project {
   description: string
   image?: string // Legacy field - kept for backward compatibility
   images?: string[] // Array of image URLs - first is cover, rest are gallery
+  videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   tech: string[]
   categories: string[] // Support multiple categories
   category?: string // Deprecated: Keep for backward compatibility
@@ -57,6 +58,7 @@ export interface Comment {
     name: string
     avatar: string
   }
+  userLikes?: string[] // Array of user IDs who liked the comment
 }
 
 export interface User {
@@ -91,7 +93,7 @@ export interface FeedbackFormData {
 }
 
 // 8 popular reaction types as requested
-export type ReactionType = 
+export type ReactionType =
   | 'like'    // 👍 ThumbsUp
   | 'love'    // ❤️ Heart
   | 'fire'    // 🔥 Zap
@@ -113,7 +115,16 @@ export interface PaginatedResponse<T> {
 export interface ProjectDocument {
   title: string
   description: string
-  image: string
+  // Legacy single image field - kept for backward compatibility
+  image?: string
+  // New structured images field
+  images?: {
+    cover: string        // Main cover image URL
+    gallery: string[]    // Additional images for gallery (max 10)
+    thumbnails: string[] // Optimized thumbnails for performance
+  }
+  // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
+  videoUrl?: string
   tech: string[]
   categories: string[] // Support multiple categories
   category?: string // Deprecated: Keep for backward compatibility
@@ -123,6 +134,12 @@ export interface ProjectDocument {
   updatedAt: FirebaseFirestore.Timestamp
   published: boolean
   authorId: string
+  authorName?: string
+  authorAvatar?: string
+  reactionsCount?: Record<ReactionType, number>
+  commentsCount?: number
+  viewsCount?: number
+  sharesCount?: number
 }
 
 export interface ReactionDocument {
@@ -140,6 +157,7 @@ export interface CommentDocument {
   createdAt: FirebaseFirestore.Timestamp
   updatedAt: FirebaseFirestore.Timestamp
   likes: number
+  userLikes?: string[]
   repliesCount: number
 }
 
@@ -180,6 +198,7 @@ export interface ProjectFormData {
   description: string
   image?: string // Legacy field
   images?: string[] // Array of image URLs
+  videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   longDescription?: string
   tech: string[]
   categories: string[] // Support multiple categories

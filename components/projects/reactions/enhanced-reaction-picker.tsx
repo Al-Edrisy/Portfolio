@@ -2,16 +2,16 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  ThumbsUp, 
-  Heart, 
-  Flame, 
-  Sparkles, 
-  Laugh, 
-  Lightbulb, 
-  Rocket, 
+import {
+  ThumbsUp,
+  Heart,
+  Flame,
+  Sparkles,
+  Laugh,
+  Lightbulb,
   HandMetal,
-  X
+  X,
+  Rocket
 } from 'lucide-react'
 import { ReactionType } from '@/types'
 // Remove this import - we'll use the project reactions hook instead
@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils'
 
 // Enhanced reaction configuration with all 8 types
 const reactionConfig = {
-  like: { 
+  like: {
     icon: ThumbsUp,
     emoji: '👍',
     label: 'Like',
@@ -32,7 +32,7 @@ const reactionConfig = {
     activeBg: 'bg-blue-100 dark:bg-blue-900/60',
     description: 'Show appreciation'
   },
-  love: { 
+  love: {
     icon: Heart,
     emoji: '❤️',
     label: 'Love',
@@ -43,7 +43,7 @@ const reactionConfig = {
     activeBg: 'bg-red-100 dark:bg-red-900/60',
     description: 'Express love and passion'
   },
-  fire: { 
+  fire: {
     icon: Flame,
     emoji: '🔥',
     label: 'Fire',
@@ -54,7 +54,7 @@ const reactionConfig = {
     activeBg: 'bg-orange-100 dark:bg-orange-900/60',
     description: 'This is absolutely amazing!'
   },
-  wow: { 
+  wow: {
     icon: Sparkles,
     emoji: '😮',
     label: 'Wow',
@@ -65,7 +65,7 @@ const reactionConfig = {
     activeBg: 'bg-yellow-100 dark:bg-yellow-900/60',
     description: 'Impressed and surprised'
   },
-  laugh: { 
+  laugh: {
     icon: Laugh,
     emoji: '😂',
     label: 'Laugh',
@@ -76,7 +76,7 @@ const reactionConfig = {
     activeBg: 'bg-green-100 dark:bg-green-900/60',
     description: 'Made me laugh'
   },
-  idea: { 
+  idea: {
     icon: Lightbulb,
     emoji: '💡',
     label: 'Great Idea',
@@ -87,7 +87,7 @@ const reactionConfig = {
     activeBg: 'bg-purple-100 dark:bg-purple-900/60',
     description: 'Brilliant concept'
   },
-  rocket: { 
+  rocket: {
     icon: Rocket,
     emoji: '🚀',
     label: 'Amazing',
@@ -98,7 +98,7 @@ const reactionConfig = {
     activeBg: 'bg-indigo-100 dark:bg-indigo-900/60',
     description: 'Outstanding work!'
   },
-  clap: { 
+  clap: {
     icon: HandMetal,
     emoji: '👏',
     label: 'Applause',
@@ -176,7 +176,7 @@ export default function EnhancedReactionPicker({
       )
 
       const existingReactionSnapshot = await getDocs(existingReactionQuery)
-      
+
       if (existingReactionSnapshot.empty) {
         // No existing reaction, add new one
         await addDoc(collection(db, 'reactions'), {
@@ -185,7 +185,7 @@ export default function EnhancedReactionPicker({
           type: reactionType,
           createdAt: new Date(),
         })
-        
+
         onReactionChange?.(reactionType)
         toast({
           title: "Reaction added!",
@@ -194,7 +194,7 @@ export default function EnhancedReactionPicker({
       } else {
         // User has existing reaction
         const existingReaction = existingReactionSnapshot.docs[0]
-        
+
         if (existingReaction.data().type === reactionType) {
           // Same reaction type, remove it
           await deleteDoc(doc(db, 'reactions', existingReaction.id))
@@ -212,7 +212,7 @@ export default function EnhancedReactionPicker({
             type: reactionType,
             createdAt: new Date(),
           })
-          
+
           onReactionChange?.(reactionType)
           toast({
             title: "Reaction updated!",
@@ -258,24 +258,24 @@ export default function EnhancedReactionPicker({
   }
 
   if (variant === 'compact') {
-    // Get the current reaction icon or use Heart as default
-    const TriggerIcon = currentUserReaction ? reactionConfig[currentUserReaction].icon : Heart
-    
+    // Get the current reaction icon or use Rocket as default (per user request)
+    const TriggerIcon = currentUserReaction ? reactionConfig[currentUserReaction].icon : Rocket
+
     return (
       <div className={cn("relative", className)} ref={pickerRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
           disabled={isReacting}
           className={cn(
-            "flex items-center justify-center p-2 rounded-lg transition-all duration-200",
-            "hover:bg-accent active:scale-95 min-h-[44px] md:min-h-0 w-10 h-10",
-            currentUserReaction 
+            "flex items-center justify-center p-2 rounded-md transition-all duration-200",
+            "hover:bg-accent/80 active:scale-95 min-h-[44px] md:min-h-0 w-10 h-10",
+            currentUserReaction
               ? cn(
-                  reactionConfig[currentUserReaction].bgColor,
-                  reactionConfig[currentUserReaction].darkBgColor,
-                  reactionConfig[currentUserReaction].color
-                )
-              : "text-muted-foreground hover:text-foreground",
+                reactionConfig[currentUserReaction].bgColor,
+                reactionConfig[currentUserReaction].darkBgColor,
+                reactionConfig[currentUserReaction].color
+              )
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
             isReacting && "opacity-50 cursor-not-allowed"
           )}
           title={currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}
@@ -296,7 +296,7 @@ export default function EnhancedReactionPicker({
                 {Object.entries(reactionConfig).map(([type, config]) => {
                   const Icon = config.icon
                   const isActive = currentUserReaction === type
-                  
+
                   return (
                     <button
                       key={type}
@@ -324,27 +324,27 @@ export default function EnhancedReactionPicker({
     )
   }
 
+  const TriggerIcon = currentUserReaction ? reactionConfig[currentUserReaction].icon : Rocket
+
   return (
     <div className={cn("relative", className)} ref={pickerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isReacting}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
-          "hover:bg-muted/80 active:scale-95 font-medium",
-          currentUserReaction 
-            ? "bg-primary/10 text-primary border border-primary/20" 
-            : "bg-muted/50 text-muted-foreground hover:text-foreground border border-border/50",
-          isReacting && "opacity-50 cursor-not-allowed"
+          "flex items-center gap-1.5 px-3 py-2 h-9 rounded-full hover:bg-muted font-normal text-muted-foreground hover:text-foreground transition-colors",
+          currentUserReaction
+            ? cn(
+              "bg-transparent hover:bg-muted",
+              reactionConfig[currentUserReaction].color
+            )
+            : "bg-transparent",
+          isReacting && "opacity-50 cursor-not-allowed",
+          "group"
         )}
       >
-        {getTriggerContent()}
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <X className="h-4 w-4" />
-        </motion.div>
+        <TriggerIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+        <span className="text-xs">{currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}</span>
       </button>
 
       <AnimatePresence>
@@ -363,12 +363,12 @@ export default function EnhancedReactionPicker({
               <div className="text-sm font-semibold text-foreground mb-3">
                 Choose your reaction
               </div>
-              
+
               <div className="grid grid-cols-4 gap-2">
                 {Object.entries(reactionConfig).map(([type, config]) => {
                   const Icon = config.icon
                   const isActive = currentUserReaction === type
-                  
+
                   return (
                     <motion.button
                       key={type}

@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  ThumbsUp, 
-  MessageCircle, 
-  MoreHorizontal, 
-  Edit2, 
-  Trash2, 
+import {
+  ThumbsUp,
+  MessageCircle,
+  MoreHorizontal,
+  Edit2,
+  Trash2,
   Flag,
   Loader2
 } from 'lucide-react'
@@ -86,8 +86,8 @@ export function CommentItem({
   const handleLike = async () => {
     if (!user || liking) return
 
-    // Check if user already liked (you'd need to track this in the comment data)
-    const isLiked = false // TODO: Implement this check
+    // Check if user already liked
+    const isLiked = comment.userLikes?.includes(user?.id || '') || false
     await toggleLike(comment.id, isLiked)
     onUpdate?.()
   }
@@ -197,16 +197,16 @@ export function CommentItem({
               "prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5",
               "prose-blockquote:border-l-4 prose-blockquote:border-gray-300 dark:prose-blockquote:border-gray-600 prose-blockquote:pl-3 prose-blockquote:italic"
             )}>
-              <ReactMarkdown 
+              <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
                   // Prevent dangerous HTML
-                  h1: ({node, ...props}) => <p className="font-bold text-base" {...props} />,
-                  h2: ({node, ...props}) => <p className="font-bold text-sm" {...props} />,
-                  h3: ({node, ...props}) => <p className="font-semibold text-sm" {...props} />,
-                  h4: ({node, ...props}) => <p className="font-semibold text-sm" {...props} />,
-                  h5: ({node, ...props}) => <p className="font-medium text-sm" {...props} />,
-                  h6: ({node, ...props}) => <p className="font-medium text-sm" {...props} />,
+                  h1: ({ node, ...props }) => <p className="font-bold text-base" {...props} />,
+                  h2: ({ node, ...props }) => <p className="font-bold text-sm" {...props} />,
+                  h3: ({ node, ...props }) => <p className="font-semibold text-sm" {...props} />,
+                  h4: ({ node, ...props }) => <p className="font-semibold text-sm" {...props} />,
+                  h5: ({ node, ...props }) => <p className="font-medium text-sm" {...props} />,
+                  h6: ({ node, ...props }) => <p className="font-medium text-sm" {...props} />,
                 }}
               >
                 {comment.content}
@@ -277,7 +277,7 @@ export function CommentItem({
                       </DropdownMenuItem>
                     )}
                     {canDelete && (
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={handleDelete}
                         className="text-red-600 dark:text-red-400"
                       >

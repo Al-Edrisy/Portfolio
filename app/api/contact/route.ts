@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Try to send email if SMTP is configured (optional - won't fail if not configured)
     const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS
-    
+
     if (!smtpConfigured) {
       console.log('SMTP not configured - email will not be sent, but contact saved to database')
       return NextResponse.json(
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
               <!-- Footer -->
               <div style="background: #1a1a1a; color: #ffffff; padding: 24px 30px; text-align: center;">
                 <p style="margin: 0; font-size: 14px; font-weight: 400; color: #cccccc;">
-                  © ${new Date().getFullYear()} Al-Edrisy Portfolio
+                  © ${new Date().getFullYear()} Salih Ben Otman Portfolio
                 </p>
               </div>
               
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
 
       // Send auto-reply to the user
       const autoReplyOptions = {
-        from: `"${process.env.CONTACT_NAME || 'Al-Edrisy'}" <${process.env.SMTP_USER}>`,
+        from: `"${process.env.CONTACT_NAME || 'Salih Ben Otman'}" <${process.env.SMTP_USER}>`,
         to: email,
         subject: 'Thank you for contacting me!',
         html: `
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
                   This is an automated response. Please do not reply to this email.
                 </p>
                 <p style="margin: 8px 0 0 0; font-size: 14px; font-weight: 400; color: #cccccc;">
-                  © ${new Date().getFullYear()} Al-Edrisy Portfolio
+                  © ${new Date().getFullYear()} Salih Ben Otman Portfolio
                 </p>
               </div>
               

@@ -318,3 +318,27 @@ export function ImageGalleryModal({
     </AnimatePresence>
   )
 }
+
+// Custom hook for managing lightbox state
+export function useImageGalleryModal() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const openAt = useCallback((index: number) => {
+    setCurrentIndex(index)
+    setIsOpen(true)
+  }, [])
+
+  const close = useCallback(() => {
+    setIsOpen(false)
+  }, [])
+
+  return {
+    isOpen,
+    currentIndex,
+    openAt,
+    close,
+    setIsOpen,
+    setCurrentIndex
+  }
+}

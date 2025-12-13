@@ -38,18 +38,18 @@ export default function Navigation() {
   useEffect(() => {
     let ticking = false
     let timeoutId: NodeJS.Timeout
-    
+
     const handleScroll = () => {
       if (!ticking) {
         ticking = true
-        
+
         // Debounce for better performance
         clearTimeout(timeoutId)
         timeoutId = setTimeout(() => {
           window.requestAnimationFrame(() => {
             const currentScrollY = window.scrollY
             const scrollDifference = Math.abs(currentScrollY - lastScrollY)
-            
+
             // Only trigger if scroll difference is significant (prevents jitter)
             if (scrollDifference > 10) {
               // Determine scroll direction - only hide after scrolling past 150px
@@ -58,18 +58,18 @@ export default function Navigation() {
               } else if (currentScrollY < lastScrollY) {
                 setScrollDirection('up')
               }
-              
+
               setLastScrollY(currentScrollY)
             }
-            
+
             // Set scrolled state for backdrop
             setIsScrolled(currentScrollY > 20)
-            
+
             // Close mobile menu on scroll down
             if (isMobileMenuOpen && currentScrollY > lastScrollY) {
               setIsMobileMenuOpen(false)
             }
-            
+
             ticking = false
           })
         }, 10)
@@ -93,17 +93,16 @@ export default function Navigation() {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 will-change-transform ${
-        isScrolled 
-          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm" 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 will-change-transform ${isScrolled
+          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm"
           : "bg-transparent"
-      }`}
+        }`}
       initial={{ opacity: 0, y: -20 }}
-      animate={{ 
+      animate={{
         opacity: 1,
-        y: scrollDirection === 'down' && isScrolled && !isMobileMenuOpen ? -100 : 0 
+        y: scrollDirection === 'down' && isScrolled && !isMobileMenuOpen ? -100 : 0
       }}
-      transition={{ 
+      transition={{
         opacity: { duration: 0.2 },
         y: { duration: 0.3, ease: "easeInOut" }
       }}
@@ -117,7 +116,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
-              Al-Edrisy
+              Salih Ben Otman
             </motion.div>
           </Link>
 
@@ -127,11 +126,10 @@ export default function Navigation() {
               {navItems.map((item) => (
                 <Link key={item.name} href={item.href}>
                   <motion.div
-                    className={`relative px-3 lg:px-4 py-2 lg:py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${
-                      isActiveRoute(item.href)
+                    className={`relative px-3 lg:px-4 py-2 lg:py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${isActiveRoute(item.href)
                         ? "text-primary bg-primary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    }`}
+                      }`}
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -259,11 +257,10 @@ export default function Navigation() {
                       initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.04, duration: 0.15, ease: "easeOut" }}
-                      className={`relative text-left py-2.5 sm:py-3 px-3 sm:px-4 rounded-md transition-colors duration-200 ${
-                        isActiveRoute(item.href)
+                      className={`relative text-left py-2.5 sm:py-3 px-3 sm:px-4 rounded-md transition-colors duration-200 ${isActiveRoute(item.href)
                           ? "text-primary bg-primary/10 font-medium"
                           : "text-foreground hover:bg-accent/50 active:bg-accent"
-                      }`}
+                        }`}
                     >
                       {item.name}
                       {isActiveRoute(item.href) && (

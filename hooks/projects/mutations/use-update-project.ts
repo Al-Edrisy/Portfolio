@@ -15,7 +15,7 @@ export function useUpdateProject() {
   const { toast } = useToast()
 
   const updateProject = async (
-    projectId: string, 
+    projectId: string,
     projectData: Partial<ProjectFormData>
   ): Promise<Project | null> => {
     if (!user) {
@@ -33,7 +33,7 @@ export function useUpdateProject() {
 
     try {
       const projectRef = doc(db, COLLECTIONS.PROJECTS, projectId)
-      
+
       // Prepare update data
       const updateData: any = {
         updatedAt: serverTimestamp()
@@ -52,14 +52,19 @@ export function useUpdateProject() {
       }
       if (projectData.link !== undefined) updateData.link = projectData.link
       if (projectData.github !== undefined) updateData.github = projectData.github
-      
+      if (projectData.videoUrl !== undefined) {
+        // If empty string, set to null to remove it
+        updateData.videoUrl = projectData.videoUrl || null
+      }
+
       // Handle images update
       if (projectData.image !== undefined || projectData.images !== undefined) {
-        updateData['images.cover'] = projectData.image || projectData.images?.[0]
-        updateData['images.gallery'] = projectData.images || [projectData.image]
-        updateData['images.thumbnails'] = [projectData.image || projectData.images?.[0]]
+        // Use dot notation for nested fields
+        (updateData as any)['images.cover'] = projectData.image || projectData.images?.[0];
+        (updateData as any)['images.gallery'] = projectData.images || [projectData.image];
+        (updateData as any)['images.thumbnails'] = [projectData.image || projectData.images?.[0]];
       }
-      
+
       // Handle published status
       if (projectData.published !== undefined) {
         updateData.published = projectData.published
@@ -90,6 +95,7 @@ export function useUpdateProject() {
         title: projectData.title || '',
         description: projectData.description || '',
         image: projectData.image || '',
+        videoUrl: projectData.videoUrl, // Include videoUrl in return
         tech: projectData.tech || [],
         categories: projectData.categories || [],
         category: projectData.categories?.[0] || projectData.category,
@@ -99,6 +105,8 @@ export function useUpdateProject() {
         updatedAt: new Date(),
         published: projectData.published || false,
         authorId: user.id,
+        authorName: user.name || 'Anonymous', // Added missing field
+        viewsCount: 0, // Added missing field
         reactionsCount: {
           like: 0,
           love: 0,
@@ -117,13 +125,13 @@ export function useUpdateProject() {
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update project'
       setError(errorMessage)
-      
+
       toast({
         title: "Error Updating Project",
         description: errorMessage,
         variant: "destructive"
       })
-      
+
       console.error('Error updating project:', err)
       return null
     } finally {

@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { 
+import {
   X,
   Loader2,
   MessageCircle,
@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils'
 import { useIncrementView } from '@/hooks/projects'
 import { formatDistanceToNow } from 'date-fns'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ProjectVideoPlayer } from '@/components/projects/project-video-player'
 
 interface ProjectModalProps {
   projectId: string
@@ -49,9 +50,9 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const { project, loading, error } = useProject(projectId)
-  const { 
-    reactions, 
-    userReactions, 
+  const {
+    reactions,
+    userReactions,
     reactionCounts
   } = useProjectReactions(projectId)
 
@@ -93,7 +94,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
 
   const nextImage = () => {
     if (project?.images && project.images.length > 0) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === project.images!.length - 1 ? 0 : prev + 1
       )
     }
@@ -101,7 +102,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
 
   const prevImage = () => {
     if (project?.images && project.images.length > 0) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? project.images!.length - 1 : prev - 1
       )
     }
@@ -113,7 +114,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ 
+          transition={{
             duration: 0.4,
             ease: [0.4, 0, 0.2, 1]
           }}
@@ -132,7 +133,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
               ease: "easeInOut"
             }}
           />
-          
+
           {/* Main Content */}
           <div className="relative text-center">
             {/* Spinner Container */}
@@ -147,7 +148,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                   ease: "linear"
                 }}
               />
-              
+
               {/* Inner Spinner */}
               <motion.div
                 className="absolute inset-2 rounded-full border-4 border-transparent border-t-primary border-r-primary"
@@ -158,7 +159,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                   ease: "linear"
                 }}
               />
-              
+
               {/* Center Icon */}
               <motion.div
                 className="absolute inset-0 flex items-center justify-center"
@@ -174,7 +175,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                 <Loader2 className="h-8 w-8 text-primary" />
               </motion.div>
             </div>
-            
+
             {/* Text */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -182,7 +183,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
               transition={{ delay: 0.2 }}
             >
               <p className="text-white text-xl font-semibold mb-2">Loading Project</p>
-              <motion.p 
+              <motion.p
                 className="text-white/60 text-sm"
                 animate={{
                   opacity: [0.6, 1, 0.6]
@@ -216,16 +217,16 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                 <X className="h-8 w-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Project Not Found</CardTitle>
-          </CardHeader>
+            </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground mb-6 leading-relaxed">
-              The project you're looking for doesn't exist or has been removed.
-            </p>
+                The project you're looking for doesn't exist or has been removed.
+              </p>
               <Button onClick={handleClose} className="w-full h-11">
-              Close
-            </Button>
-          </CardContent>
-        </Card>
+                Close
+              </Button>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     )
@@ -237,12 +238,12 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
       {/* Backdrop click to close */}
-      <div 
-        className="absolute inset-0" 
+      <div
+        className="absolute inset-0"
         onClick={handleClose}
         aria-label="Close modal"
       />
-      
+
       {/* Modal Content - Sidebar Layout */}
       <div className="relative h-full flex items-end md:items-center justify-center md:p-6">
         <motion.div
@@ -265,19 +266,19 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
               >
                 <X className="h-5 w-5" />
               </Button>
-          </div>
+            </div>
 
             {/* Desktop Close Button */}
             <div className="hidden md:block absolute top-4 right-4 z-20">
-          <Button
-            variant="ghost"
-            size="icon"
+              <Button
+                variant="ghost"
+                size="icon"
                 className="bg-background/90 backdrop-blur-sm hover:bg-background h-10 w-10 rounded-full shadow-lg"
-            onClick={handleClose}
-          >
-              <X className="h-5 w-5" />
-          </Button>
-          </div>
+                onClick={handleClose}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
 
             {/* Image Display */}
             <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted/80 overflow-hidden group">
@@ -292,7 +293,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                     alt={project.title}
                     className="w-full h-full object-contain p-2 md:p-4"
                   />
-                  
+
                   {/* Image Navigation */}
                   {projectImages.length > 1 && (
                     <>
@@ -343,8 +344,8 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                         onClick={() => setCurrentImageIndex(index)}
                         className={cn(
                           "relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all",
-                          index === currentImageIndex 
-                            ? "border-primary ring-2 ring-primary/20" 
+                          index === currentImageIndex
+                            ? "border-primary ring-2 ring-primary/20"
                             : "border-transparent hover:border-muted-foreground/30"
                         )}
                       >
@@ -362,10 +363,10 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                 </div>
                 <div className="text-center mt-3 text-xs text-muted-foreground">
                   {currentImageIndex + 1} / {projectImages.length}
-                  </div>
                 </div>
-              )}
-              
+              </div>
+            )}
+
             {/* Mobile Image Counter */}
             {projectImages.length > 1 && (
               <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium">
@@ -384,10 +385,10 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                     {project.title}
                   </h1>
                   <Badge variant="secondary" className="text-xs">
-                {project.category}
-              </Badge>
+                    {project.category}
+                  </Badge>
                 </div>
-            </div>
+              </div>
 
               {/* Quick Stats */}
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -419,7 +420,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
               `}</style>
               <div className="p-6 space-y-6">
                 {/* Description */}
-              <div>
+                <div>
                   <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                     About This Project
                   </h3>
@@ -427,6 +428,17 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                     {project.description}
                   </p>
                 </div>
+
+                {/* Video Section */}
+                {project.videoUrl && (
+                  <>
+                    <Separator />
+                    <ProjectVideoPlayer
+                      videoUrl={project.videoUrl}
+                      title={project.title}
+                    />
+                  </>
+                )}
 
                 <Separator />
 
@@ -436,7 +448,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                     <Tag className="h-4 w-4" />
                     Project Details
                   </h3>
-                  
+
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4 flex-shrink-0" />
@@ -444,22 +456,22 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                         Created {formatDistanceToNow(project.createdAt, { addSuffix: true })}
                       </span>
                     </div>
-                    
-                {project.tech && project.tech.length > 0 && (
+
+                    {project.tech && project.tech.length > 0 && (
                       <div>
                         <div className="flex items-center gap-2 text-muted-foreground mb-2">
                           <Code2 className="h-4 w-4 flex-shrink-0" />
                           <span className="text-xs font-medium">Technologies</span>
                         </div>
                         <div className="flex flex-wrap gap-1.5 pl-6">
-                  {project.tech.map((tech) => (
+                          {project.tech.map((tech) => (
                             <Badge key={tech} variant="outline" className="text-xs px-2 py-0.5">
-                        {tech}
-                      </Badge>
-                    ))}
+                              {tech}
+                            </Badge>
+                          ))}
                         </div>
-                  </div>
-                )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -469,71 +481,71 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">Links</h3>
                   <div className="flex items-center gap-2">
-                  {project.link && (
+                    {project.link && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button asChild size="icon" className="h-10 w-10 rounded-full">
-                      <a href={project.link} target="_blank" rel="noopener noreferrer">
+                              <a href={project.link.startsWith('http') ? project.link : `https://${project.link}`} target="_blank" rel="noopener noreferrer">
                                 <Globe className="h-4 w-4" />
-                      </a>
-                    </Button>
+                              </a>
+                            </Button>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>View Live Project</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                  )}
-                  {project.github && (
+                    )}
+                    {project.github && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button asChild size="icon" variant="outline" className="h-10 w-10 rounded-full">
-                      <a href={project.github} target="_blank" rel="noopener noreferrer">
+                              <a href={project.github.startsWith('http') ? project.github : `https://${project.github}`} target="_blank" rel="noopener noreferrer">
                                 <Github className="h-4 w-4" />
-                      </a>
-                    </Button>
+                              </a>
+                            </Button>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>View Source Code</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                  )}
-              </div>
+                    )}
+                  </div>
                 </div>
 
                 <Separator />
 
                 {/* Interactions Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 h-10 bg-muted/50">
                     <TabsTrigger value="reactions" className="text-xs font-medium">
                       <Heart className="h-3.5 w-3.5 mr-1.5" />
                       Reactions
-                    {totalReactions > 0 && (
+                      {totalReactions > 0 && (
                         <span className="ml-1.5 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                        {totalReactions}
-                      </span>
-                    )}
-                  </TabsTrigger>
+                          {totalReactions}
+                        </span>
+                      )}
+                    </TabsTrigger>
                     <TabsTrigger value="comments" className="text-xs font-medium">
                       <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
                       Comments
-                  </TabsTrigger>
-                </TabsList>
+                    </TabsTrigger>
+                  </TabsList>
 
                   <TabsContent value="reactions" className="mt-4 space-y-4">
                     {/* Reaction Picker */}
-                      <EnhancedReactionPicker
-                        projectId={projectId}
-                        currentUserReaction={getCurrentUserReaction()}
-                        variant="modal"
-                        onReactionChange={() => {
-                          // Reactions will refresh automatically via the hook
-                        }}
-                      />
+                    <EnhancedReactionPicker
+                      projectId={projectId}
+                      currentUserReaction={getCurrentUserReaction()}
+                      variant="modal"
+                      onReactionChange={() => {
+                        // Reactions will refresh automatically via the hook
+                      }}
+                    />
 
                     {/* People Who Reacted - Compact Display */}
                     {Object.entries(reactionCounts).some(([_, count]) => count > 0) && (
@@ -552,16 +564,16 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                               rocket: '🚀',
                               clap: '👏'
                             }
-                            
+
                             // Get users who used this reaction type
                             const usersWithReaction = reactions.filter(r => r.type === type)
-                            
+
                             return (
                               <div key={type} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
                                 {/* Reaction Emoji */}
                                 <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted/50 flex-shrink-0">
                                   <span className="text-lg">{reactionEmojis[type] || '👍'}</span>
-                    </div>
+                                </div>
 
                                 {/* User Avatars - Stacked */}
                                 <div className="flex items-center flex-1 min-w-0">
@@ -590,7 +602,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                                         </span>
                                       </div>
                                     )}
-                  </div>
+                                  </div>
 
                                   {/* Count */}
                                   <span className="text-xs font-medium text-muted-foreground ml-auto">
@@ -600,20 +612,20 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                               </div>
                             )
                           })}
-                  </div>
+                      </div>
                     )}
-                </TabsContent>
+                  </TabsContent>
 
                   <TabsContent value="comments" className="mt-4">
-                      <EnhancedCommentSystem
-                        projectId={projectId}
-                        projectTitle={project?.title}
-                        projectDescription={project?.description}
-                        maxDepth={3}
-                        showCount={true}
-                      />
-                </TabsContent>
-              </Tabs>
+                    <EnhancedCommentSystem
+                      projectId={projectId}
+                      projectTitle={project?.title}
+                      projectDescription={project?.description}
+                      maxDepth={3}
+                      showCount={true}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>

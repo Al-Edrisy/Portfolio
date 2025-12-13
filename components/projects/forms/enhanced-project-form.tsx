@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Save, 
-  Eye, 
-  EyeOff, 
-  Loader2, 
+import {
+  Save,
+  Eye,
+  EyeOff,
+  Loader2,
   AlertCircle,
   CheckCircle,
   ExternalLink,
@@ -35,8 +35,10 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ImageUrlInput, ImageGalleryInput } from './image-url-input'
+import { VideoUrlInput } from './video-url-input'
 import { TechStackSelector } from './tech-stack-selector'
 import { CategoryPicker, CompactCategoryPicker } from './category-picker'
+import { parseVideoUrl } from '@/lib/utils/video-helpers'
 
 interface EnhancedProjectFormProps {
   project?: Project
@@ -69,7 +71,8 @@ export function EnhancedProjectForm({
     description: project?.description || '',
     longDescription: '',
     image: project?.image || '',
-    images: project?.image ? [project.image] : [],
+    images: project?.images && project.images.length > 0 ? project.images : (project?.image ? [project.image] : []),
+    videoUrl: project?.videoUrl || '',
     tech: project?.tech || [],
     categories: project?.categories || (project?.category ? [project.category] : []),
     link: project?.link || '',
@@ -81,6 +84,7 @@ export function EnhancedProjectForm({
   const [showPreview, setShowPreview] = useState(false)
   const [localStep, setLocalStep] = useState(currentStep)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [pendingVideoUrl, setPendingVideoUrl] = useState('')
 
   const loading = creating || updating
   const isEdit = mode === 'edit' && project
@@ -152,6 +156,15 @@ export function EnhancedProjectForm({
   }
 
   const handleSubmit = async () => {
+    // Check for pending video URL before validation
+    let finalVideoUrl = formData.videoUrl
+    if (!finalVideoUrl && pendingVideoUrl.trim()) {
+      const parsed = parseVideoUrl(pendingVideoUrl.trim())
+      if (parsed.isValid) {
+        finalVideoUrl = pendingVideoUrl.trim()
+      }
+    }
+
     if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) {
       goToStep(1) // Go back to first step with errors
       return
@@ -159,11 +172,17 @@ export function EnhancedProjectForm({
 
     setIsSubmitting(true)
     try {
+      // Create submission data with the final video URL
+      const submissionData = {
+        ...formData,
+        videoUrl: finalVideoUrl
+      }
+
       let result
       if (isEdit) {
-        result = await updateProject(project!.id, formData)
+        result = await updateProject(project!.id, submissionData)
       } else {
-        result = await createProject(formData)
+        result = await createProject(submissionData)
       }
 
       if (result) {
@@ -181,7 +200,7 @@ export function EnhancedProjectForm({
 
   const handleInputChange = (field: keyof ProjectFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
@@ -217,7 +236,7 @@ export function EnhancedProjectForm({
                 Step {activeStep} of 5
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
@@ -342,6 +361,13 @@ export function EnhancedProjectForm({
                     {errors.image && (
                       <p className="text-sm text-destructive">{errors.image}</p>
                     )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <VideoUrlInput
+                      videoUrl={formData.videoUrl}
+                      onVideoChange={(url) => handleInputChange('videoUrl', url || '')}
+                    />
                   </div>
                 </CardContent>
               </Card>

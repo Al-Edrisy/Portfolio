@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  onSnapshot, 
-  addDoc, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
   updateDoc,
   deleteDoc,
   doc,
@@ -49,11 +49,11 @@ export function useProjectComments(projectId: string) {
           const commentsData = await Promise.all(
             snapshot.docs.map(async (commentDoc) => {
               const data = commentDoc.data()
-              
+
               // Get user data
               const userDoc = await getDoc(doc(db, 'users', data.userId))
               const userData = userDoc.exists() ? userDoc.data() : null
-              
+
               return {
                 id: commentDoc.id,
                 projectId: data.projectId,
@@ -63,6 +63,7 @@ export function useProjectComments(projectId: string) {
                 createdAt: data.createdAt?.toDate() || new Date(),
                 updatedAt: data.updatedAt?.toDate() || new Date(),
                 likes: data.likes,
+                userLikes: data.userLikes || [],
                 repliesCount: data.repliesCount,
                 user: {
                   name: userData?.name || 'Unknown User',
@@ -71,7 +72,7 @@ export function useProjectComments(projectId: string) {
               } as Comment
             })
           )
-          
+
           setComments(commentsData)
           setError(null)
         } catch (err: any) {
@@ -129,6 +130,7 @@ export function useProjectComments(projectId: string) {
         createdAt: new Date(),
         updatedAt: new Date(),
         likes: 0,
+        userLikes: [],
         repliesCount: 0,
       }
 
@@ -244,7 +246,7 @@ export function useProjectComments(projectId: string) {
           collection(db, 'comments'),
           where('parentCommentId', '==', commentId)
         )
-        
+
         const repliesSnapshot = await getDocs(repliesQuery)
         const deletePromises = repliesSnapshot.docs.map(doc => deleteDoc(doc.ref))
         await Promise.all(deletePromises)
@@ -285,7 +287,7 @@ export function useProjectComments(projectId: string) {
         snapshot.docs.map(async (commentDoc) => {
           try {
             const data = commentDoc.data()
-            
+
             // Get user data safely with error handling
             let userData = null
             try {
@@ -294,7 +296,7 @@ export function useProjectComments(projectId: string) {
             } catch (userError) {
               console.error('Error fetching user data:', userError)
             }
-            
+
             return {
               id: commentDoc.id,
               projectId: data.projectId || '',
@@ -303,7 +305,10 @@ export function useProjectComments(projectId: string) {
               parentCommentId: data.parentCommentId || null,
               createdAt: data.createdAt?.toDate() || new Date(),
               updatedAt: data.updatedAt?.toDate() || new Date(),
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
               likes: data.likes || 0,
+              userLikes: data.userLikes || [], // Map userLikes safely
               repliesCount: data.repliesCount || 0,
               user: {
                 name: userData?.name || 'Unknown User',
@@ -356,11 +361,11 @@ export function useAllComments() {
           const commentsData = await Promise.all(
             snapshot.docs.map(async (commentDoc) => {
               const data = commentDoc.data()
-              
+
               // Get user data
               const userDoc = await getDoc(doc(db, 'users', data.userId))
               const userData = userDoc.exists() ? userDoc.data() : null
-              
+
               return {
                 id: commentDoc.id,
                 projectId: data.projectId,
@@ -370,6 +375,7 @@ export function useAllComments() {
                 createdAt: data.createdAt?.toDate() || new Date(),
                 updatedAt: data.updatedAt?.toDate() || new Date(),
                 likes: data.likes,
+                userLikes: data.userLikes || [],
                 repliesCount: data.repliesCount,
                 user: {
                   name: userData?.name || 'Unknown User',
@@ -378,7 +384,7 @@ export function useAllComments() {
               } as Comment
             })
           )
-          
+
           setComments(commentsData)
           setError(null)
         } catch (err: any) {
@@ -426,13 +432,13 @@ export function useCommentStats(projectId?: string) {
         setError(null)
 
         let q = query(collection(db, 'comments'))
-        
+
         if (projectId) {
           q = query(q, where('projectId', '==', projectId))
         }
 
         const snapshot = await getDocs(q)
-        
+
         const commentsByProject = snapshot.docs.reduce((acc, doc) => {
           const projectId = doc.data().projectId
           acc[projectId] = (acc[projectId] || 0) + 1

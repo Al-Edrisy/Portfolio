@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  Share2, 
-  Copy, 
-  Check, 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
+import {
+  Share2,
+  Copy,
+  Check,
+  Facebook,
+  Twitter,
+  Linkedin,
   Mail,
   ExternalLink
 } from 'lucide-react'
@@ -223,7 +223,7 @@ export function ProjectShare({ project, trigger }: ProjectShareProps) {
                 asChild
                 className="w-full justify-start"
               >
-                <a href={project.link} target="_blank" rel="noopener noreferrer">
+                <a href={project.link?.startsWith('http') ? project.link : `https://${project.link}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Live Project
                 </a>
@@ -234,7 +234,7 @@ export function ProjectShare({ project, trigger }: ProjectShareProps) {
                 asChild
                 className="w-full justify-start"
               >
-                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                <a href={project.github?.startsWith('http') ? project.github : `https://${project.github}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Source Code
                 </a>
@@ -254,7 +254,7 @@ export function QuickShareButton({ project }: { project: Project }) {
 
   const handleQuickShare = async () => {
     const projectUrl = `${window.location.origin}/projects/${project.id}`
-    
+
     if (navigator.share) {
       try {
         await navigator.share({

@@ -18,19 +18,18 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'media.licdn.com',
-        pathname: '/dms/image/**',
+        hostname: '**',
       },
       {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },
   // Optimize Fast Refresh and performance
   experimental: {
     optimizePackageImports: [
-      'lucide-react', 
+      'lucide-react',
       '@radix-ui/react-icons',
       'motion/react',
       '@radix-ui/react-dialog',
@@ -55,7 +54,7 @@ const nextConfig = {
         tls: false,
       }
     }
-    
+
     return config
   },
   // Suppress browser extension errors in development

@@ -8,11 +8,10 @@ import { FeedbackSection } from "@/components/feedback"
 import { GitHubActivitySection } from "@/components/sections/github-activity-section"
 
 export const metadata: Metadata = {
-  title: "Al-Edrisy (Salih Ben Otman) - Full Stack Developer | React, Next.js, AI Integration Expert",
+  title: "Salih Ben Otman - Full Stack Developer | React, Next.js, AI Integration Expert",
   description: "Full Stack Software Developer with 5+ years building modern web applications. Specialized in React, Next.js, TypeScript, Node.js, and AI integrations. View 50+ completed projects, hire for freelance work.",
   keywords: [
     "Salih Ben Otman",
-    "Al-Edrisy",
     "Full Stack Developer",
     "React Developer",
     "Next.js Expert",
@@ -26,13 +25,13 @@ export const metadata: Metadata = {
     "Modern Web Applications",
     "Scalable Web Solutions",
   ],
-  authors: [{ name: "Al-Edrisy (Salih Ben Otman)", url: "https://salihbenotman.dev" }],
-  creator: "Al-Edrisy",
+  authors: [{ name: "Salih Ben Otman", url: "https://salihbenotman.dev" }],
+  creator: "Salih Ben Otman",
   openGraph: {
-    title: "Al-Edrisy - Full Stack Developer Portfolio",
+    title: "Salih Ben Otman - Full Stack Developer Portfolio",
     description: "Professional Software Developer with 5+ years experience. Expert in React, Next.js, TypeScript, and AI integrations. 50+ completed projects.",
     url: "https://salihbenotman.dev",
-    siteName: "Al-Edrisy Portfolio",
+    siteName: "Salih Ben Otman Portfolio",
     type: "website",
     locale: "en_US",
     images: [
@@ -40,13 +39,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Al-Edrisy - Full Stack Software Developer",
+        alt: "Salih Ben Otman - Full Stack Software Developer",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Al-Edrisy - Full Stack Developer",
+    title: "Salih Ben Otman - Full Stack Developer",
     description: "Full Stack Developer specializing in React, Next.js, TypeScript & AI. 50+ projects completed.",
     creator: "@salihbenotman",
     images: ["/og-image.png"],

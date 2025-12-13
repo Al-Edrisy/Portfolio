@@ -6,11 +6,11 @@ import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 
 export const metadata: Metadata = {
-  title: "Technical Skills & Expertise - Al-Edrisy (Salih Ben Otman)",
-  description: "Comprehensive overview of Al-Edrisy's (Salih Ben Otman) technical skills and expertise. Proficient in React, Next.js, TypeScript, JavaScript, Node.js, Express.js, HTML5, CSS3, Tailwind CSS, Firebase, MongoDB, PostgreSQL, Git, AI integrations (OpenAI, Langflow), RESTful APIs, responsive design, system architecture, and modern web development best practices. 15+ technologies mastered.",
+  title: "Technical Skills & Expertise - Salih Ben Otman",
+  description: "Comprehensive overview of Salih Ben Otman's technical skills and expertise. Proficient in React, Next.js, TypeScript, JavaScript, Node.js, Express.js, HTML5, CSS3, Tailwind CSS, Firebase, MongoDB, PostgreSQL, Git, AI integrations (OpenAI, Langflow), RESTful APIs, responsive design, system architecture, and modern web development best practices. 15+ technologies mastered.",
   keywords: "Technical Skills, Programming Languages, React Skills, Next.js Expertise, TypeScript, JavaScript, Node.js, Frontend Development Skills, Backend Development, Database Skills, MongoDB, PostgreSQL, Firebase, Git, GitHub, AI Integration, OpenAI, Web Development Skills, Full Stack Skills, UI/UX Skills, Modern Web Technologies, Software Engineering Skills",
   openGraph: {
-    title: "Technical Skills & Expertise - Al-Edrisy (Salih Ben Otman)",
+    title: "Technical Skills & Expertise - Salih Ben Otman",
     description: "Expert in React, Next.js, TypeScript, Node.js, AI integrations, and 15+ modern web technologies. Professional full-stack development skills.",
     url: "https://salihbenotman.dev/skills",
     type: "website",

@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og'
 
 // Image metadata
-export const alt = 'Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer Portfolio'
+// Image metadata
+export const alt = 'Salih Ben Otman - Full Stack Software Developer Portfolio'
 export const size = {
   width: 1200,
   height: 630,
@@ -52,7 +53,7 @@ export default async function Image() {
               boxShadow: '0 20px 60px rgba(255, 255, 255, 0.2)',
             }}
           >
-            A
+            S
           </div>
 
           {/* Title */}
@@ -67,18 +68,6 @@ export default async function Image() {
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Al-Edrisy
-          </div>
-
-          {/* Subtitle */}
-          <div
-            style={{
-              fontSize: 32,
-              color: '#cccccc',
-              marginBottom: 10,
-              textAlign: 'center',
             }}
           >
             Salih Ben Otman

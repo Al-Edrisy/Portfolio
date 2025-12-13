@@ -6,11 +6,11 @@ import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 
 export const metadata: Metadata = {
-  title: "Contact Al-Edrisy (Salih Ben Otman) - Hire Full Stack Developer",
-  description: "Get in touch with Al-Edrisy (Salih Ben Otman) for software development projects, collaboration opportunities, freelance work, or consulting services. Available for full-stack development, React/Next.js projects, AI integrations, UI/UX design, and web application development. Contact via email: salehfree33@gmail.com or phone: +218 92 152 70 18. Let's discuss your next digital solution.",
-  keywords: "Contact Software Developer, Hire Full Stack Developer, Contact Al-Edrisy, Contact Salih Ben Otman, Freelance Developer, Software Development Services, Collaboration Opportunity, Project Inquiry, Hire React Developer, Hire Next.js Developer, Web Development Consultation, Software Engineer Contact",
+  title: "Contact Salih Ben Otman - Hire Full Stack Developer",
+  description: "Get in touch with Salih Ben Otman for software development projects, collaboration opportunities, freelance work, or consulting services. Available for full-stack development, React/Next.js projects, AI integrations, UI/UX design, and web application development. Contact via email: salehfree33@gmail.com or phone: +218 92 152 70 18. Let's discuss your next digital solution.",
+  keywords: "Contact Software Developer, Hire Full Stack Developer, Contact Salih Ben Otman, Freelance Developer, Software Development Services, Collaboration Opportunity, Project Inquiry, Hire React Developer, Hire Next.js Developer, Web Development Consultation, Software Engineer Contact",
   openGraph: {
-    title: "Contact Al-Edrisy (Salih Ben Otman) - Hire Full Stack Developer",
+    title: "Contact Salih Ben Otman - Hire Full Stack Developer",
     description: "Available for software development projects, collaboration, and consulting. Expert in React, Next.js, TypeScript, and AI integrations.",
     url: "https://salihbenotman.dev/contact",
     type: "website",

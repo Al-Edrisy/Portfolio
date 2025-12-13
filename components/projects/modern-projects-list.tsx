@@ -13,9 +13,10 @@ import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectCardSkeleton } from '@/components/ui/loading-skeleton'
+
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { 
+import {
   Loader2,
   ChevronUp
 } from 'lucide-react'
@@ -36,9 +37,9 @@ export function ModernProjectsList() {
   // const { isConnected, retry } = useFirebaseConnection()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
-  
+
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  
+
   const { projects, loading, error, hasMore, loadMore, refresh } = useProjects()
 
   // Infinite scroll implementation
@@ -89,7 +90,7 @@ export function ModernProjectsList() {
   // Sort projects by newest first
   const sortedProjects = useMemo(() => {
     if (!projects) return []
-    
+
     return [...projects].sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
@@ -126,8 +127,8 @@ export function ModernProjectsList() {
       })
       toast({
         title: currentStatus ? "Project unpublished" : "Project published",
-        description: currentStatus 
-          ? "The project is now hidden from public view." 
+        description: currentStatus
+          ? "The project is now hidden from public view."
           : "The project is now visible to everyone.",
       })
       refresh()
@@ -162,7 +163,7 @@ export function ModernProjectsList() {
       {/* Projects List with Infinite Scroll */}
       <div>
         {loading ? (
-          <div className="grid gap-6 grid-cols-1 max-w-2xl mx-auto">
+          <div className="grid gap-4 grid-cols-1 max-w-xl mx-auto">
             {[...Array(3)].map((_, i) => (
               <ProjectCardSkeleton key={i} />
             ))}
@@ -179,7 +180,7 @@ export function ModernProjectsList() {
           </div>
         ) : (
           <>
-            <div className="grid gap-6 grid-cols-1 max-w-2xl mx-auto">
+            <div className="grid gap-4 grid-cols-1 max-w-xl mx-auto">
               <AnimatePresence>
                 {sortedProjects.map((project, index) => (
                   <LinkedInStyleProjectCardGSAP
@@ -194,7 +195,7 @@ export function ModernProjectsList() {
                 ))}
               </AnimatePresence>
             </div>
-            
+
             {/* Infinite Scroll Trigger */}
             {hasMore && (
               <div ref={loadMoreRef} className="flex justify-center py-8">
@@ -210,7 +211,7 @@ export function ModernProjectsList() {
                 )}
               </div>
             )}
-            
+
             {/* End of results */}
             {!hasMore && sortedProjects.length > 0 && (
               <div className="flex justify-center py-8">
@@ -223,7 +224,7 @@ export function ModernProjectsList() {
           </>
         )}
       </div>
-      
+
       {/* Scroll to Top Button */}
       <AnimatePresence>
         {showScrollTop && (

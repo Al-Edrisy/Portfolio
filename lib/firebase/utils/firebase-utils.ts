@@ -1,32 +1,32 @@
 // Utility functions for Firebase operations
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
   startAfter,
   Timestamp,
   DocumentSnapshot,
   QueryDocumentSnapshot
 } from 'firebase/firestore'
 import { db } from '../../firebase'
-import { 
-  Project, 
-  Reaction, 
-  Comment, 
-  User, 
-  ProjectDocument, 
-  ReactionDocument, 
-  CommentDocument, 
+import {
+  Project,
+  Reaction,
+  Comment,
+  User,
+  ProjectDocument,
+  ReactionDocument,
+  CommentDocument,
   UserDocument,
-  ReactionType 
+  ReactionType
 } from '@/types'
 
 // Collection names
@@ -48,13 +48,50 @@ export const dateToTimestamp = (date: Date): Timestamp => {
 }
 
 // Convert Firestore document to Project
+// Normalizes images from Firestore structure to flat array for UI consumption
+// Handles backward compatibility with legacy single-image projects
 export const docToProject = (doc: QueryDocumentSnapshot): Project => {
   const data = doc.data() as ProjectDocument
+
+  // Normalize images: convert Firestore { cover, gallery } structure to flat array
+  // First image is always the cover, followed by gallery images
+  const normalizeImages = (): string[] => {
+    // If new images structure exists with cover or gallery
+    if (data.images) {
+      const images: string[] = []
+      if (data.images.cover) {
+        images.push(data.images.cover)
+      }
+      if (data.images.gallery && Array.isArray(data.images.gallery)) {
+        // Filter out cover from gallery to avoid duplicates if it's already there
+        const galleryImages = data.images.gallery.filter(img => img !== data.images!.cover);
+        images.push(...galleryImages)
+      }
+      if (images.length > 0) {
+        return images
+      }
+    }
+
+    // Fall back to legacy single image field
+    if (data.image) {
+      return [data.image]
+    }
+
+    return []
+  }
+
+  const images = normalizeImages()
+
   return {
     id: doc.id,
     title: data.title,
     description: data.description,
+    // Legacy field: use cover from images structure, or legacy image field
     image: data.images?.cover || data.image || '',
+    // New images array: normalized flat array for UI consumption
+    images: images.length > 0 ? images : undefined,
+    // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
+    videoUrl: data.videoUrl,
     tech: data.tech,
     category: data.category,
     link: data.link || '',
@@ -87,11 +124,11 @@ export const docToReaction = (doc: QueryDocumentSnapshot): Reaction => {
 // Convert Firestore document to Comment
 export const docToComment = async (doc: QueryDocumentSnapshot): Promise<Comment> => {
   const data = doc.data() as CommentDocument
-  
+
   // Get user data
   const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, data.userId))
   const userData = userDoc.exists() ? userDoc.data() as UserDocument : null
-  
+
   return {
     id: doc.id,
     projectId: data.projectId,
@@ -126,18 +163,18 @@ export const docToUser = (doc: QueryDocumentSnapshot): User => {
 export const getProjectById = async (projectId: string): Promise<Project | null> => {
   try {
     const projectDoc = await getDoc(doc(db, COLLECTIONS.PROJECTS, projectId))
-    
+
     if (!projectDoc.exists()) {
       return null
     }
 
     const project = docToProject(projectDoc as QueryDocumentSnapshot)
-    
+
     // Get reactions count
     const reactionsSnapshot = await getDocs(
       query(collection(db, COLLECTIONS.REACTIONS), where('projectId', '==', projectId))
     )
-    
+
     const reactionsCount = reactionsSnapshot.docs.reduce((acc, reactionDoc) => {
       const type = reactionDoc.data().type as ReactionType
       acc[type] = (acc[type] || 0) + 1
@@ -167,7 +204,7 @@ export const getProjectWithCounts = getProjectById
 export const getUserById = async (userId: string): Promise<User | null> => {
   try {
     const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId))
-    
+
     if (!userDoc.exists()) {
       return null
     }
@@ -211,12 +248,12 @@ export const getPaginatedProjects = async (
     const projects = await Promise.all(
       snapshot.docs.map(async (doc) => {
         const project = docToProject(doc)
-        
+
         // Get reactions count
         const reactionsSnapshot = await getDocs(
           query(collection(db, COLLECTIONS.REACTIONS), where('projectId', '==', doc.id))
         )
-        
+
         const reactionsCount = reactionsSnapshot.docs.reduce((acc, reactionDoc) => {
           const type = reactionDoc.data().type as ReactionType
           acc[type] = (acc[type] || 0) + 1

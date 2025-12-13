@@ -25,6 +25,9 @@ export interface ProjectDocument {
     thumbnails: string[] // Optimized thumbnails for performance
   }
   
+  // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct mp4/webm)
+  videoUrl?: string
+  
   // Project metadata
   tech: string[]         // Technology stack (max 20 items)
   category: string       // Project category

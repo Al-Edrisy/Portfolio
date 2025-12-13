@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion'
 import { 
   Image, 
   Link, 
@@ -11,11 +11,13 @@ import {
   AlertCircle,
   Loader2,
   Eye,
-  EyeOff
+  EyeOff,
+  GripVertical
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 
 interface ImageUrlInputProps {
   value: string
@@ -26,6 +28,7 @@ interface ImageUrlInputProps {
   showPreview?: boolean
   allowMultiple?: boolean
   maxImages?: number
+  disabled?: boolean
 }
 
 interface ImagePreviewProps {
@@ -131,7 +134,8 @@ export function ImageUrlInput({
   className,
   showPreview = true,
   allowMultiple = true,
-  maxImages = 10
+  maxImages = 10,
+  disabled = false
 }: ImageUrlInputProps) {
   const [isValidating, setIsValidating] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -229,10 +233,11 @@ export function ImageUrlInput({
             onChange={handleInputChange}
             onPaste={handlePaste}
             placeholder={placeholder}
-            disabled={isValidating}
+            disabled={isValidating || disabled}
             className={cn(
               "pl-10 pr-20",
-              validationError && "border-red-500 focus:border-red-500"
+              validationError && "border-red-500 focus:border-red-500",
+              disabled && "opacity-50 cursor-not-allowed"
             )}
           />
           
@@ -243,7 +248,7 @@ export function ImageUrlInput({
               <Button
                 type="submit"
                 size="sm"
-                disabled={!value.trim() || isValidating}
+                disabled={!value.trim() || isValidating || disabled}
                 className="h-8 px-3"
               >
                 <Plus className="w-4 h-4 mr-1" />
@@ -275,12 +280,134 @@ export function ImageUrlInput({
   )
 }
 
+// Draggable image item component for reorder functionality
+interface DraggableImageItemProps {
+  url: string
+  index: number
+  onRemove: () => void
+}
+
+function DraggableImageItem({ url, index, onRemove }: DraggableImageItemProps) {
+  const dragControls = useDragControls()
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
+
+  return (
+    <Reorder.Item
+      value={url}
+      dragListener={false}
+      dragControls={dragControls}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      className="relative group"
+    >
+      <div
+        className={cn(
+          "relative rounded-lg overflow-hidden",
+          "border border-gray-200 dark:border-gray-700",
+          "bg-white dark:bg-gray-800"
+        )}
+      >
+        {/* Drag Handle */}
+        <div
+          onPointerDown={(e) => dragControls.start(e)}
+          className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing bg-black/50 hover:bg-black/70 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <GripVertical className="w-4 h-4" />
+        </div>
+
+        {/* Cover Image Indicator */}
+        {index === 0 && (
+          <div className="absolute top-2 left-10 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-md">
+            Cover
+          </div>
+        )}
+
+        {/* Image */}
+        <div className="relative aspect-video">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            </div>
+          )}
+          
+          {hasError ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400">
+              <AlertCircle className="w-8 h-8 mb-2" />
+              <span className="text-sm">Failed to load image</span>
+            </div>
+          ) : (
+            <img
+              src={url}
+              alt="Preview"
+              onLoad={() => { setIsLoading(false); setHasError(false) }}
+              onError={() => { setIsLoading(false); setHasError(true) }}
+              className={cn(
+                "w-full h-full object-cover transition-opacity duration-200",
+                isLoading ? "opacity-0" : "opacity-100"
+              )}
+            />
+          )}
+        </div>
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 pointer-events-none" />
+
+        {/* Actions */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+              onClick={() => window.open(url, '_blank')}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-500"
+              onClick={onRemove}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* URL Display */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <p className="text-xs truncate">{url}</p>
+        </div>
+      </div>
+    </Reorder.Item>
+  )
+}
+
 // Gallery display component for multiple images
 interface ImageGalleryInputProps {
   images: string[]
   onImagesChange: (images: string[]) => void
   className?: string
   maxImages?: number
+}
+
+/**
+ * Checks if a URL already exists in the images array (duplicate prevention)
+ * Property 5: Duplicate Prevention - attempting to add a URL that already exists SHALL leave the array unchanged
+ */
+export function isDuplicateUrl(images: string[], url: string): boolean {
+  return images.includes(url)
+}
+
+/**
+ * Checks if the images array has reached the maximum limit
+ * Property 1: Image Array Size Constraint - array length SHALL be between 0 and maxImages (inclusive)
+ */
+export function isAtMaxImages(images: string[], maxImages: number): boolean {
+  return images.length >= maxImages
 }
 
 export function ImageGalleryInput({
@@ -290,16 +417,30 @@ export function ImageGalleryInput({
   maxImages = 10
 }: ImageGalleryInputProps) {
   const [inputUrl, setInputUrl] = useState('')
+  
+  const isLimitReached = isAtMaxImages(images, maxImages)
 
   const handleAddImage = (url: string) => {
-    if (images.length >= maxImages) {
-      alert(`Maximum ${maxImages} images allowed`)
+    // Property 1: Image Array Size Constraint - reject if at max
+    if (isLimitReached) {
+      toast.error('Maximum images reached', {
+        description: `You can only add up to ${maxImages} images per project.`
+      })
       return
     }
     
-    if (!images.includes(url)) {
-      onImagesChange([...images, url])
+    // Property 5: Duplicate Prevention - reject if duplicate
+    if (isDuplicateUrl(images, url)) {
+      toast.warning('Duplicate image', {
+        description: 'This image URL has already been added to the gallery.'
+      })
+      return
     }
+    
+    onImagesChange([...images, url])
+    toast.success('Image added', {
+      description: 'The image has been added to your gallery.'
+    })
   }
 
   const handleRemoveImage = (index: number) => {
@@ -307,68 +448,78 @@ export function ImageGalleryInput({
     onImagesChange(newImages)
   }
 
-  const handleReorder = (fromIndex: number, toIndex: number) => {
-    const newImages = [...images]
-    const [removed] = newImages.splice(fromIndex, 1)
-    newImages.splice(toIndex, 0, removed)
-    onImagesChange(newImages)
+  // Property 3: Reorder Preserves Cover - reorder updates array with first element as cover
+  const handleReorder = (newOrder: string[]) => {
+    onImagesChange(newOrder)
   }
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Input */}
-      <ImageUrlInput
-        value={inputUrl}
-        onChange={setInputUrl}
-        onAddImage={handleAddImage}
-        placeholder="Add image URL..."
-        showPreview={false}
-      />
+      <div className="space-y-2">
+        <ImageUrlInput
+          value={inputUrl}
+          onChange={setInputUrl}
+          onAddImage={handleAddImage}
+          placeholder={isLimitReached ? "Maximum images reached" : "Add image URL..."}
+          showPreview={false}
+          disabled={isLimitReached}
+        />
+        
+        {/* Limit indicator when approaching max */}
+        {images.length >= maxImages - 2 && images.length < maxImages && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            ⚠️ You can add {maxImages - images.length} more image{maxImages - images.length !== 1 ? 's' : ''}
+          </p>
+        )}
+        
+        {/* Disabled state message */}
+        {isLimitReached && (
+          <p className="text-xs text-red-500">
+            Maximum of {maxImages} images reached. Remove an image to add more.
+          </p>
+        )}
+      </div>
 
-      {/* Gallery */}
+      {/* Gallery with drag-and-drop reorder */}
       {images.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Project Images ({images.length})
             </h4>
-            <span className="text-xs text-gray-500">
+            <span className={cn(
+              "text-xs font-medium px-2 py-1 rounded-full",
+              isLimitReached 
+                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                : images.length >= maxImages - 2
+                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+            )}>
               {images.length}/{maxImages}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <AnimatePresence>
-              {images.map((url, index) => (
-                <motion.div
-                  key={`${url}-${index}`}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="relative"
-                >
-                  <ImagePreview
-                    url={url}
-                    onRemove={() => handleRemoveImage(index)}
-                    className="cursor-pointer"
-                  />
-                  
-                  {/* Cover Image Indicator */}
-                  {index === 0 && (
-                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-md">
-                      Cover
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <Reorder.Group
+            axis="x"
+            values={images}
+            onReorder={handleReorder}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
+          >
+            {images.map((url, index) => (
+              <DraggableImageItem
+                key={url}
+                url={url}
+                index={index}
+                onRemove={() => handleRemoveImage(index)}
+              />
+            ))}
+          </Reorder.Group>
 
           {/* Reorder Instructions */}
           {images.length > 1 && (
             <p className="text-xs text-gray-500 text-center">
-              💡 First image will be used as the cover image
+              💡 Drag images to reorder. First image will be used as the cover image.
             </p>
           )}
         </div>

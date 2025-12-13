@@ -11,20 +11,20 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { 
+import {
   MessageCircle,
   MoreHorizontal,
   User,
@@ -44,7 +44,9 @@ import ReactionList from '../reactions/reaction-list'
 import EnhancedCommentSystem from '../comments/enhanced-comment-system'
 import { useIncrementView } from '@/hooks/projects'
 import { getTechIconOrText } from '@/lib/tech-icon-mapper'
-import { CompactImageGallery } from '../gallery/image-gallery'
+import { ImageGalleryModal } from '../gallery/image-gallery-modal'
+import { SmartImageGrid } from '../gallery/smart-image-grid'
+
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -60,8 +62,8 @@ interface LinkedInStyleProjectCardProps {
   onDelete?: (projectId: string) => void
 }
 
-const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP({ 
-  project, 
+const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP({
+  project,
   index,
   showAdminControls = false,
   onTogglePublished,
@@ -75,7 +77,9 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   const [showCommentsModal, setShowCommentsModal] = useState(false)
   const [showReactionsModal, setShowReactionsModal] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
-  
+  const [showLightbox, setShowLightbox] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+
   // Refs for GSAP animations
   const cardRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -83,19 +87,19 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   const descriptionRef = useRef<HTMLParagraphElement>(null)
   const techStackRef = useRef<HTMLDivElement>(null)
   const moreMenuRef = useRef<HTMLDivElement>(null)
-  
+
   const { toast } = useToast()
-  
-  const { 
-    reactions, 
-    userReactions, 
-    reactionCounts, 
+
+  const {
+    reactions,
+    userReactions,
+    reactionCounts,
     loading: reactionsLoading
   } = useProjectReactions(project.id)
-  
-  const { 
-    comments, 
-    loading: commentsLoading, 
+
+  const {
+    comments,
+    loading: commentsLoading,
   } = useProjectComments(project.id)
 
   const { incrementView } = useIncrementView()
@@ -195,7 +199,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   // Soft Hover Feedback - Memoized for performance
   const handleCardHover = useCallback((isHovering: boolean) => {
     if (!cardRef.current) return
-    
+
     gsap.to(cardRef.current, {
       y: isHovering ? -3 : 0,
       scale: isHovering ? 1.005 : 1,
@@ -220,12 +224,12 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
     if (e) {
       e.preventDefault()
     }
-    
+
     try {
       incrementView(project.id).catch(error => {
         console.warn('Failed to increment view:', error)
       })
-      
+
       router.push(`/projects/${project.id}`)
     } catch (error) {
       console.error('Error handling project click:', error)
@@ -238,7 +242,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
     }
     setShowCommentsInline(!showCommentsInline)
   }
-  
+
   const handleViewAllCommentsInModal = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation()
@@ -259,6 +263,13 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
     return userReactions.length > 0 ? userReactions[0].type : null
   }
 
+  // Handler to open lightbox at specific image index
+  const handleImageClick = useCallback((e: React.MouseEvent, index: number) => {
+    e.stopPropagation()
+    setLightboxIndex(index)
+    setShowLightbox(true)
+  }, [])
+
   return (
     <div
       ref={cardRef}
@@ -266,31 +277,31 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
       onMouseEnter={() => handleCardHover(true)}
       onMouseLeave={() => handleCardHover(false)}
     >
-      <Card 
+      <Card
         className="border-2 border-border rounded-lg bg-card transition-all hover:border-primary/50 hover:shadow-lg will-change-transform overflow-hidden"
       >
         {/* Header - Author Info */}
-        <div className="p-3 md:p-4 pb-2">
+        <div className="p-2.5 md:p-3 pb-1.5">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 ring-2 ring-border">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8 ring-1 ring-border">
                 <AvatarImage src={project.authorAvatar || (isClient ? user?.avatar : null) || '/placeholder-user.jpg'} />
                 <AvatarFallback>
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-foreground">
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-medium text-sm text-foreground">
                     {project.authorName || (isClient ? user?.name : null) || 'Anonymous User'}
                   </h4>
-                  <Badge variant="secondary" className="text-xs">
-                    Developer
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    Dev
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                  {(project.categories && project.categories.length > 0 
-                    ? project.categories 
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                  {(project.categories && project.categories.length > 0
+                    ? project.categories
                     : project.category ? [project.category] : ['Uncategorized']
                   ).slice(0, 3).map((cat, idx) => (
                     <Badge key={idx} variant="outline" className="text-xs">
@@ -307,7 +318,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 relative">
               {isClient && (showAdminControls || isDeveloper) && (
                 <>
@@ -322,7 +333,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
-                  
+
                   {/* Admin Menu Dropdown */}
                   {showMoreMenu && (
                     <div
@@ -384,21 +395,20 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
           </div>
         </div>
 
-        {/* Content - Clickable to open project */}
-        <div 
-          className="px-3 md:px-4 pb-2 cursor-pointer hover:bg-accent/5 transition-colors rounded-lg -mx-1 px-4"
-          onClick={handleProjectClick}
+        {/* Content - Static (View Details button handles navigation) */}
+        <div
+          className="px-2.5 md:px-3 pb-1.5 rounded-lg"
         >
-          <h3 
+          <h3
             ref={titleRef}
-            className="text-base md:text-lg font-semibold text-foreground mb-2 line-clamp-2"
+            className="text-sm md:text-base font-semibold text-foreground mb-1 line-clamp-1"
           >
             {project.title}
           </h3>
-          
-          <p 
+
+          <p
             ref={descriptionRef}
-            className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-3"
+            className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2"
           >
             {project.description}
           </p>
@@ -406,232 +416,114 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
 
         {/* Tech Stack - Above Image with Icons - Responsive */}
         {project.tech && project.tech.length > 0 && (
-          <div className="px-3 md:px-4 pb-2">
-            <div ref={techStackRef} className="flex flex-wrap gap-1.5 md:gap-2">
-              {project.tech.slice(0, 6).map((tech, techIndex) => {
+          <div className="px-2.5 md:px-3 pb-1.5">
+            <div ref={techStackRef} className="flex flex-wrap gap-1">
+              {project.tech.slice(0, 4).map((tech, techIndex) => {
                 const { iconPath, displayName, hasIcon } = getTechIconOrText(tech)
-                
+
                 return (
-                  <TooltipProvider key={techIndex}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="tech-item flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-1 md:py-1.5 rounded-md bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors cursor-pointer">
-                          {hasIcon && iconPath ? (
-                            <img 
-                              src={iconPath} 
-                              alt={displayName}
-                              loading="lazy"
-                              className="w-3.5 h-3.5 md:w-4 md:h-4 object-contain"
-                            />
-                          ) : null}
-                          <span className="text-[10px] md:text-xs font-medium text-primary truncate max-w-[80px] md:max-w-none">
-                            {displayName}
-                          </span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{displayName}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Tooltip key={techIndex}>
+                    <TooltipTrigger asChild>
+                      <div className="tech-item flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors cursor-pointer">
+                        {hasIcon && iconPath ? (
+                          <img
+                            src={iconPath}
+                            alt={displayName}
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            className="w-3 h-3 object-contain"
+                          />
+                        ) : null}
+                        <span className="text-[9px] font-medium text-primary truncate max-w-[60px]">
+                          {displayName}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{displayName}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )
               })}
-              {project.tech.length > 6 && (
-                <Badge variant="secondary" className="tech-item text-[10px] px-2 py-1 font-medium bg-muted text-muted-foreground border-0">
-                  +{project.tech.length - 6}
+              {project.tech.length > 4 && (
+                <Badge variant="secondary" className="tech-item text-[9px] px-1.5 py-0.5 font-medium bg-muted text-muted-foreground border-0">
+                  +{project.tech.length - 4}
                 </Badge>
               )}
             </div>
           </div>
         )}
 
-        {/* Project Images Gallery - Display all images */}
+        {/* Project Images Gallery - Display all images with error handling */}
         {(project.image || project.images?.gallery?.length) && (
-          <div className="px-3 md:px-4 pb-3 overflow-hidden">
-            {/* Get all images to display */}
-            {(() => {
-              const allImages = project.images?.gallery || [project.image].filter(Boolean)
-              
-              if (allImages.length === 1) {
-                // Single image - show with parallax effect
-                return (
-                  <div 
-                    className="relative w-full aspect-video overflow-hidden rounded-lg bg-muted group/image cursor-pointer"
-                    onClick={handleProjectClick}
-                  >
-                    <div ref={imageRef} className="w-full h-full">
-                      <img
-                        src={allImages[0]}
-                        alt={project.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* View Project Overlay Hint */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300">
-                      <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
-                        <p className="text-white text-sm font-medium">Click to view project</p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              } else {
-                // Multiple images - show gallery
-                return (
-                  <div ref={imageRef} className="relative">
-                    <CompactImageGallery
-                      images={allImages}
-                      onImageClick={handleProjectClick}
-                      aspectRatio="video"
-                      className="cursor-pointer"
-                    />
-                    {/* Gallery indicator */}
-                    {allImages.length > 1 && (
-                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-                        {allImages.length} images
-                      </div>
-                    )}
-                  </div>
-                )
-              }
-            })()}
+          <div className="px-2.5 md:px-3 pb-2 overflow-hidden">
+            <SmartImageGrid
+              images={project.images?.gallery || [project.image].filter(Boolean) as string[]}
+              projectTitle={project.title}
+              onImageClick={handleImageClick}
+              imageRef={imageRef as React.RefObject<HTMLDivElement>}
+            />
           </div>
         )}
 
-        {/* Engagement Stats */}
-        <div className="px-3 md:px-4 py-2 border-t border-border">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    onClick={handleReactionsClick}
-                    className="hover:underline cursor-pointer transition-colors hover:text-foreground flex items-center gap-1.5"
-                  >
-                    {Object.entries(reactionCounts)
-                      .filter(([_, count]) => count > 0)
-                      .slice(0, 3)
-                      .map(([type, _], index) => {
-                        const reactionEmojis: Record<string, string> = {
-                          like: '👍',
-                          love: '❤️',
-                          fire: '🔥',
-                          wow: '😮',
-                          laugh: '😂',
-                          idea: '💡',
-                          rocket: '🚀',
-                          clap: '👏'
-                        }
-                        return (
-                          <span key={type} className="text-base">
-                            {reactionEmojis[type] || '👍'}
-                          </span>
-                        )
-                      })}
-                    <span>{Object.values(reactionCounts).reduce((sum, count) => sum + count, 0)}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="space-y-1">
-                    {Object.entries(reactionCounts)
-                      .filter(([_, count]) => count > 0)
-                      .map(([type, count]) => {
-                        const reactionLabels: Record<string, string> = {
-                          like: 'Like',
-                          love: 'Love',
-                          fire: 'Fire',
-                          wow: 'Wow',
-                          laugh: 'Laugh',
-                          idea: 'Great Idea',
-                          rocket: 'Amazing',
-                          clap: 'Applause'
-                        }
-                        const reactionEmojis: Record<string, string> = {
-                          like: '👍',
-                          love: '❤️',
-                          fire: '🔥',
-                          wow: '😮',
-                          laugh: '😂',
-                          idea: '💡',
-                          rocket: '🚀',
-                          clap: '👏'
-                        }
-                        return (
-                          <div key={type} className="flex items-center gap-2">
-                            <span>{reactionEmojis[type]}</span>
-                            <span className="text-xs">{reactionLabels[type]}: {count}</span>
-                          </div>
-                        )
-                      })}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <button
-              onClick={handleComment}
-              className="hover:underline cursor-pointer transition-colors hover:text-foreground flex items-center gap-1"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              {comments.length} comment{comments.length !== 1 ? 's' : ''}
-            </button>
+        {/* Actions Row - Consolidate Stats and Actions */}
+        <div className="px-3 md:px-4 py-3 border-t border-border flex items-center justify-between gap-3">
+          {/* Left: Interactive Actions */}
+          <div className="flex items-center gap-1">
+            {/* Reaction Picker */}
+            <EnhancedReactionPicker
+              projectId={project.id}
+              currentUserReaction={getCurrentUserReaction()}
+              variant="compact"
+              onReactionChange={() => { }}
+            />
+
+            {/* Comment Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleComment}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 h-9 rounded-full hover:bg-muted font-normal text-muted-foreground hover:text-foreground transition-colors",
+                    showCommentsInline && "bg-muted text-foreground"
+                  )}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-xs">{comments.length > 0 ? comments.length : 'Comment'}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View comments</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
+
+          {/* Right: View Details */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleProjectClick}
+                className="flex items-center gap-1.5 px-3 py-2 h-9 rounded-full hover:bg-muted font-normal text-muted-foreground hover:text-primary transition-colors group/view"
+              >
+                <span className="text-xs">View Details</span>
+                <Eye className="h-4 w-4 group-hover/view:text-primary transition-colors" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Open project details</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
-        {/* Action Buttons */}
-        <div className="px-3 md:px-4 py-3 md:py-2 border-t border-border relative">
-          <div className="flex items-center justify-between gap-3">
-            {/* Left side - Reactions and Comment */}
-            <TooltipProvider>
-              <div className="flex items-center gap-1">
-                <EnhancedReactionPicker
-                  projectId={project.id}
-                  currentUserReaction={getCurrentUserReaction()}
-                  variant="compact"
-                  onReactionChange={() => {}}
-                />
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleComment}
-                      className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-2 rounded-lg hover:bg-accent transition-colors min-h-[44px] md:min-h-0"
-                    >
-                      <MessageCircle className="h-5 w-5 md:h-4 md:w-4" />
-                      <span className="sr-only md:not-sr-only md:inline">Comment</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add a comment</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
-            
-            {/* Right side - View Project Button */}
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleProjectClick}
-              className="flex items-center gap-2 px-4 py-2.5 md:py-2 min-h-[44px] md:min-h-0 bg-primary hover:bg-primary/90"
-            >
-              <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">View Project</span>
-              <span className="sm:hidden">View</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Comments Section - Inline Expandable */}
-        {!commentsLoading && comments.length > 0 && !showCommentsInline && (
+        {/* Comments Section - Only show when explicitly expanded */}
+        {showCommentsInline && !commentsLoading && (
           <div className="px-4 py-3 border-t border-border bg-muted/30">
             <div className="space-y-3">
-              {comments.slice(0, 2).map((comment) => (
+              {comments.slice(0, 3).map((comment) => (
                 <div key={comment.id} className="space-y-2">
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8 flex-shrink-0">
@@ -727,13 +619,15 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
                     </Button>
                   </div>
                 </div>
-                <EnhancedCommentSystem
-                  projectId={project.id}
-                  projectTitle={project.title}
-                  projectDescription={project.description}
-                  maxDepth={3}
-                  showCount={false}
-                />
+                {showCommentsInline && (
+                  <EnhancedCommentSystem
+                    projectId={project.id}
+                    projectTitle={project.title}
+                    projectDescription={project.description}
+                    maxDepth={3}
+                    showCount={false}
+                  />
+                )}
               </div>
             </motion.div>
           )}
@@ -749,15 +643,17 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
               {project.title}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="mt-4 overflow-y-auto max-h-[60vh]">
-            <EnhancedCommentSystem
-              projectId={project.id}
-              projectTitle={project.title}
-              projectDescription={project.description}
-              maxDepth={3}
-              showCount={false}
-            />
+            {showCommentsModal && (
+              <EnhancedCommentSystem
+                projectId={project.id}
+                projectTitle={project.title}
+                projectDescription={project.description}
+                maxDepth={3}
+                showCount={false}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -771,7 +667,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
               People who reacted to this project
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="mt-4">
             <ReactionList
               reactions={reactions}
@@ -782,6 +678,15 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Image Gallery Lightbox */}
+      <ImageGalleryModal
+        images={project.images?.gallery || [project.image].filter(Boolean) as string[]}
+        initialIndex={lightboxIndex}
+        isOpen={showLightbox}
+        onClose={() => setShowLightbox(false)}
+        projectTitle={project.title}
+      />
     </div>
   )
 })

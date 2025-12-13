@@ -34,29 +34,32 @@ export function useCreateProject() {
         title: projectData.title,
         description: projectData.description,
         longDescription: projectData.longDescription || '',
-        
+
         // Image structure
         images: {
           cover: projectData.image, // First image as cover
           gallery: projectData.images || [projectData.image], // All images including cover
           thumbnails: [projectData.image] // Optimized thumbnails (to be implemented)
         },
-        
+
+        // Video
+        videoUrl: projectData.videoUrl || null,
+
         tech: projectData.tech,
         categories: projectData.categories || [], // New: support multiple categories
         category: projectData.categories?.[0] || projectData.category || '', // Legacy: keep for backward compatibility
         link: projectData.link || '',
         github: projectData.github || '',
-        
+
         // Status
         published: projectData.published,
         featured: false, // New projects are not featured by default
-        
+
         // Author information
         authorId: user.id,
         authorName: user.name,
         authorAvatar: user.avatar,
-        
+
         // Initialize counters
         commentsCount: 0,
         reactionsCount: {
@@ -72,7 +75,7 @@ export function useCreateProject() {
         totalReactions: 0,
         viewsCount: 0,
         sharesCount: 0,
-        
+
         // Timestamps
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -96,6 +99,7 @@ export function useCreateProject() {
         title: projectData.title,
         description: projectData.description,
         image: projectData.image,
+        videoUrl: projectData.videoUrl, // Include videoUrl in returned object
         tech: projectData.tech,
         categories: projectData.categories || [],
         category: projectData.categories?.[0] || projectData.category,
@@ -119,13 +123,13 @@ export function useCreateProject() {
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create project'
       setError(errorMessage)
-      
+
       toast({
         title: "Error Creating Project",
         description: errorMessage,
         variant: "destructive"
       })
-      
+
       console.error('Error creating project:', err)
       return null
     } finally {

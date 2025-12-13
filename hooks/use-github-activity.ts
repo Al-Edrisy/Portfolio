@@ -69,10 +69,38 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
 
         const repos = await reposResponse.json()
 
+        interface GitHubEvent {
+          type: string
+          created_at: string
+          repo: {
+            name: string
+          }
+          payload: {
+            action?: string
+            ref_type?: string
+            commits?: Array<{
+              message: string
+            }>
+          }
+        }
+
+        interface GitHubRepo {
+          name: string
+          description: string
+          stargazers_count: number
+          forks_count: number
+          language: string
+          html_url: string
+          fork: boolean
+          archived: boolean
+        }
+        // ... (keep existing imports and interfaces)
+
+        // Inside the function, replace `any` with these types
         // Process activities
-        const processedActivities = events
+        const processedActivities = (events as GitHubEvent[])
           .slice(0, 5)
-          .map((event: any) => {
+          .map((event) => {
             let message = ''
             let icon = '📝'
 
@@ -120,19 +148,19 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
         const last30Days = new Date()
         last30Days.setDate(last30Days.getDate() - 30)
 
-        const recentCommits = events.filter(
-          (e: any) => e.type === 'PushEvent' && new Date(e.created_at) > last30Days
-        ).reduce((sum: number, e: any) => sum + (e.payload.commits?.length || 0), 0)
+        const recentCommits = (events as GitHubEvent[]).filter(
+          (e) => e.type === 'PushEvent' && new Date(e.created_at) > last30Days
+        ).reduce((sum: number, e) => sum + (e.payload.commits?.length || 0), 0)
 
         // Calculate total stars
-        const totalStars = repos.reduce((sum: number, repo: any) => sum + (repo.stargazers_count || 0), 0)
+        const totalStars = (repos as GitHubRepo[]).reduce((sum: number, repo) => sum + (repo.stargazers_count || 0), 0)
 
         // Get featured repositories (top 4 by stars)
-        const featured = repos
-          .filter((r: any) => !r.fork && !r.archived)
-          .sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
+        const featured = (repos as GitHubRepo[])
+          .filter((r) => !r.fork && !r.archived)
+          .sort((a, b) => b.stargazers_count - a.stargazers_count)
           .slice(0, 4)
-          .map((repo: any) => ({
+          .map((repo) => ({
             name: repo.name,
             description: repo.description || 'No description available',
             stars: repo.stargazers_count || 0,
@@ -143,15 +171,15 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
 
         // Calculate streak (simplified - just check recent days with activity)
         const uniqueDays = new Set(
-          events
-            .filter((e: any) => new Date(e.created_at) > last30Days)
-            .map((e: any) => new Date(e.created_at).toDateString())
+          (events as GitHubEvent[])
+            .filter((e) => new Date(e.created_at) > last30Days)
+            .map((e) => new Date(e.created_at).toDateString())
         )
 
         setStats({
           totalCommits: recentCommits,
           currentStreak: uniqueDays.size,
-          activeRepos: repos.filter((r: any) => !r.fork && !r.archived).length,
+          activeRepos: (repos as GitHubRepo[]).filter((r) => !r.fork && !r.archived).length,
           totalStars
         })
 

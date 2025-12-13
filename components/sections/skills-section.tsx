@@ -11,271 +11,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
 }
 
-interface Skill {
-  name: string
-  icon: string
-  category: string
-  proficiency: number
-  description: string
-  color: string
-  featured?: boolean
-}
-
-const skillCategories = [
-  {
-    title: "Frontend Development",
-    description: "Modern user interfaces and experiences",
-    color: "from-blue-500 to-cyan-500",
-    skills: [
-      {
-        name: "React",
-        icon: "/svg_tech_stack_icons/Frameworks/react-2.svg",
-        category: "Frontend",
-        proficiency: 93,
-        description: "Building scalable React applications with modern hooks and patterns",
-        color: "#61DAFB",
-        featured: true
-      },
-      {
-        name: "Next.js",
-        icon: "/svg_tech_stack_icons/Frameworks/next-3.svg",
-        category: "Frontend",
-        proficiency: 89,
-        description: "Full-stack React framework with SSR, SSG, and API routes",
-        color: "#000000",
-        featured: true
-      },
-      {
-        name: "TypeScript",
-        icon: "/svg_tech_stack_icons/Programming_Languages/typescript.svg",
-        category: "Frontend",
-        proficiency: 88,
-        description: "Type-safe JavaScript for robust applications",
-        color: "#3178C6",
-        featured: true
-      },
-      {
-        name: "Expo",
-        icon: "/svg_tech_stack_icons/Frameworks/expo-go-app.svg",
-        category: "Mobile",
-        proficiency: 75,
-        description: "Cross-platform mobile development with React Native",
-        color: "#000020"
-      },
-      {
-        name: "GSAP",
-        icon: "/svg_tech_stack_icons/Animation/gsap-greensock.svg",
-        category: "Animation",
-        proficiency: 70,
-        description: "Advanced web animations and interactions",
-        color: "#88CE02"
-      }
-    ]
-  },
-  {
-    title: "Backend & Infrastructure",
-    description: "Scalable server-side solutions",
-    color: "from-green-500 to-emerald-500",
-    skills: [
-      {
-        name: "Node.js",
-        icon: "/svg_tech_stack_icons/Programming_Languages/nodejs-1.svg",
-        category: "Backend",
-        proficiency: 95,
-        description: "Server-side JavaScript runtime for scalable applications",
-        color: "#339933",
-        featured: true
-      },
-      {
-        name: "Python",
-        icon: "/svg_tech_stack_icons/Programming_Languages/python-5.svg",
-        category: "Backend",
-        proficiency: 95,
-        description: "Versatile language for backend services and automation",
-        color: "#3776AB",
-        featured: true
-      },
-      {
-        name: "C",
-        icon: "/svg_tech_stack_icons/Programming_Languages/c.svg",
-        category: "System Programming",
-        proficiency: 80,
-        description: "Low-level system programming and performance optimization",
-        color: "#A8B9CC"
-      },
-      {
-        name: "Swift",
-        icon: "/svg_tech_stack_icons/Programming_Languages/swift-15.svg",
-        category: "Mobile",
-        proficiency: 70,
-        description: "iOS native app development",
-        color: "#FA7343"
-      },
-      {
-        name: "Docker",
-        icon: "/svg_tech_stack_icons/Tools_Services/docker-3.svg",
-        category: "DevOps",
-        proficiency: 82,
-        description: "Containerization and orchestration",
-        color: "#2496ED"
-      }
-    ]
-  },
-  {
-    title: "Cloud & Databases",
-    description: "Infrastructure and data management",
-    color: "from-indigo-500 to-purple-500",
-    skills: [
-      {
-        name: "Firebase",
-        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/firebase-2.svg",
-        category: "Cloud",
-        proficiency: 87,
-        description: "Backend-as-a-Service for rapid app development",
-        color: "#FFCA28",
-        featured: true
-      },
-      {
-        name: "PostgreSQL",
-        icon: "/svg_tech_stack_icons/Databases/postgresql.svg",
-        category: "Database",
-        proficiency: 90,
-        description: "Relational database design and optimization",
-        color: "#336791",
-        featured: true
-      },
-      {
-        name: "AWS",
-        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/aws-2.svg",
-        category: "Cloud",
-        proficiency: 82,
-        description: "Cloud infrastructure and deployment strategies",
-        color: "#FF9900",
-        featured: true
-      },
-      {
-        name: "Google Cloud",
-        icon: "/svg_tech_stack_icons/Cloud_Infrastructure/google-cloud-3.svg",
-        category: "Cloud",
-        proficiency: 75,
-        description: "Google's cloud platform for scalable applications",
-        color: "#4285F4"
-      },
-      {
-        name: "MongoDB",
-        icon: "/svg_tech_stack_icons/Databases/mongodb-icon-2.svg",
-        category: "Database",
-        proficiency: 75,
-        description: "NoSQL database architecture and management",
-        color: "#47A248"
-      },
-      {
-        name: "MySQL",
-        icon: "/svg_tech_stack_icons/Databases/mysql-logo-pure.svg",
-        category: "Database",
-        proficiency: 70,
-        description: "Relational database management and optimization",
-        color: "#4479A1"
-      }
-    ]
-  },
-  {
-    title: "AI & Machine Learning",
-    description: "Intelligent systems and automation",
-    color: "from-purple-500 to-pink-500",
-    skills: [
-      {
-        name: "OpenAI API",
-        icon: "/svg_tech_stack_icons/AI_ML/openai-logo-1.svg",
-        category: "AI",
-        proficiency: 78,
-        description: "AI integration and prompt engineering",
-        color: "#412991",
-        featured: true
-      },
-      {
-        name: "TensorFlow",
-        icon: "/svg_tech_stack_icons/Frameworks/tensorflow-2.svg",
-        category: "ML",
-        proficiency: 65,
-        description: "Machine learning and deep learning framework",
-        color: "#FF6F00"
-      },
-      {
-        name: "PyTorch",
-        icon: "/svg_tech_stack_icons/Frameworks/pytorch-2.svg",
-        category: "ML",
-        proficiency: 60,
-        description: "Deep learning framework for research and production",
-        color: "#EE4C2C"
-      },
-      {
-        name: "Hugging Face",
-        icon: "/svg_tech_stack_icons/AI_ML/huggingface-1.svg",
-        category: "AI",
-        proficiency: 65,
-        description: "Transformer models and NLP pipelines",
-        color: "#FFD21E"
-      }
-    ]
-  },
-  {
-    title: "Development Tools",
-    description: "Productivity and collaboration tools",
-    color: "from-orange-500 to-red-500",
-    skills: [
-      {
-        name: "GitHub",
-        icon: "/svg_tech_stack_icons/Tools_Services/github-2.svg",
-        category: "Version Control",
-        proficiency: 87,
-        description: "Collaborative development and CI/CD",
-        color: "#181717",
-        featured: true
-      },
-      {
-        name: "Postman",
-        icon: "/svg_tech_stack_icons/Tools_Services/postman.svg",
-        category: "API Testing",
-        proficiency: 80,
-        description: "API development and testing platform",
-        color: "#FF6C37"
-      },
-      {
-        name: "Jenkins",
-        icon: "/svg_tech_stack_icons/Tools_Services/jenkins-1.svg",
-        category: "CI/CD",
-        proficiency: 70,
-        description: "Automated build and deployment pipelines",
-        color: "#D24939"
-      },
-      {
-        name: "Jira",
-        icon: "/svg_tech_stack_icons/Tools_Services/jira-1.svg",
-        category: "Project Management",
-        proficiency: 75,
-        description: "Agile project management and issue tracking",
-        color: "#0052CC"
-      },
-      {
-        name: "Slack",
-        icon: "/svg_tech_stack_icons/Tools_Services/slack-new-logo.svg",
-        category: "Communication",
-        proficiency: 85,
-        description: "Team communication and collaboration platform",
-        color: "#4A154B"
-      },
-      {
-        name: "Notion",
-        icon: "/svg_tech_stack_icons/Tools_Services/notion-2.svg",
-        category: "Documentation",
-        proficiency: 80,
-        description: "All-in-one workspace for notes and documentation",
-        color: "#000000"
-      }
-    ]
-  }
-]
+import { skillCategories, Skill } from "@/constants/skills-data"
 
 import SkillsShowcase from "@/components/ui/skill-showcase"
 import MagicBento from "@/components/ui/magic-bento"
@@ -297,7 +33,7 @@ export default function SkillsSection() {
   const handleDownloadCV = () => {
     // Create a link element
     const link = document.createElement('a')
-    link.href = '/cv/Salih_Ben_Otman_CV.pdf' // Update this path to your actual CV file
+    link.href = '/cv/salih.otman@final.edu.tr.pdf' // Updated CV path
     link.download = 'Salih_Ben_Otman_CV.pdf'
     link.target = '_blank'
     document.body.appendChild(link)
@@ -310,7 +46,7 @@ export default function SkillsSection() {
 
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    
+
     if (prefersReducedMotion) return
 
     // Create floating tech icons animation (optimized)
@@ -321,15 +57,15 @@ export default function SkillsSection() {
         "/svg_tech_stack_icons/Tools_Services/docker-3.svg",
         "/svg_tech_stack_icons/AI_ML/openai-logo-1.svg"
       ]
-      
+
       const icon = document.createElement('div')
       icon.className = 'absolute pointer-events-none opacity-10'
       icon.style.left = `${Math.random() * 100}%`
       icon.style.top = '100%'
       icon.innerHTML = `<img src="${icons[Math.floor(Math.random() * icons.length)]}" alt="" class="w-6 h-6" loading="lazy" />`
-      
+
       sectionRef.current?.appendChild(icon)
-      
+
       gsap.to(icon, {
         y: -window.innerHeight - 100,
         rotation: 180, // Reduced rotation for better performance
@@ -376,7 +112,7 @@ export default function SkillsSection() {
               Technical Expertise in Action
             </h2>
             <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Explore the technologies and methodologies I use to build scalable, modern applications. 
+              Explore the technologies and methodologies I use to build scalable, modern applications.
               Each card represents a key aspect of my development approach.
             </p>
           </div>
@@ -406,15 +142,15 @@ export default function SkillsSection() {
               {/* Decorative elements - reduced opacity */}
               <div className="absolute top-0 right-0 w-32 md:w-48 h-32 md:h-48 bg-primary/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-32 md:w-48 h-32 md:h-48 bg-secondary/10 rounded-full blur-3xl" />
-              
+
               <div className="relative z-10 text-center">
                 <h3 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 text-foreground">
                   Ready to collaborate?
                 </h3>
-                
+
                 <p className="text-base md:text-lg text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  Let's combine these skills to create something extraordinary for your next project. 
-                  I bring <strong>{yearsOfExperience}+ years of experience</strong> and 
+                  Let's combine these skills to create something extraordinary for your next project.
+                  I bring <strong>{yearsOfExperience}+ years of experience</strong> and
                   <strong>full-stack expertise</strong> to every collaboration.
                 </p>
 
@@ -433,7 +169,7 @@ export default function SkillsSection() {
                     <span>100% Client Satisfaction</span>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center">
                   <button
                     className="group relative px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl font-bold text-base md:text-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-300 hover:scale-105 shadow-xl shadow-primary/25 hover:shadow-primary/40 flex items-center justify-center gap-3 overflow-hidden"
@@ -446,7 +182,7 @@ export default function SkillsSection() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </button>
-                
+
                   <button
                     className="group relative px-8 md:px-12 py-4 md:py-5 bg-background/80 backdrop-blur-sm border-2 border-primary/20 text-foreground rounded-2xl font-bold text-base md:text-lg hover:bg-background/90 hover:border-primary/40 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
                     onClick={handleDownloadCV}

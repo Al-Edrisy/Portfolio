@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, Suspense } from "react"
 import { motion } from "motion/react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Prism from "@/components/ui/prism"
 import { AppleHelloEnglishEffect } from "@/components/ui/shadcn-io/apple-hello-effect"
@@ -24,6 +25,8 @@ export default function HeroSection() {
   const yearsOfExperience = calculateYearsOfExperience()
 
   // Pause Prism animation when scrolled away for better performance
+  const router = useRouter() // Import from 'next/navigation' (needs to be added to imports at top)
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -46,11 +49,11 @@ export default function HeroSection() {
   }, [])
 
   const navigateToProjects = () => {
-    window.location.href = '/projects'
+    router.push('/projects')
   }
 
   const navigateToContact = () => {
-    window.location.href = '/contact'
+    router.push('/contact')
   }
 
   return (
@@ -93,16 +96,11 @@ export default function HeroSection() {
             <CardContainer className="inter-var" containerClassName="py-0">
               <CardBody className="w-auto h-auto">
                 <CardItem translateZ="100" className="w-full">
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl">
-                    <Image
-                      src="https://media.licdn.com/dms/image/v2/D4E03AQFM9J33eiWAsQ/profile-displayphoto-shrink_800_800/B4EZhDaJ4wHgAc-/0/1753477588378?e=1762992000&v=beta&t=reJ_IQNrpYVuIrSNvDOpUPWRbMK-bx3F-1kSWSfrslk"
-                      alt="Al-Edrisy (Salih Ben Otman) - Full Stack Software Developer"
-                      fill
-                      className="object-cover grayscale"
-                      priority
-                      quality={85}
-                      sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px"
-                    />
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    {/* Placeholder avatar with initials */}
+                    <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-primary/60">
+                      SB
+                    </div>
                   </div>
                 </CardItem>
               </CardBody>
@@ -117,7 +115,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="mb-4 sm:mb-6 flex justify-center"
             >
-              <AppleHelloEnglishEffect 
+              <AppleHelloEnglishEffect
                 speed={1.1}
                 className="h-16 sm:h-20 md:h-24 lg:h-28 text-foreground"
               />
