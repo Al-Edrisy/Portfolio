@@ -6,6 +6,11 @@ import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 import { FeedbackSection } from "@/components/feedback"
 import { GitHubActivitySection } from "@/components/sections/github-activity-section"
+import SkillsTicker from "@/components/sections/skills-ticker"
+import ServicesPreview from "@/components/sections/services-preview"
+import HomeFeaturedProjects from "@/components/sections/home-featured-projects"
+import ContactSection from "@/components/sections/contact-section"
+import Footer from "@/components/ui/footer"
 
 export const metadata: Metadata = {
   title: "Salih Ben Otman - Full Stack Developer | React, Next.js, AI Integration Expert",
@@ -80,15 +85,36 @@ function LoadingFallback() {
 export default function Home() {
   return (
     <ErrorBoundary>
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background flex flex-col">
         <Navigation />
-        <HeroSection />
-        <Suspense fallback={<LoadingFallback />}>
-          <GitHubActivitySection />
-        </Suspense>
-        <Suspense fallback={<LoadingFallback />}>
-          <FeedbackSection />
-        </Suspense>
+
+        <div className="flex-1">
+          <HeroSection />
+
+          <SkillsTicker />
+
+          <Suspense fallback={<LoadingFallback />}>
+            <ServicesPreview />
+          </Suspense>
+
+          <Suspense fallback={<LoadingFallback />}>
+            <HomeFeaturedProjects />
+          </Suspense>
+
+          <Suspense fallback={<LoadingFallback />}>
+            <GitHubActivitySection />
+          </Suspense>
+
+          <Suspense fallback={<LoadingFallback />}>
+            <FeedbackSection />
+          </Suspense>
+
+          <Suspense fallback={<LoadingFallback />}>
+            <ContactSection />
+          </Suspense>
+        </div>
+
+        <Footer />
       </main>
     </ErrorBoundary>
   )

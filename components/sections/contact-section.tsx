@@ -48,7 +48,7 @@ const socialLinks = [
   },
   {
     name: "LinkedIn",
-    href: "https://www.linkedin.com/in/salih-otman-a565a2242",
+    href: "https://www.linkedin.com/in/صالح-بن-عثمان-a565a2242",
     icon: "💼",
     color: "hover:text-blue-600",
   },
@@ -57,6 +57,12 @@ const socialLinks = [
     href: "https://www.facebook.com/share/14GHt7scAjF/?mibextid=wwXIfr",
     icon: "📘",
     color: "hover:text-blue-500",
+  },
+  {
+    name: "LeetCode",
+    href: "https://leetcode.com/u/salehfree33",
+    icon: "📝",
+    color: "hover:text-yellow-600",
   },
 ]
 
@@ -336,30 +342,6 @@ export default function ContactSection() {
             </form>
           </motion.div>
         </div>
-
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center pt-12 border-t border-border"
-        >
-          <p className="text-muted-foreground mb-4">
-            © {new Date().getFullYear()} Salih Ben Otman. Built with Next.js, TypeScript, and lots of ☕
-          </p>
-          <div className="flex justify-center space-x-6 text-sm text-muted-foreground">
-            <motion.a href="#" className="hover:text-primary transition-colors duration-200" whileHover={{ y: -2 }}>
-              Privacy Policy
-            </motion.a>
-            <motion.a href="#" className="hover:text-primary transition-colors duration-200" whileHover={{ y: -2 }}>
-              Terms of Service
-            </motion.a>
-            <motion.a href="#" className="hover:text-primary transition-colors duration-200" whileHover={{ y: -2 }}>
-              Sitemap
-            </motion.a>
-          </div>
-        </motion.div>
       </div>
     </section>
   )

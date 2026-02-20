@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react'
 
+export interface GitHubContribution {
+  date: string
+  count: number
+  level: number
+}
+
 export interface GitHubStats {
   totalCommits: number
   currentStreak: number
@@ -30,80 +36,71 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
   const [stats, setStats] = useState<GitHubStats | null>(null)
   const [activities, setActivities] = useState<GitHubActivity[]>([])
   const [featuredRepos, setFeaturedRepos] = useState<FeaturedRepo[]>([])
+  const [contributions, setContributions] = useState<GitHubContribution[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let isMounted = true
+
     async function fetchGitHubData() {
       try {
         setLoading(true)
         setError(null)
 
-        // Fetch user events from GitHub API
+        // 1. Fetch contribution data (using public proxy)
+        const contribResponse = await fetch(`https://github-contributions-api.jogruber.de/v4/${username}`)
+        if (!contribResponse.ok) {
+          throw new Error('Failed to fetch contribution data')
+        }
+        const contribData = await contribResponse.json()
+
+        // 2. Fetch user events from GitHub API
         const eventsResponse = await fetch(
           `https://api.github.com/users/${username}/events/public?per_page=10`,
           {
             headers: {
               'Accept': 'application/vnd.github.v3+json',
-            },
-            next: { revalidate: 900 } // Cache for 15 minutes
+            }
           }
         )
 
         if (!eventsResponse.ok) {
-          throw new Error('Failed to fetch GitHub data')
+          throw new Error('Failed to fetch GitHub events')
         }
-
         const events = await eventsResponse.json()
 
-        // Fetch user repos for language stats
+        // 3. Fetch user repos
         const reposResponse = await fetch(
           `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`,
           {
             headers: {
               'Accept': 'application/vnd.github.v3+json',
-            },
-            next: { revalidate: 900 }
+            }
           }
         )
-
         const repos = await reposResponse.json()
 
-        interface GitHubEvent {
-          type: string
-          created_at: string
-          repo: {
-            name: string
-          }
-          payload: {
-            action?: string
-            ref_type?: string
-            commits?: Array<{
-              message: string
-            }>
-          }
-        }
+        // Process contributions
+        let allContributions = (contribData.contributions || []) as GitHubContribution[]
 
-        interface GitHubRepo {
-          name: string
-          description: string
-          stargazers_count: number
-          forks_count: number
-          language: string
-          html_url: string
-          fork: boolean
-          archived: boolean
-        }
-        // ... (keep existing imports and interfaces)
+        // Ensure chronological order (some APIs return reverse)
+        allContributions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-        // Inside the function, replace `any` with these types
+        // Filter out future dates to avoid empty squares (API returns full year)
+        const today = new Date()
+        const pastContributions = allContributions.filter(c => new Date(c.date) <= today)
+
+        // Get the last 154 days for the visual grid
+        const recentContributions = pastContributions.slice(-154)
+        setContributions(recentContributions)
+
         // Process activities
-        const processedActivities = (events as GitHubEvent[])
+        const processedActivities = (events as any[])
           .slice(0, 5)
           .map((event) => {
             let message = ''
             let icon = '📝'
-
             switch (event.type) {
               case 'PushEvent':
                 const commitCount = event.payload.commits?.length || 0
@@ -134,7 +131,6 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
                 message = event.type.replace('Event', '')
                 icon = '📌'
             }
-
             return {
               type: event.type,
               repo: event.repo.name,
@@ -143,20 +139,10 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
               icon
             }
           })
+        setActivities(processedActivities)
 
-        // Calculate stats
-        const last30Days = new Date()
-        last30Days.setDate(last30Days.getDate() - 30)
-
-        const recentCommits = (events as GitHubEvent[]).filter(
-          (e) => e.type === 'PushEvent' && new Date(e.created_at) > last30Days
-        ).reduce((sum: number, e) => sum + (e.payload.commits?.length || 0), 0)
-
-        // Calculate total stars
-        const totalStars = (repos as GitHubRepo[]).reduce((sum: number, repo) => sum + (repo.stargazers_count || 0), 0)
-
-        // Get featured repositories (top 4 by stars)
-        const featured = (repos as GitHubRepo[])
+        // Process featured repos
+        const featured = (repos as any[])
           .filter((r) => !r.fork && !r.archived)
           .sort((a, b) => b.stargazers_count - a.stargazers_count)
           .slice(0, 4)
@@ -168,35 +154,39 @@ export function useGitHubActivity(username: string = 'Al-Edrisy') {
             language: repo.language || 'Code',
             url: repo.html_url
           }))
+        setFeaturedRepos(featured)
 
-        // Calculate streak (simplified - just check recent days with activity)
-        const uniqueDays = new Set(
-          (events as GitHubEvent[])
-            .filter((e) => new Date(e.created_at) > last30Days)
-            .map((e) => new Date(e.created_at).toDateString())
-        )
+        // Calculate stats
+        const last30Days = new Date()
+        last30Days.setDate(last30Days.getDate() - 30)
+        const recentCommits = (events as any[]).filter(
+          (e) => e.type === 'PushEvent' && new Date(e.created_at) > last30Days
+        ).reduce((sum: number, e) => sum + (e.payload.commits?.length || 0), 0)
+        const totalStars = (repos as any[]).reduce((sum: number, repo) => sum + (repo.stargazers_count || 0), 0)
+        const activeDays = pastContributions.filter((c: any) => c.count > 0 && new Date(c.date) > last30Days).length
 
         setStats({
-          totalCommits: recentCommits,
-          currentStreak: uniqueDays.size,
-          activeRepos: (repos as GitHubRepo[]).filter((r) => !r.fork && !r.archived).length,
+          totalCommits: recentCommits || (contribData.total ? contribData.total[new Date().getFullYear()] : 0),
+          currentStreak: activeDays,
+          activeRepos: (repos as any[]).filter((r) => !r.fork && !r.archived).length,
           totalStars
         })
 
-        setFeaturedRepos(featured)
-
-        setActivities(processedActivities)
       } catch (err: any) {
-        console.error('Error fetching GitHub data:', err)
-        setError(err.message)
+        if (isMounted) {
+          console.error('Error fetching GitHub data:', err)
+          setError(err.message)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchGitHubData()
+    return () => { isMounted = false }
   }, [username])
 
-  return { stats, activities, featuredRepos, loading, error }
+  return { stats, activities, featuredRepos, contributions, loading, error }
 }
-

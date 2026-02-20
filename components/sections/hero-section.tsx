@@ -96,11 +96,14 @@ export default function HeroSection() {
             <CardContainer className="inter-var" containerClassName="py-0">
               <CardBody className="w-auto h-auto">
                 <CardItem translateZ="100" className="w-full">
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                    {/* Placeholder avatar with initials */}
-                    <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-primary/60">
-                      SB
-                    </div>
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/20 to-primary/5">
+                    <Image
+                      src="/me.jpg"
+                      alt="Salih Ben Otman"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
                   </div>
                 </CardItem>
               </CardBody>

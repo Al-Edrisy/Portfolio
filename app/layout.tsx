@@ -228,8 +228,9 @@ export default function RootLayout({
         },
         "sameAs": [
           "https://github.com/Al-Edrisy",
-          "https://www.linkedin.com/in/salih-otman-a565a2242",
-          "https://www.facebook.com/share/14GHt7scAjF"
+          "https://www.linkedin.com/in/صالح-بن-عثمان-a565a2242",
+          "https://www.facebook.com/share/14GHt7scAjF/?mibextid=wwXIfr",
+          "https://leetcode.com/u/salehfree33"
         ],
         "email": "salehfree33@gmail.com",
         "telephone": "+218 92 152 70 18"

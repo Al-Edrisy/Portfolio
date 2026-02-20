@@ -104,7 +104,6 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
 
   const { incrementView } = useIncrementView()
 
-  // GSAP Scroll-triggered Animations - Optimized
   // Prevent hydration mismatch
   useEffect(() => {
     setIsClient(true)
@@ -114,71 +113,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
     if (!cardRef.current) return
 
     const ctx = gsap.context(() => {
-      // Create unified timeline for scroll-triggered reveal
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: cardRef.current,
-          start: 'top 90%',
-          toggleActions: 'play none none none',
-          once: true, // Only animate once for performance
-        }
-      })
-
-      // 1. Card fade in + upward motion (reduced duration)
-      tl.fromTo(
-        cardRef.current,
-        {
-          opacity: 0,
-          y: 20,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: 'power2.out',
-        }
-      )
-
-      // 2. Title reveal
-      if (titleRef.current) {
-        tl.fromTo(
-          titleRef.current,
-          { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' },
-          '-=0.25'
-        )
-      }
-
-      // 3. Description reveal
-      if (descriptionRef.current) {
-        tl.fromTo(
-          descriptionRef.current,
-          { opacity: 0, y: 8 },
-          { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' },
-          '-=0.2'
-        )
-      }
-
-      // 4. Tech stack sequential reveal (faster stagger)
-      if (techStackRef.current) {
-        const techItems = techStackRef.current.querySelectorAll('.tech-item')
-        if (techItems.length > 0) {
-          tl.fromTo(
-            techItems,
-            { opacity: 0, y: 8 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.25,
-              stagger: 0.03, // Faster sequential appearance
-              ease: 'power2.out',
-            },
-            '-=0.15'
-          )
-        }
-      }
-
-      // 5. Gentle Image Parallax (only on larger screens)
+      // Gentle Image Parallax (only on larger screens)
       if (imageRef.current && window.innerWidth > 768) {
         gsap.to(imageRef.current, {
           yPercent: -5,
@@ -271,8 +206,12 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   }, [])
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
       className="group"
       onMouseEnter={() => handleCardHover(true)}
       onMouseLeave={() => handleCardHover(false)}
@@ -520,57 +459,64 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         </div>
 
         {/* Comments Section - Only show when explicitly expanded */}
-        {showCommentsInline && !commentsLoading && (
-          <div className="px-4 py-3 border-t border-border bg-muted/30">
-            <div className="space-y-3">
-              {comments.slice(0, 3).map((comment) => (
-                <div key={comment.id} className="space-y-2">
-                  <div className="flex gap-3">
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={(isClient ? comment.user?.avatar : null) || '/placeholder-user.jpg'} />
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm text-foreground">{(isClient ? comment.user?.name : null) || 'Anonymous'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-                        </span>
+        <AnimatePresence>
+          {showCommentsInline && !commentsLoading && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="px-4 py-3 border-t border-border bg-muted/30 overflow-hidden"
+            >
+              <div className="space-y-3">
+                {comments.slice(0, 3).map((comment) => (
+                  <div key={comment.id} className="space-y-2">
+                    <div className="flex gap-3">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage src={(isClient ? comment.user?.avatar : null) || '/placeholder-user.jpg'} />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm text-foreground">{(isClient ? comment.user?.name : null) || 'Anonymous'}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground/80 line-clamp-2">{comment.content}</p>
+                        {(comment.repliesCount && comment.repliesCount > 0) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleComment()
+                            }}
+                            className="mt-1 text-xs text-primary hover:underline font-medium"
+                          >
+                            View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
+                          </button>
+                        )}
                       </div>
-                      <p className="text-sm text-foreground/80 line-clamp-2">{comment.content}</p>
-                      {(comment.repliesCount && comment.repliesCount > 0) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleComment()
-                          }}
-                          className="mt-1 text-xs text-primary hover:underline font-medium"
-                        >
-                          View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
-                        </button>
-                      )}
                     </div>
                   </div>
-                </div>
-              ))}
-              {comments.length > 2 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleComment()
-                  }}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
-                >
-                  View all {comments.length} comments
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+                ))}
+                {comments.length > 2 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleComment()
+                    }}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+                  >
+                    View all {comments.length} comments
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Expanded Comments Section */}
+        {/* Expanded Comments System */}
         <AnimatePresence>
           {showCommentsInline && (
             <motion.div
@@ -634,7 +580,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         </AnimatePresence>
       </Card>
 
-      {/* Comments Modal */}
+      {/* Models / Dialogs */}
       <Dialog open={showCommentsModal} onOpenChange={setShowCommentsModal}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -658,7 +604,6 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         </DialogContent>
       </Dialog>
 
-      {/* Reactions Modal */}
       <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -679,7 +624,6 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         </DialogContent>
       </Dialog>
 
-      {/* Image Gallery Lightbox */}
       <ImageGalleryModal
         images={project.images?.gallery || [project.image].filter(Boolean) as string[]}
         initialIndex={lightboxIndex}
@@ -687,9 +631,8 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         onClose={() => setShowLightbox(false)}
         projectTitle={project.title}
       />
-    </div>
+    </motion.div>
   )
 })
 
 export { LinkedInStyleProjectCardGSAP }
-

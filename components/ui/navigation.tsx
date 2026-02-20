@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { AuthButton } from "@/components/auth/auth-button"
 import { useAuth } from "@/contexts/auth-context"
@@ -94,8 +95,8 @@ export default function Navigation() {
   return (
     <motion.header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 will-change-transform ${isScrolled
-          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm"
-          : "bg-transparent"
+        ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm"
+        : "bg-transparent"
         }`}
       initial={{ opacity: 0, y: -20 }}
       animate={{
@@ -112,11 +113,17 @@ export default function Navigation() {
           {/* Logo - Improved touch target and responsiveness */}
           <Link href="/" className="flex-shrink-0 -ml-1 sm:-ml-2 md:ml-0">
             <motion.div
-              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-foreground hover:text-primary transition-colors duration-200 px-2 py-1 rounded-md"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-colors duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Salih Ben Otman
+              <Image
+                src="/me.jpg"
+                alt="Salih Ben Otman"
+                fill
+                className="object-cover"
+                priority
+              />
             </motion.div>
           </Link>
 
@@ -127,8 +134,8 @@ export default function Navigation() {
                 <Link key={item.name} href={item.href}>
                   <motion.div
                     className={`relative px-3 lg:px-4 py-2 lg:py-2.5 text-sm font-medium transition-all duration-200 rounded-lg ${isActiveRoute(item.href)
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
                       }`}
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.98 }}
@@ -258,8 +265,8 @@ export default function Navigation() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.04, duration: 0.15, ease: "easeOut" }}
                       className={`relative text-left py-2.5 sm:py-3 px-3 sm:px-4 rounded-md transition-colors duration-200 ${isActiveRoute(item.href)
-                          ? "text-primary bg-primary/10 font-medium"
-                          : "text-foreground hover:bg-accent/50 active:bg-accent"
+                        ? "text-primary bg-primary/10 font-medium"
+                        : "text-foreground hover:bg-accent/50 active:bg-accent"
                         }`}
                     >
                       {item.name}
