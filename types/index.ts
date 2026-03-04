@@ -284,3 +284,28 @@ export interface UseProjectCommentsReturn {
   updateComment: (commentId: string, content: string) => Promise<void>
   deleteComment: (commentId: string) => Promise<void>
 }
+
+// Contact messages for admin
+export interface ContactMessage {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  timestamp: Date
+  read: boolean
+  replied: boolean
+  createdAt: string
+}
+
+export interface ContactMessageDocument {
+  name: string
+  email: string
+  subject: string
+  message: string
+  timestamp: FirebaseFirestore.Timestamp
+  read: boolean
+  replied: boolean
+  createdAt: string
+}
+

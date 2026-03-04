@@ -6,24 +6,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Plus, 
-  Users, 
-  FileText, 
-  BarChart3, 
+import {
+  Plus,
+  Users,
+  FileText,
+  BarChart3,
   Settings,
   Crown,
   TrendingUp,
   MessageSquare,
   Heart,
   Eye,
-  EyeOff
+  EyeOff,
+  Mail
 } from 'lucide-react'
 import { useProjectsRealtime } from '@/hooks/projects'
 import { useAllReactions } from '@/hooks/reactions'
 import { useAllComments } from '@/hooks/comments'
+import { useMessagesRealtime } from '@/hooks/messages'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
+import { AdminMessages } from './admin-messages'
+
 
 export function AdminDashboard() {
   const { user } = useAuth()
@@ -41,6 +45,8 @@ export function AdminDashboard() {
   const draftProjects = projects.filter(p => !p.published).length
   const totalReactions = reactions.length
   const totalComments = comments.length
+  const { messages } = useMessagesRealtime()
+  const unreadMessages = messages.filter(m => !m.read).length
 
   // Get most popular project
   const mostPopularProject = projects.reduce((prev, current) => {
@@ -52,7 +58,7 @@ export function AdminDashboard() {
   // Get recent activity (last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  
+
   const recentProjects = projects.filter(p => p.createdAt > sevenDaysAgo).length
   const recentReactions = reactions.filter(r => r.createdAt > sevenDaysAgo).length
   const recentComments = comments.filter(c => c.createdAt > sevenDaysAgo).length
@@ -93,7 +99,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,6 +160,25 @@ export function AdminDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{unreadMessages}</div>
+              <p className="text-xs text-muted-foreground">
+                Out of {messages.length} total
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Card>
@@ -166,8 +191,8 @@ export function AdminDashboard() {
                 {mostPopularProject?.title || 'No projects yet'}
               </div>
               <p className="text-xs text-muted-foreground">
-                {mostPopularProject ? 
-                  `${Object.values(mostPopularProject.reactionsCount).reduce((sum, count) => sum + count, 0)} reactions` 
+                {mostPopularProject ?
+                  `${Object.values(mostPopularProject.reactionsCount).reduce((sum, count) => sum + count, 0)} reactions`
                   : 'No reactions yet'
                 }
               </p>
@@ -178,9 +203,10 @@ export function AdminDashboard() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -323,6 +349,27 @@ export function AdminDashboard() {
                     Go to Projects Management
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Messages Tab */}
+        <TabsContent value="messages">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Messages</CardTitle>
+                <CardDescription>
+                  Read and manage emails from your portfolio contact form
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminMessages />
               </CardContent>
             </Card>
           </motion.div>

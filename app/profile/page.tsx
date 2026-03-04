@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,15 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { 
-  User, 
-  Settings, 
-  Plus, 
-  Edit, 
-  Eye, 
-  EyeOff, 
-  Globe, 
-  Globe2, 
+import {
+  User,
+  Settings,
+  Plus,
+  Edit,
+  Eye,
+  EyeOff,
+  Globe,
+  Globe2,
   BarChart3,
   Calendar,
   Heart,
@@ -42,6 +42,9 @@ import { useToast } from '@/hooks/use-toast'
 import { useUserProjects } from '@/hooks/projects/use-user-projects'
 import { useTogglePublished } from '@/hooks/projects/mutations/use-toggle-published'
 import { useDeleteProject } from '@/hooks/projects/mutations'
+import { AdminMessages } from '@/components/admin/admin-messages'
+import { Mail } from 'lucide-react'
+import { useMessagesRealtime } from '@/hooks/messages'
 
 export default function ProfilePage() {
   const { user } = useAuth()
@@ -50,14 +53,16 @@ export default function ProfilePage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
-  
+
   // Check if user can create projects (developer or admin)
   const canCreateProjects = user?.role === 'developer' || user?.role === 'admin'
-  
+
   // Only load projects for developers/admins
   const { projects, loading, refresh } = useUserProjects()
   const { togglePublished } = useTogglePublished()
   const { deleteProject } = useDeleteProject()
+  const { messages } = useMessagesRealtime()
+  const unreadCount = messages.filter(m => !m.read).length
 
   useEffect(() => {
     if (!user) {
@@ -68,7 +73,7 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     if (!user) return
-    
+
     setIsDeleting(true)
     try {
       // Delete all user's projects first (only for developers/admins)
@@ -77,23 +82,23 @@ export default function ProfilePage() {
           await deleteProject(project.id)
         }
       }
-      
+
       // Delete user document from Firestore
       const { doc, deleteDoc } = await import('firebase/firestore')
       const { db } = await import('@/lib/firebase')
       await deleteDoc(doc(db, 'users', user.id))
-      
+
       // Delete Firebase Auth account
       const { auth } = await import('@/lib/firebase')
       if (auth.currentUser) {
         await auth.currentUser.delete()
       }
-      
+
       toast({
         title: "Account deleted",
         description: "Your account has been permanently deleted.",
       })
-      
+
       router.push('/')
     } catch (error: any) {
       console.error('Error deleting account:', error)
@@ -110,17 +115,17 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-        <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-          <Navigation />
-          <div className="pt-20">
-            <div className="container mx-auto px-6 py-8">
-              <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="text-muted-foreground mt-4">Redirecting to login...</p>
-              </div>
+      <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <Navigation />
+        <div className="pt-20">
+          <div className="container mx-auto px-6 py-8">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="text-muted-foreground mt-4">Redirecting to login...</p>
             </div>
           </div>
-        </main>
+        </div>
+      </main>
     )
   }
 
@@ -140,209 +145,225 @@ export default function ProfilePage() {
   const draftProjects = projects.filter(p => !p.published)
 
   return (
-      <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <Navigation />
-        <div className="pt-20">
-          <div className="container mx-auto px-6 py-8">
-            <div className="max-w-6xl mx-auto">
-              {/* Profile Header */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="mb-8"
-              >
-                <Card className="border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          {user.avatar ? (
-                            <img 
-                              src={user.avatar} 
-                              alt={user.name}
-                              className="w-16 h-16 rounded-full object-cover"
-                            />
-                          ) : (
-                            <User className="w-8 h-8 text-primary" />
-                          )}
-                        </div>
-                        <div>
-                          <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
-                          <p className="text-muted-foreground">{user.email}</p>
-                          <Badge variant="secondary" className="mt-1">
-                            {user.role === 'admin' ? 'Administrator' : 
-                             user.role === 'developer' ? 'Developer' : 'User'}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1" />
-                      
-                      <div className="flex items-center gap-4">
-                        {canCreateProjects && (
-                          <Button
-                            onClick={() => router.push('/projects/create')}
-                            className="gap-2"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Create Project
-                          </Button>
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <Navigation />
+      <div className="pt-20">
+        <div className="container mx-auto px-6 py-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Profile Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8"
+            >
+              <Card className="border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-8 h-8 text-primary" />
                         )}
-                        <Button 
-                          variant="destructive" 
-                          className="gap-2"
-                          onClick={() => setShowDeleteDialog(true)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete Account
-                        </Button>
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
+                        <p className="text-muted-foreground">{user.email}</p>
+                        <Badge variant="secondary" className="mt-1">
+                          {user.role === 'admin' ? 'Administrator' :
+                            user.role === 'developer' ? 'Developer' : 'User'}
+                        </Badge>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
 
-              {/* Stats Overview - Only for Developers/Admins */}
-              {canCreateProjects && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  className="mb-8"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-primary">{projects.length}</div>
-                        <div className="text-sm text-muted-foreground">Total Projects</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-green-600">{publishedProjects.length}</div>
-                        <div className="text-sm text-muted-foreground">Published</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-yellow-600">{draftProjects.length}</div>
-                        <div className="text-sm text-muted-foreground">Drafts</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {projects.reduce((acc, p) => acc + (p.commentsCount || 0), 0)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Total Comments</div>
-                      </CardContent>
-                    </Card>
+                    <div className="flex-1" />
+
+                    <div className="flex items-center gap-4">
+                      {canCreateProjects && (
+                        <Button
+                          onClick={() => router.push('/projects/create')}
+                          className="gap-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Create Project
+                        </Button>
+                      )}
+                      <Button
+                        variant="destructive"
+                        className="gap-2"
+                        onClick={() => setShowDeleteDialog(true)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Account
+                      </Button>
+                    </div>
                   </div>
-                </motion.div>
-              )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              {/* Content based on user role */}
+            {/* Stats Overview - Only for Developers/Admins */}
+            {canCreateProjects && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="mb-8"
               >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-primary" />
-                      {canCreateProjects ? 'My Projects' : 'My Activity'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {canCreateProjects ? (
-                      <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="all">All Projects</TabsTrigger>
-                          <TabsTrigger value="published">Published</TabsTrigger>
-                          <TabsTrigger value="drafts">Drafts</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="all" className="mt-6">
-                          <ProjectList 
-                            projects={projects}
-                            onTogglePublished={handleTogglePublished}
-                            onDelete={handleDeleteProject}
-                            onEdit={(id) => router.push(`/projects/${id}/edit`)}
-                          />
-                        </TabsContent>
-
-                        <TabsContent value="published" className="mt-6">
-                          <ProjectList 
-                            projects={publishedProjects}
-                            onTogglePublished={handleTogglePublished}
-                            onDelete={handleDeleteProject}
-                            onEdit={(id) => router.push(`/projects/${id}/edit`)}
-                          />
-                        </TabsContent>
-
-                        <TabsContent value="drafts" className="mt-6">
-                          <ProjectList 
-                            projects={draftProjects}
-                            onTogglePublished={handleTogglePublished}
-                            onDelete={handleDeleteProject}
-                            onEdit={(id) => router.push(`/projects/${id}/edit`)}
-                          />
-                        </TabsContent>
-                      </Tabs>
-                    ) : (
-                      <div className="text-center py-12">
-                        <div className="text-muted-foreground mb-4">
-                          <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-lg font-semibold mb-2">Your Activity</h3>
-                          <p className="text-sm">You haven't interacted with any projects yet.</p>
-                          <p className="text-sm mt-2">Explore projects and leave comments or reactions!</p>
-                        </div>
-                        <Button onClick={() => router.push('/projects')} className="mt-4">
-                          Explore Projects
-                        </Button>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-primary">{projects.length}</div>
+                      <div className="text-sm text-muted-foreground">Total Projects</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">{publishedProjects.length}</div>
+                      <div className="text-sm text-muted-foreground">Published</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-yellow-600">{draftProjects.length}</div>
+                      <div className="text-sm text-muted-foreground">Drafts</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {projects.reduce((acc, p) => acc + (p.commentsCount || 0), 0)}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      <div className="text-sm text-muted-foreground">Total Comments</div>
+                    </CardContent>
+                  </Card>
+                </div>
               </motion.div>
-            </div>
+            )}
+
+            {/* Content based on user role */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    {canCreateProjects ? 'My Projects' : 'My Activity'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {canCreateProjects ? (
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                      <TabsList className={`grid w-full ${user.role === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                        <TabsTrigger value="all">Projects</TabsTrigger>
+                        <TabsTrigger value="published">Published</TabsTrigger>
+                        <TabsTrigger value="drafts">Drafts</TabsTrigger>
+                        {user.role === 'admin' && (
+                          <TabsTrigger value="messages" className="gap-2">
+                            Messages
+                            {unreadCount > 0 && (
+                              <Badge variant="destructive" className="h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                                {unreadCount}
+                              </Badge>
+                            )}
+                          </TabsTrigger>
+                        )}
+                      </TabsList>
+
+                      <TabsContent value="all" className="mt-6">
+                        <ProjectList
+                          projects={projects}
+                          onTogglePublished={handleTogglePublished}
+                          onDelete={handleDeleteProject}
+                          onEdit={(id) => router.push(`/projects/${id}/edit`)}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="published" className="mt-6">
+                        <ProjectList
+                          projects={publishedProjects}
+                          onTogglePublished={handleTogglePublished}
+                          onDelete={handleDeleteProject}
+                          onEdit={(id) => router.push(`/projects/${id}/edit`)}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="drafts" className="mt-6">
+                        <ProjectList
+                          projects={draftProjects}
+                          onTogglePublished={handleTogglePublished}
+                          onDelete={handleDeleteProject}
+                          onEdit={(id) => router.push(`/projects/${id}/edit`)}
+                        />
+                      </TabsContent>
+
+                      {user.role === 'admin' && (
+                        <TabsContent value="messages" className="mt-6">
+                          <AdminMessages />
+                        </TabsContent>
+                      )}
+                    </Tabs>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="text-muted-foreground mb-4">
+                        <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">Your Activity</h3>
+                        <p className="text-sm">You haven't interacted with any projects yet.</p>
+                        <p className="text-sm mt-2">Explore projects and leave comments or reactions!</p>
+                      </div>
+                      <Button onClick={() => router.push('/projects')} className="mt-4">
+                        Explore Projects
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
+      </div>
 
-        {/* Delete Account Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Account</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete your account? This action cannot be undone.
-                All your data, including {canCreateProjects ? 'projects, ' : ''}comments, and reactions will be permanently deleted.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? 'Deleting...' : 'Delete Account'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </main>
+      {/* Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your account? This action cannot be undone.
+              All your data, including {canCreateProjects ? 'projects, ' : ''}comments, and reactions will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
   )
 }
 
 // Project List Component
-function ProjectList({ 
-  projects, 
-  onTogglePublished, 
-  onDelete, 
-  onEdit 
+function ProjectList({
+  projects,
+  onTogglePublished,
+  onDelete,
+  onEdit
 }: {
   projects: any[]
   onTogglePublished: (id: string, currentStatus: boolean) => void
@@ -370,8 +391,8 @@ function ProjectList({
               {/* Project Image */}
               <div className="w-full md:w-32 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                 {project.image ? (
-                  <img 
-                    src={project.image} 
+                  <img
+                    src={project.image}
                     alt={project.title}
                     className="w-full h-full object-cover"
                   />
@@ -389,7 +410,7 @@ function ProjectList({
                     <h3 className="font-semibold text-lg line-clamp-1">{project.title}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 ml-4">
                     <Badge variant={project.published ? "default" : "secondary"}>
                       {project.published ? "Published" : "Draft"}
@@ -439,7 +460,7 @@ function ProjectList({
                   <Edit className="w-3 h-3" />
                   Edit
                 </Button>
-                
+
                 <Button
                   size="sm"
                   variant={project.published ? "default" : "secondary"}
