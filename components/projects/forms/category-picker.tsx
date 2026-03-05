@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Code, 
-  Palette, 
-  Smartphone, 
-  Globe, 
-  Database, 
-  Cloud, 
-  Gamepad2, 
+import {
+  Code,
+  Palette,
+  Smartphone,
+  Globe,
+  Database,
+  Cloud,
+  Gamepad2,
   Briefcase,
   Heart,
   Book,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { ProjectCategory } from '@/types'
 
 // Project categories with icons and descriptions
 const categories = {
@@ -123,11 +124,9 @@ const categories = {
   }
 } as const
 
-type CategoryKey = keyof typeof categories
-
 interface CategoryPickerProps {
-  selectedCategories: CategoryKey[]
-  onCategoriesChange: (categories: CategoryKey[]) => void
+  selectedCategories: ProjectCategory[]
+  onCategoriesChange: (categories: ProjectCategory[]) => void
   className?: string
   allowClear?: boolean
 }
@@ -138,9 +137,9 @@ export function CategoryPicker({
   className,
   allowClear = true
 }: CategoryPickerProps) {
-  const [hoveredCategory, setHoveredCategory] = useState<CategoryKey | null>(null)
+  const [hoveredCategory, setHoveredCategory] = useState<ProjectCategory | null>(null)
 
-  const handleCategoryToggle = (categoryKey: CategoryKey) => {
+  const handleCategoryToggle = (categoryKey: ProjectCategory) => {
     if (selectedCategories.includes(categoryKey)) {
       // Remove category
       onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
@@ -164,16 +163,16 @@ export function CategoryPicker({
               Selected ({selectedCategories.length})
             </p>
             {allowClear && selectedCategories.length > 0 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => onCategoriesChange([])}
                 className="text-gray-400 hover:text-gray-600 h-auto py-1"
-                >
+              >
                 Clear All
-                </Button>
-              )}
+              </Button>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map(categoryKey => {
@@ -212,7 +211,7 @@ export function CategoryPicker({
       {/* Category Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {Object.entries(categories).map(([key, category]) => {
-          const categoryKey = key as CategoryKey
+          const categoryKey = key as ProjectCategory
           const isSelected = selectedCategories.includes(categoryKey)
           const isHovered = hoveredCategory === categoryKey
           const Icon = category.icon
@@ -227,8 +226,8 @@ export function CategoryPicker({
               className={cn(
                 "relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200",
                 "hover:scale-105 hover:shadow-md",
-                isSelected 
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30" 
+                isSelected
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
                   : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
                 "bg-white dark:bg-gray-800"
               )}
@@ -238,8 +237,8 @@ export function CategoryPicker({
               {/* Icon */}
               <div className={cn(
                 "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-                isSelected 
-                  ? "bg-blue-500 text-white" 
+                isSelected
+                  ? "bg-blue-500 text-white"
                   : category.color
               )}>
                 <Icon className="w-5 h-5" />
@@ -248,8 +247,8 @@ export function CategoryPicker({
               {/* Label */}
               <span className={cn(
                 "text-sm font-medium text-center leading-tight",
-                isSelected 
-                  ? "text-blue-700 dark:text-blue-300" 
+                isSelected
+                  ? "text-blue-700 dark:text-blue-300"
                   : "text-gray-700 dark:text-gray-300"
               )}>
                 {category.label}
@@ -294,8 +293,8 @@ export function CategoryPicker({
 
 // Compact version for forms
 interface CompactCategoryPickerProps {
-  selectedCategories: CategoryKey[]
-  onCategoriesChange: (categories: CategoryKey[]) => void
+  selectedCategories: ProjectCategory[]
+  onCategoriesChange: (categories: ProjectCategory[]) => void
   className?: string
 }
 
@@ -304,7 +303,7 @@ export function CompactCategoryPicker({
   onCategoriesChange,
   className
 }: CompactCategoryPickerProps) {
-  const handleCategoryToggle = (categoryKey: CategoryKey) => {
+  const handleCategoryToggle = (categoryKey: ProjectCategory) => {
     if (selectedCategories.includes(categoryKey)) {
       onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
     } else {
@@ -329,22 +328,22 @@ export function CompactCategoryPicker({
         )}
 
         {selectedCategories.length > 0 && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => onCategoriesChange([])}
             className="text-gray-400 hover:text-gray-600 h-auto py-1"
-        >
+          >
             Clear
-        </Button>
+          </Button>
         )}
       </div>
 
       {/* Quick Selection */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(categories).map(([key, category]) => {
-          const categoryKey = key as CategoryKey
+          const categoryKey = key as ProjectCategory
           const Icon = category.icon
           const isSelected = selectedCategories.includes(categoryKey)
 
@@ -356,7 +355,7 @@ export function CompactCategoryPicker({
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm",
                 "border transition-colors",
-                isSelected 
+                isSelected
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500"
                   : category.color
               )}

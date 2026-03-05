@@ -2,17 +2,20 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion'
-import { 
-  Image, 
-  Link, 
-  Plus, 
-  X, 
-  ExternalLink, 
+import {
+  Image,
+  Link,
+  Plus,
+  X,
+  ExternalLink,
   AlertCircle,
   Loader2,
   Eye,
   EyeOff,
-  GripVertical
+  GripVertical,
+  Upload,
+  RefreshCw,
+  FileImage
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -70,7 +73,7 @@ function ImagePreview({ url, onRemove, className }: ImagePreviewProps) {
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
         )}
-        
+
         {hasError ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400">
             <AlertCircle className="w-8 h-8 mb-2" />
@@ -104,7 +107,7 @@ function ImagePreview({ url, onRemove, className }: ImagePreviewProps) {
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
-          
+
           {onRemove && (
             <Button
               size="sm"
@@ -138,12 +141,15 @@ export function ImageUrlInput({
   disabled = false
 }: ImageUrlInputProps) {
   const [isValidating, setIsValidating] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const validateImageUrl = async (url: string): Promise<boolean> => {
     if (!url.trim()) return false
-    
+
     // Basic URL validation
     try {
       new URL(url)
@@ -153,7 +159,7 @@ export function ImageUrlInput({
 
     // Check if URL ends with common image extensions
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']
-    const hasImageExtension = imageExtensions.some(ext => 
+    const hasImageExtension = imageExtensions.some(ext =>
       url.toLowerCase().includes(ext)
     )
 
@@ -163,7 +169,7 @@ export function ImageUrlInput({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const url = value.trim()
     if (!url) return
 
@@ -172,7 +178,7 @@ export function ImageUrlInput({
 
     try {
       const isValid = await validateImageUrl(url)
-      
+
       if (isValid) {
         onAddImage?.(url)
         onChange('') // Clear input
@@ -189,21 +195,73 @@ export function ImageUrlInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     onChange(newValue)
-    
+
+    // Instant preview logic
+    if (newValue.trim()) {
+      // Basic URL check before setting preview
+      if (newValue.startsWith('http') && newValue.includes('.')) {
+        setPreviewUrl(newValue)
+      } else {
+        setPreviewUrl(null)
+      }
+    } else {
+      setPreviewUrl(null)
+    }
+
     // Clear validation error when user starts typing
     if (validationError) {
       setValidationError(null)
     }
   }
 
+  const handleFileClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Preview local file
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64String = reader.result as string
+      setPreviewUrl(base64String)
+
+      setIsUploading(true)
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64String })
+        })
+
+        const data = await response.json()
+        if (data.success) {
+          onAddImage?.(data.url)
+          toast.success('Image uploaded successfully')
+          setPreviewUrl(null)
+        } else {
+          toast.error(data.error || 'Upload failed')
+        }
+      } catch (err) {
+        toast.error('Error uploading image')
+      } finally {
+        setIsUploading(false)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handlePaste = async (e: React.ClipboardEvent) => {
     const pastedText = e.clipboardData.getData('text')
-    
+
     // If it looks like a URL, validate it
     if (pastedText.includes('http') && pastedText.includes('.')) {
       e.preventDefault()
       onChange(pastedText)
-      
+
       // Auto-validate pasted URLs
       setIsValidating(true)
       const isValid = await validateImageUrl(pastedText)
@@ -220,49 +278,111 @@ export function ImageUrlInput({
   return (
     <div className={cn("space-y-3", className)}>
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2">
-            <Link className="w-4 h-4 text-gray-400" />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <Link className="w-4 h-4 text-gray-400" />
+            </div>
+
+            <Input
+              ref={inputRef}
+              type="url"
+              value={value}
+              onChange={handleInputChange}
+              onPaste={handlePaste}
+              placeholder={placeholder}
+              disabled={isValidating || isUploading || disabled}
+              className={cn(
+                "pl-10 pr-20 h-11",
+                validationError && "border-red-500 focus:border-red-500",
+                (disabled || isUploading) && "opacity-50 cursor-not-allowed"
+              )}
+            />
+
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              {isValidating ? (
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              ) : (
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="ghost"
+                  disabled={!value.trim() || isValidating || isUploading || disabled}
+                  className="h-8 px-3 hover:bg-primary/10 text-primary font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              )}
+            </div>
           </div>
-          
-          <Input
-            ref={inputRef}
-            type="url"
-            value={value}
-            onChange={handleInputChange}
-            onPaste={handlePaste}
-            placeholder={placeholder}
-            disabled={isValidating || disabled}
-            className={cn(
-              "pl-10 pr-20",
-              validationError && "border-red-500 focus:border-red-500",
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          />
-          
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            {isValidating ? (
-              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-            ) : (
-              <Button
-                type="submit"
-                size="sm"
-                disabled={!value.trim() || isValidating || disabled}
-                className="h-8 px-3"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add
-              </Button>
-            )}
+
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleFileClick}
+              disabled={isUploading || disabled}
+              className="h-11 px-4 gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all"
+            >
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {isUploading ? 'Uploading...' : 'Upload Image'}
+            </Button>
           </div>
         </div>
+
+        {/* Instant Preview Widget */}
+        <AnimatePresence>
+          {previewUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: 10, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="p-3 bg-muted/30 rounded-xl border border-border/50 flex items-center gap-4">
+                <div className="w-20 h-20 rounded-lg overflow-hidden border border-border bg-background flex-shrink-0">
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <Eye className="w-3 h-3 text-primary" />
+                    Live Image Preview
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{value || 'Local file'}</p>
+                </div>
+                {!isUploading && !value.startsWith('data:') && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSubmit}
+                    className="flex-shrink-0"
+                  >
+                    Confirm & Add
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {validationError && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-sm text-red-500"
+            className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 p-2 rounded-lg"
           >
             <AlertCircle className="w-4 h-4" />
             {validationError}
@@ -285,12 +405,26 @@ interface DraggableImageItemProps {
   url: string
   index: number
   onRemove: () => void
+  onReplace: (file: File) => void
 }
 
-function DraggableImageItem({ url, index, onRemove }: DraggableImageItemProps) {
+function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageItemProps) {
   const dragControls = useDragControls()
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const replaceInputRef = useRef<HTMLInputElement>(null)
+
+  const handleReplaceClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    replaceInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      onReplace(file)
+    }
+  }
 
   return (
     <Reorder.Item
@@ -331,7 +465,7 @@ function DraggableImageItem({ url, index, onRemove }: DraggableImageItemProps) {
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
             </div>
           )}
-          
+
           {hasError ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400">
               <AlertCircle className="w-8 h-8 mb-2" />
@@ -357,10 +491,27 @@ function DraggableImageItem({ url, index, onRemove }: DraggableImageItemProps) {
         {/* Actions */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="flex gap-1">
+            <input
+              type="file"
+              ref={replaceInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
             <Button
               size="sm"
               variant="secondary"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white text-gray-700"
+              onClick={handleReplaceClick}
+              title="Replace image"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white text-gray-700"
               onClick={() => window.open(url, '_blank')}
             >
               <ExternalLink className="w-4 h-4" />
@@ -417,7 +568,7 @@ export function ImageGalleryInput({
   maxImages = 10
 }: ImageGalleryInputProps) {
   const [inputUrl, setInputUrl] = useState('')
-  
+
   const isLimitReached = isAtMaxImages(images, maxImages)
 
   const handleAddImage = (url: string) => {
@@ -428,7 +579,7 @@ export function ImageGalleryInput({
       })
       return
     }
-    
+
     // Property 5: Duplicate Prevention - reject if duplicate
     if (isDuplicateUrl(images, url)) {
       toast.warning('Duplicate image', {
@@ -436,7 +587,7 @@ export function ImageGalleryInput({
       })
       return
     }
-    
+
     onImagesChange([...images, url])
     toast.success('Image added', {
       description: 'The image has been added to your gallery.'
@@ -446,6 +597,36 @@ export function ImageGalleryInput({
   const handleRemoveImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     onImagesChange(newImages)
+  }
+
+  const handleReplaceImage = async (index: number, file: File) => {
+    // Preview and upload
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64String = reader.result as string
+      
+      toast.info('Uploading replacement image...')
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64String })
+        })
+
+        const data = await response.json()
+        if (data.success) {
+          const newImages = [...images]
+          newImages[index] = data.url
+          onImagesChange(newImages)
+          toast.success('Image replaced successfully')
+        } else {
+          toast.error(data.error || 'Upload failed')
+        }
+      } catch (err) {
+        toast.error('Error uploading image')
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   // Property 3: Reorder Preserves Cover - reorder updates array with first element as cover
@@ -465,14 +646,14 @@ export function ImageGalleryInput({
           showPreview={false}
           disabled={isLimitReached}
         />
-        
+
         {/* Limit indicator when approaching max */}
         {images.length >= maxImages - 2 && images.length < maxImages && (
           <p className="text-xs text-amber-600 dark:text-amber-400">
             ⚠️ You can add {maxImages - images.length} more image{maxImages - images.length !== 1 ? 's' : ''}
           </p>
         )}
-        
+
         {/* Disabled state message */}
         {isLimitReached && (
           <p className="text-xs text-red-500">
@@ -490,7 +671,7 @@ export function ImageGalleryInput({
             </h4>
             <span className={cn(
               "text-xs font-medium px-2 py-1 rounded-full",
-              isLimitReached 
+              isLimitReached
                 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                 : images.length >= maxImages - 2
                   ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
@@ -512,6 +693,7 @@ export function ImageGalleryInput({
                 url={url}
                 index={index}
                 onRemove={() => handleRemoveImage(index)}
+                onReplace={(file) => handleReplaceImage(index, file)}
               />
             ))}
           </Reorder.Group>

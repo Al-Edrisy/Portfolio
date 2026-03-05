@@ -138,8 +138,8 @@ export function EnhancedProjectForm({
         if (!formData.description.trim()) newErrors.description = 'Project description is required'
         break
       case 2:
-        if (!formData.image.trim()) newErrors.image = 'Project image is required'
-        if (!formData.category) newErrors.category = 'Project category is required'
+        if (!formData.image?.trim()) newErrors.image = 'Project image is required'
+        if (!formData.categories || formData.categories.length === 0) newErrors.category = 'Project category is required'
         break
       case 3:
         if (!formData.tech || formData.tech.length === 0) newErrors.tech = 'At least one technology is required'
@@ -250,13 +250,21 @@ export function EnhancedProjectForm({
             </div>
           </div>
 
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 p-1 bg-muted/20 backdrop-blur-md border border-border/50 rounded-xl">
             {steps.map((step) => {
               const Icon = step.icon
+              const isActive = activeStep === step.id
               return (
-                <TabsTrigger key={step.id} value={step.id.toString()} className="gap-2">
-                  <Icon className="w-4 h-4" />
-                  {step.title}
+                <TabsTrigger
+                  key={step.id}
+                  value={step.id.toString()}
+                  className={cn(
+                    "gap-2 transition-all duration-300 rounded-lg",
+                    isActive ? "bg-background shadow-sm text-primary" : "hover:text-primary/70"
+                  )}
+                >
+                  <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />
+                  <span className="hidden sm:inline">{step.title}</span>
                 </TabsTrigger>
               )
             })}
@@ -272,51 +280,62 @@ export function EnhancedProjectForm({
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
+              <Card className="border-primary/10 bg-gradient-to-br from-card to-card/50 shadow-sm overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b border-primary/10">
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <FileText className="w-5 h-5" />
                     Basic Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 pt-6">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Project Title *</Label>
+                    <Label htmlFor="title" className="text-sm font-semibold">Project Title *</Label>
                     <Input
                       id="title"
-                      placeholder="Enter your project title"
+                      placeholder="e.g., My Awesome Portfolio"
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      className={errors.title ? 'border-destructive' : ''}
+                      className={cn(
+                        "h-11 transition-all focus:ring-2 focus:ring-primary/20",
+                        errors.title && 'border-destructive'
+                      )}
                     />
                     {errors.title && (
-                      <p className="text-sm text-destructive">{errors.title}</p>
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.title}
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Project Description *</Label>
+                    <Label htmlFor="description" className="text-sm font-semibold">Short Subtitle *</Label>
                     <Textarea
                       id="description"
-                      placeholder="Describe your project in a few sentences"
+                      placeholder="A brief overview of the project (visible on cards)"
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
-                      className={errors.description ? 'border-destructive' : ''}
-                      rows={4}
+                      className={cn(
+                        "h-24 resize-none transition-all focus:ring-2 focus:ring-primary/20",
+                        errors.description && 'border-destructive'
+                      )}
                     />
                     {errors.description && (
-                      <p className="text-sm text-destructive">{errors.description}</p>
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.description}
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="longDescription">Detailed Description</Label>
+                    <Label htmlFor="longDescription" className="text-sm font-semibold">Detailed Story</Label>
                     <Textarea
                       id="longDescription"
-                      placeholder="Provide more details about your project, challenges faced, solutions implemented, etc."
+                      placeholder="Go deep into the challenges, solutions, and tech choices..."
                       value={formData.longDescription}
                       onChange={(e) => handleInputChange('longDescription', e.target.value)}
-                      rows={6}
+                      className="min-h-[200px] transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </CardContent>
@@ -343,9 +362,8 @@ export function EnhancedProjectForm({
                   <div className="space-y-2">
                     <Label>Project Category *</Label>
                     <CategoryPicker
-                      selectedCategories={formData.category ? [formData.category] : []}
-                      onCategoriesChange={(categories) => handleInputChange('category', categories[0] || '')}
-                      maxSelections={1}
+                      selectedCategories={formData.categories}
+                      onCategoriesChange={(categories) => handleInputChange('categories', categories)}
                     />
                     {errors.category && (
                       <p className="text-sm text-destructive">{errors.category}</p>
@@ -355,7 +373,7 @@ export function EnhancedProjectForm({
                   <div className="space-y-2">
                     <Label>Project Images *</Label>
                     <ImageGalleryInput
-                      images={formData.images}
+                      images={formData.images || []}
                       onImagesChange={handleImagesChange}
                     />
                     {errors.image && (
@@ -462,77 +480,116 @@ export function EnhancedProjectForm({
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                    Review & Publish
+              <Card className="border-primary/20 bg-gradient-to-br from-card via-card/50 to-primary/5 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                  <Rocket className="w-32 h-32 text-primary" />
+                </div>
+
+                <CardHeader className="bg-primary/5 border-b border-primary/10">
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <CheckCircle className="w-5 h-5 animate-bounce-slow" />
+                    Final Preview & Publish
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Title</Label>
-                        <p className="text-lg font-semibold">{formData.title || 'Not provided'}</p>
+                <CardContent className="space-y-8 pt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Visual Preview */}
+                    <div className="lg:col-span-1 space-y-4">
+                      <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Appearance</Label>
+                      <div className="aspect-video rounded-xl overflow-hidden border-2 border-primary/10 shadow-inner bg-muted">
+                        {formData.image ? (
+                          <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <ImageIcon className="w-8 h-8 opacity-20" />
+                            <span className="text-xs">No cover image</span>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Category</Label>
-                        <Badge variant="secondary" className="mt-1">
-                          {formData.category || 'Not selected'}
+                      <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                        <span className="text-sm font-medium">Draft Status</span>
+                        <Badge variant={formData.published ? "default" : "secondary"}>
+                          {formData.published ? "Ready to fly 🚀" : "Draft ✏️"}
                         </Badge>
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Technologies</Label>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.tech?.map((tech, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tech}
-                            </Badge>
-                          ))}
+                    </div>
+
+                    {/* Content Review */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Title</Label>
+                            <p className="text-lg font-bold text-foreground leading-tight">{formData.title || 'Untitled Project'}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Categories</Label>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {formData.categories?.length ? (
+                                formData.categories.map((cat, i) => (
+                                  <Badge key={i} variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+                                    {cat}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-sm italic text-muted-foreground">No categories</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Tech Stack</Label>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {formData.tech?.map((t, i) => (
+                                <Badge key={i} variant="secondary" className="px-2 py-0.5 text-[10px] font-bold">
+                                  {t}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Links</Label>
+                            <div className="flex gap-4 mt-1">
+                              {formData.link && (
+                                <a href={formData.link} target="_blank" className="text-primary hover:scale-110 transition-transform">
+                                  <ExternalLink className="w-5 h-5" />
+                                </a>
+                              )}
+                              {formData.github && (
+                                <a href={formData.github} target="_blank" className="text-primary hover:scale-110 transition-transform">
+                                  <Github className="w-5 h-5" />
+                                </a>
+                              )}
+                              {formData.videoUrl && (
+                                <span className="text-primary cursor-help" title="Video included">
+                                  <Rocket className="w-5 h-5" />
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Description</Label>
-                        <p className="text-sm text-muted-foreground">{formData.description || 'Not provided'}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Links</Label>
-                        <div className="space-y-1">
-                          {formData.link && (
-                            <a href={formData.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
-                              <ExternalLink className="w-3 h-3" />
-                              Live Demo
-                            </a>
-                          )}
-                          {formData.github && (
-                            <a href={formData.github} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
-                              <Github className="w-3 h-3" />
-                              GitHub
-                            </a>
-                          )}
+
+                      <Separator className="bg-primary/5" />
+
+                      <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <Label htmlFor="published" className="text-base font-bold text-primary">Ready to publish?</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Public projects are visible to all visitors in your portfolio.
+                            </p>
+                          </div>
+                          <Switch
+                            id="published"
+                            checked={formData.published}
+                            onCheckedChange={(checked) => handleInputChange('published', checked)}
+                            className="data-[state=checked]:bg-primary"
+                          />
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="published">Publish Project</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Make your project visible to everyone
-                        </p>
-                      </div>
-                      <Switch
-                        id="published"
-                        checked={formData.published}
-                        onCheckedChange={(checked) => handleInputChange('published', checked)}
-                      />
                     </div>
                   </div>
                 </CardContent>

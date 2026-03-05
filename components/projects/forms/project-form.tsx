@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Save, 
-  Eye, 
-  EyeOff, 
-  Loader2, 
+import {
+  Save,
+  Eye,
+  EyeOff,
+  Loader2,
   AlertCircle,
   CheckCircle,
   ExternalLink,
@@ -62,7 +62,7 @@ export function ProjectForm({
     description: project?.description || '',
     longDescription: '',
     image: project?.image || '',
-    images: project?.image ? [project.image] : [],
+    images: project?.images && project.images.length > 0 ? project.images : (project?.image ? [project.image] : []),
     tech: project?.tech || [],
     categories: project?.categories || (project?.category ? [project.category] : []), // Support both new and legacy
     link: project?.link || '',
@@ -107,7 +107,7 @@ export function ProjectForm({
         description: project.description,
         longDescription: '',
         image: project.image,
-        images: project.image ? [project.image] : [],
+        images: project.images && project.images.length > 0 ? project.images : (project.image ? [project.image] : []),
         tech: project.tech,
         categories: project.categories || (project.category ? [project.category] : []), // Support both new and legacy
         link: project.link,
@@ -185,7 +185,7 @@ export function ProjectForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!user) {
       alert('Please sign in to create/edit projects')
       return
@@ -214,7 +214,7 @@ export function ProjectForm({
 
   const handleInputChange = (field: keyof ProjectFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
@@ -232,7 +232,7 @@ export function ProjectForm({
   return (
     <div className={cn("space-y-8", className)}>
       {/* Enhanced Header */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-card/50 to-card/30 backdrop-blur-sm rounded-2xl p-6 border border-border/50"
@@ -247,7 +247,7 @@ export function ProjectForm({
             </h2>
           </div>
           <p className="text-muted-foreground">
-            {isEdit 
+            {isEdit
               ? 'Update your project details and settings'
               : 'Fill out the information below to showcase your project'
             }
@@ -291,7 +291,7 @@ export function ProjectForm({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -308,7 +308,7 @@ export function ProjectForm({
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               {/* Title */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -329,7 +329,7 @@ export function ProjectForm({
                   )}
                 />
                 {errors.title && (
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-sm text-red-500 flex items-center gap-2"
@@ -341,7 +341,7 @@ export function ProjectForm({
               </motion.div>
 
               {/* Description */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
@@ -380,7 +380,7 @@ export function ProjectForm({
               </motion.div>
 
               {/* Long Description */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -405,9 +405,9 @@ export function ProjectForm({
                 <div className="flex justify-between items-center text-xs">
                   <span className={cn(
                     "transition-colors",
-                    formData.longDescription.length > 1800 ? "text-amber-600" : "text-muted-foreground"
+                    (formData.longDescription?.length || 0) > 1800 ? "text-amber-600" : "text-muted-foreground"
                   )}>
-                    {formData.longDescription.length}/2000 characters
+                    {formData.longDescription?.length || 0}/2000 characters
                   </span>
                   {errors.longDescription && (
                     <span className="text-red-500 flex items-center gap-1">
@@ -436,7 +436,7 @@ export function ProjectForm({
               </CardHeader>
               <CardContent className="pt-6">
                 <ImageGalleryInput
-                  images={formData.images}
+                  images={formData.images || []}
                   onImagesChange={handleImagesChange}
                   maxImages={10}
                 />
@@ -460,7 +460,7 @@ export function ProjectForm({
               </CardHeader>
               <CardContent className="space-y-8 pt-6">
                 {/* Category */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
@@ -468,11 +468,11 @@ export function ProjectForm({
                 >
                   <Label className="text-sm font-semibold">Project Categories *</Label>
                   <CompactCategoryPicker
-                    selectedCategories={formData.categories as any}
+                    selectedCategories={formData.categories}
                     onCategoriesChange={(categories) => handleInputChange('categories', categories)}
                   />
                   {errors.categories && (
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="text-sm text-red-500 flex items-center gap-2"
@@ -484,7 +484,7 @@ export function ProjectForm({
                 </motion.div>
 
                 {/* Tech Stack */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
@@ -497,7 +497,7 @@ export function ProjectForm({
                     maxItems={20}
                   />
                   {errors.tech && (
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="text-sm text-red-500 flex items-center gap-2"
@@ -590,7 +590,7 @@ export function ProjectForm({
           </Card>
 
           {/* Enhanced Submit Button */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -617,7 +617,7 @@ export function ProjectForm({
                       </>
                     )}
                   </Button>
-                  
+
                   {onCancel && (
                     <Button
                       type="button"
@@ -630,10 +630,10 @@ export function ProjectForm({
                     </Button>
                   )}
                 </div>
-                
+
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {isEdit 
+                    {isEdit
                       ? 'Your changes will be saved and the project will be updated.'
                       : 'Your project will be created and added to your portfolio.'
                     }
@@ -668,7 +668,7 @@ export function ProjectForm({
                   <div className="space-y-4">
                     {/* Cover Image */}
                     {formData.image && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-lg"
@@ -724,7 +724,7 @@ export function ProjectForm({
 
                     {/* Links */}
                     {(formData.link || formData.github) && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}

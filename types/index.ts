@@ -12,6 +12,24 @@ export type {
   AIGenerationErrorResponse
 } from './ai'
 
+export type ProjectCategory =
+  | 'web-development'
+  | 'mobile-app'
+  | 'desktop-app'
+  | 'ui-ux-design'
+  | 'backend-api'
+  | 'cloud-devops'
+  | 'game-development'
+  | 'data-science'
+  | 'business'
+  | 'education'
+  | 'healthcare'
+  | 'e-commerce'
+  | 'entertainment'
+  | 'photography'
+  | 'portfolio'
+  | 'home-automation'
+
 export interface Project {
   id: string
   title: string
@@ -20,8 +38,8 @@ export interface Project {
   images?: string[] // Array of image URLs - first is cover, rest are gallery
   videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   tech: string[]
-  categories: string[] // Support multiple categories
-  category?: string // Deprecated: Keep for backward compatibility
+  categories: ProjectCategory[] // Support multiple categories
+  category?: ProjectCategory // Deprecated: Keep for backward compatibility
   link: string
   github: string
   createdAt: Date
@@ -126,8 +144,8 @@ export interface ProjectDocument {
   // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   videoUrl?: string
   tech: string[]
-  categories: string[] // Support multiple categories
-  category?: string // Deprecated: Keep for backward compatibility
+  categories: ProjectCategory[] // Support multiple categories
+  category?: ProjectCategory // Deprecated: Keep for backward compatibility
   link: string
   github: string
   createdAt: FirebaseFirestore.Timestamp
@@ -201,8 +219,8 @@ export interface ProjectFormData {
   videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   longDescription?: string
   tech: string[]
-  categories: string[] // Support multiple categories
-  category?: string // Deprecated: Keep for backward compatibility
+  categories: ProjectCategory[] // Support multiple categories
+  category?: ProjectCategory // Deprecated: Keep for backward compatibility
   link: string
   github: string
   published: boolean
@@ -215,8 +233,8 @@ export interface CommentFormData {
 
 // Filter and search types
 export interface ProjectFilters {
-  categories?: string[] // Support filtering by multiple categories
-  category?: string // Deprecated: Keep for backward compatibility
+  categories?: ProjectCategory[] // Support filtering by multiple categories
+  category?: ProjectCategory // Deprecated: Keep for backward compatibility
   search?: string
   published?: boolean
 }
