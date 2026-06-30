@@ -44,7 +44,7 @@ export function ImageGallery({
   const [isLoading, setIsLoading] = useState(true)
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
   const [errors, setErrors] = useState<Set<number>>(new Set())
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Auto-play functionality
   useEffect(() => {

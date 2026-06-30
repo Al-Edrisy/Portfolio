@@ -17,7 +17,6 @@
     "setup-firestore": "node scripts/setup-firestore.js",
     "test-firestore": "node scripts/test-firestore.js",
     "test-smtp": "node scripts/test-smtp.js",
-    "test-s3": "node scripts/test-s3-upload.js",
     "firebase:emulator": "firebase emulators:start --only firestore",
     "firebase:deploy-rules": "firebase deploy --only firestore:rules"
   },

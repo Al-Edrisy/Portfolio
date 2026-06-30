@@ -149,9 +149,11 @@ export function useUserReactions(projectId?: string) {
       counts[reaction.type]++
     })
 
-    return Object.entries(counts).reduce((mostUsed, [type, count]) => 
-      count > counts[mostUsed] ? type as ReactionType : mostUsed
-    ) as ReactionType
+    const entries = Object.entries(counts) as [ReactionType, number][]
+    return entries.reduce<ReactionType>((mostUsed, [type, count]) => 
+      count > counts[mostUsed] ? type : mostUsed,
+      'like'
+    )
   }
 
   return {

@@ -28,18 +28,7 @@ const GenerateCommentSchema = z.object({
     errorMap: () => ({ message: 'Invalid length selected' })
   }).optional().default('medium'),
   
-  model: z.enum([
-    'meta-llama/llama-3.3-8b-instruct:free',
-    'mistralai/mistral-7b-instruct:free',
-    'google/gemini-2.0-flash-exp:free',
-    'google/gemma-3-12b-it:free',
-    'nvidia/nemotron-nano-9b-v2:free',
-    'mistralai/mistral-small-24b-instruct-2501:free',
-    'deepseek/deepseek-chat',
-    'qwen/qwen3-14b:free'
-  ], {
-    errorMap: () => ({ message: 'Invalid model selected' })
-  }).optional(),
+  model: z.string().max(200).optional(),
   
   customInstructions: z.string()
     .max(200, 'Custom instructions must be 200 characters or less')

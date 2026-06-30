@@ -11,14 +11,15 @@ import { useToast } from '@/hooks/use-toast'
 // import { useNetworkStatus } from '@/hooks/use-network-status'
 // import { useFirebaseConnection } from '@/hooks/use-firebase-connection'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectCardSkeleton } from '@/components/ui/loading-skeleton'
 
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
   Loader2,
-  ChevronUp
+  ChevronUp,
+  LayoutGrid,
+  List
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,10 +28,24 @@ export function ModernProjectsList() {
   const { isDeveloper } = useAuth()
   const { toast } = useToast()
   const [isClient, setIsClient] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch and load saved view preference
   useEffect(() => {
     setIsClient(true)
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('projects-view-mode') as 'grid' | 'list'
+      if (savedMode === 'grid' || savedMode === 'list') {
+        setViewMode(savedMode)
+      }
+    }
+  }, [])
+
+  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
+    setViewMode(mode)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('projects-view-mode', mode)
+    }
   }, [])
   // Removed connection status check as it was causing false positives
   // const { isOnline } = useNetworkStatus()
@@ -163,8 +178,13 @@ export function ModernProjectsList() {
       {/* Projects List with Infinite Scroll */}
       <div>
         {loading ? (
-          <div className="grid gap-4 grid-cols-1 max-w-xl mx-auto">
-            {[...Array(3)].map((_, i) => (
+          <div className={cn(
+            "grid gap-6 w-full mx-auto",
+            viewMode === 'grid' 
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-7xl" 
+              : "grid-cols-1 max-w-2xl"
+          )}>
+            {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => (
               <ProjectCardSkeleton key={i} />
             ))}
           </div>
@@ -180,7 +200,49 @@ export function ModernProjectsList() {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 grid-cols-1 max-w-xl mx-auto">
+            {/* View Mode Controls */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 pb-4 border-b border-border">
+              <div className="text-sm text-muted-foreground">
+                Showing <span className="font-semibold text-foreground">{sortedProjects.length}</span> projects
+              </div>
+              <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-lg border border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewModeChange('grid')}
+                  className={cn(
+                    "h-8 px-3 rounded-md text-xs gap-1.5 transition-all duration-200",
+                    viewMode === 'grid'
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  <span>Grid View</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewModeChange('list')}
+                  className={cn(
+                    "h-8 px-3 rounded-md text-xs gap-1.5 transition-all duration-200",
+                    viewMode === 'list'
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <List className="h-3.5 w-3.5" />
+                  <span>List View</span>
+                </Button>
+              </div>
+            </div>
+
+            <div className={cn(
+              "grid gap-6 w-full mx-auto",
+              viewMode === 'grid'
+                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-7xl"
+                : "grid-cols-1 max-w-2xl"
+            )}>
               <AnimatePresence>
                 {sortedProjects.map((project, index) => (
                   <LinkedInStyleProjectCardGSAP
@@ -191,6 +253,7 @@ export function ModernProjectsList() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onTogglePublished={handleTogglePublished}
+                    viewMode={viewMode}
                   />
                 ))}
               </AnimatePresence>

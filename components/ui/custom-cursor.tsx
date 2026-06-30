@@ -41,7 +41,7 @@ function CursorProvider({ ref, children, ...props }: CursorProviderProps) {
   const [isActive, setIsActive] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const cursorRef = React.useRef<HTMLDivElement>(null);
-  const rafRef = React.useRef<number>();
+  const rafRef = React.useRef<number | undefined>(undefined);
   
   React.useImperativeHandle(ref, () => containerRef.current as HTMLDivElement);
 
@@ -377,9 +377,9 @@ function UserCursor() {
         >
           <div className="flex items-center gap-2 text-sm">
             <span className="font-semibold text-foreground">{user.name}</span>
-            {user.role === 'admin' && (
+            {user.role === 'developer' && (
               <span className="text-xs bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                👑 Admin
+                👑 Dev
               </span>
             )}
           </div>

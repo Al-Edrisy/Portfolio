@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useCallback, memo } from 'react'
-import { Video, X, Plus, ExternalLink, AlertCircle, Check } from 'lucide-react'
+import { useState, useCallback, memo, useRef } from 'react'
+import { Video, X, Plus, ExternalLink, AlertCircle, Check, Upload, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { parseVideoUrl, getVideoSourceName, getVideoSourceStyle, isValidVideoUrl } from '@/lib/utils/video-helpers'
+import { toast } from 'sonner'
 
 interface VideoUrlInputProps {
   videoUrl?: string
@@ -26,6 +27,8 @@ export const VideoUrlInput = memo(function VideoUrlInput({
 }: VideoUrlInputProps) {
   const [localInputValue, setLocalInputValue] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const inputValue = pendingUrl !== undefined ? pendingUrl : localInputValue
 
@@ -36,6 +39,49 @@ export const VideoUrlInput = memo(function VideoUrlInput({
       setLocalInputValue(value)
     }
     setError(null)
+  }
+
+  const handleFileClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    setError(null)
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      try {
+        const base64String = reader.result as string
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: base64String,
+            filename: file.name,
+            folder: 'project-videos'
+          })
+        })
+
+        const data = await response.json()
+        if (data.success) {
+          onVideoChange(data.url)
+          toast.success('Video uploaded successfully')
+        } else {
+          setError(data.error || 'Upload failed')
+          toast.error(data.error || 'Upload failed')
+        }
+      } catch (err) {
+        setError('An error occurred during file upload')
+        toast.error('Error uploading video file')
+      } finally {
+        setIsUploading(false)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const parsedVideo = videoUrl ? parseVideoUrl(videoUrl) : null
@@ -139,29 +185,60 @@ export const VideoUrlInput = memo(function VideoUrlInput({
         </div>
       )}
 
-      {/* Add video input */}
+      {/* Add video input or upload */}
       {!videoUrl && (
         <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Paste video URL (YouTube, Vimeo, LinkedIn, Facebook, etc.)"
-              value={inputValue}
-              onChange={(e) => {
-                handleInputChange(e.target.value)
-              }}
-              onKeyDown={handleKeyDown}
-              onBlur={() => inputValue.trim() && handleAddVideo()}
-              className={cn(error && "border-destructive")}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddVideo}
-              className="gap-1 shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              Add
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Input
+                placeholder="Paste video URL (YouTube, Vimeo, LinkedIn, etc.)"
+                value={inputValue}
+                onChange={(e) => {
+                  handleInputChange(e.target.value)
+                }}
+                onKeyDown={handleKeyDown}
+                onBlur={() => inputValue.trim() && handleAddVideo()}
+                disabled={isUploading}
+                className={cn(error && "border-destructive", "pr-20 h-11")}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={!inputValue.trim() || isUploading}
+                  onClick={handleAddVideo}
+                  className="h-8 px-3 hover:bg-primary/10 text-primary font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="video/*"
+                onChange={handleFileChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFileClick}
+                disabled={isUploading}
+                className="h-11 px-4 gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all w-full sm:w-auto shrink-0"
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+                {isUploading ? 'Uploading...' : 'Upload Video File'}
+              </Button>
+            </div>
           </div>
 
           {error && (
@@ -172,7 +249,7 @@ export const VideoUrlInput = memo(function VideoUrlInput({
           )}
 
           <p className="text-xs text-muted-foreground">
-            Supported: YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct video files (.mp4, .webm)
+            Supported: YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct video file uploads (.mp4, .webm)
           </p>
         </div>
       )}

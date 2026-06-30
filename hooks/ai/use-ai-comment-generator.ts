@@ -14,6 +14,9 @@ interface UseAICommentGeneratorReturn {
     projectTitle: string
     projectDescription: string
     tone: CommentTone
+    length?: CommentLength
+    model?: AIModel
+    customInstructions?: string
   }) => Promise<string | null>
   loading: boolean
   error: string | null

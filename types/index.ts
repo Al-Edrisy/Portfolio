@@ -1,5 +1,30 @@
 // Type definitions for the portfolio projects system
 import { User as FirebaseUser } from 'firebase/auth'
+import { Timestamp } from 'firebase/firestore'
+
+export interface TechStackItem {
+  id: string
+  name: string
+  slug: string
+  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other'
+  logoMediaId: string
+  officialUrl?: string
+  displayOrder: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface TechStackItemDocument {
+  name: string
+  slug: string
+  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other'
+  logoMediaId: string
+  officialUrl?: string
+  displayOrder: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 
 // Export AI-related types
 export type {
@@ -12,28 +37,31 @@ export type {
   AIGenerationErrorResponse
 } from './ai'
 
-export type ProjectCategory =
-  | 'web-development'
-  | 'mobile-app'
-  | 'desktop-app'
-  | 'ui-ux-design'
-  | 'backend-api'
-  | 'cloud-devops'
-  | 'game-development'
-  | 'data-science'
-  | 'business'
-  | 'education'
-  | 'healthcare'
-  | 'e-commerce'
-  | 'entertainment'
-  | 'photography'
-  | 'portfolio'
-  | 'home-automation'
+export type ProjectCategory = string
+
+export interface MediaAsset {
+  id: string
+  url: string
+  mediaType: 'image' | 'video' | 'document'
+  mimeType: string
+  width?: number
+  height?: number
+  fileSize: number
+  altText?: string
+  uploadedBy?: string
+  createdAt: Date
+}
 
 export interface Project {
   id: string
   title: string
   description: string
+  thumbnailMediaId?: string
+  thumbnail?: MediaAsset
+  galleryMediaIds?: string[]
+  gallery?: MediaAsset[]
+  videoMediaId?: string
+  video?: MediaAsset
   image?: string // Legacy field - kept for backward compatibility
   images?: string[] // Array of image URLs - first is cover, rest are gallery
   videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
@@ -45,13 +73,16 @@ export interface Project {
   createdAt: Date
   updatedAt: Date
   published: boolean
+  featured?: boolean
   authorId: string
   authorName: string
   authorAvatar?: string
   reactionsCount: Record<ReactionType, number>
   commentsCount: number
-  viewsCount: number
+  viewsCount?: number
   sharesCount?: number
+  documents?: { name: string; url: string; type: 'srs' | 'erd' | 'readme' | 'mermaid' | 'other' }[]
+  documentsMediaIds?: string[]
 }
 
 export interface Reaction {
@@ -84,8 +115,48 @@ export interface User {
   email: string
   name: string
   avatar: string
-  role: 'developer' | 'user'
+  avatarMediaId?: string
+  avatarMedia?: MediaAsset
+  role: 'developer' | 'user' | 'client' | 'admin'
   createdAt: Date
+}
+
+export interface UserProfile {
+  id: string
+  name: string
+  email: string
+  avatar: string
+  role: 'developer' | 'user' | 'client' | 'admin'
+  bio?: string
+  website?: string
+  github?: string
+  linkedin?: string
+  twitter?: string
+  location?: string
+  skills?: string[]
+  interests?: string[]
+  projectsCount?: number
+  commentsCount?: number
+  reactionsGiven?: number
+  reactionsReceived?: number
+  viewsCount?: number
+  createdAt: Date
+  updatedAt: Date
+  lastActiveAt: Date
+  preferences: {
+    theme: 'system' | 'light' | 'dark'
+    notifications: {
+      email: boolean
+      comments: boolean
+      reactions: boolean
+      projects: boolean
+    }
+    privacy: {
+      showEmail: boolean
+      showLocation: boolean
+      showStats: boolean
+    }
+  }
 }
 
 export interface Feedback {
@@ -93,6 +164,8 @@ export interface Feedback {
   userId: string
   userName: string
   userAvatar?: string
+  userAvatarMediaId?: string
+  userAvatarMedia?: MediaAsset
   userEmail: string
   rating: number // 1-6 stars
   comment: string
@@ -130,9 +203,31 @@ export interface PaginatedResponse<T> {
 }
 
 // Firebase document interfaces (for Firestore)
+export interface MediaAssetDocument {
+  url: string
+  publicId: string
+  storageProvider: 'cloudflare_r2' | 's3' | 'local'
+  bucketName: string
+  objectKey: string
+  originalFilename: string
+  mimeType: string
+  fileSize: number
+  width?: number
+  height?: number
+  durationSeconds?: number
+  mediaType: 'image' | 'video' | 'document'
+  altText?: string
+  uploadedBy?: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export interface ProjectDocument {
   title: string
   description: string
+  thumbnailMediaId?: string
+  galleryMediaIds?: string[]
+  videoMediaId?: string
   // Legacy single image field - kept for backward compatibility
   image?: string
   // New structured images field
@@ -148,9 +243,10 @@ export interface ProjectDocument {
   category?: ProjectCategory // Deprecated: Keep for backward compatibility
   link: string
   github: string
-  createdAt: FirebaseFirestore.Timestamp
-  updatedAt: FirebaseFirestore.Timestamp
+  createdAt: Timestamp
+  updatedAt: Timestamp
   published: boolean
+  featured?: boolean
   authorId: string
   authorName?: string
   authorAvatar?: string
@@ -158,13 +254,15 @@ export interface ProjectDocument {
   commentsCount?: number
   viewsCount?: number
   sharesCount?: number
+  documents?: { name: string; url: string; type: 'srs' | 'erd' | 'readme' | 'mermaid' | 'other' }[]
+  documentsMediaIds?: string[]
 }
 
 export interface ReactionDocument {
   projectId: string
   userId: string
   type: ReactionType
-  createdAt: FirebaseFirestore.Timestamp
+  createdAt: Timestamp
 }
 
 export interface CommentDocument {
@@ -172,8 +270,8 @@ export interface CommentDocument {
   userId: string
   content: string
   parentCommentId?: string
-  createdAt: FirebaseFirestore.Timestamp
-  updatedAt: FirebaseFirestore.Timestamp
+  createdAt: Timestamp
+  updatedAt: Timestamp
   likes: number
   userLikes?: string[]
   repliesCount: number
@@ -183,14 +281,16 @@ export interface UserDocument {
   email: string
   name: string
   avatar: string
-  role: 'developer' | 'user'
-  createdAt: FirebaseFirestore.Timestamp
+  avatarMediaId?: string
+  role: 'developer' | 'user' | 'client' | 'admin'
+  createdAt: Timestamp
 }
 
 export interface FeedbackDocument {
   userId: string
   userName: string
   userAvatar?: string
+  userAvatarMediaId?: string
   userEmail: string
   rating: number
   comment: string
@@ -198,8 +298,8 @@ export interface FeedbackDocument {
   projectTitle?: string
   approved: boolean
   featured: boolean
-  createdAt: FirebaseFirestore.Timestamp
-  updatedAt: FirebaseFirestore.Timestamp
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 
 // API Response types
@@ -213,17 +313,28 @@ export interface ApiResponse<T> {
 // Form types
 export interface ProjectFormData {
   title: string
+  slug: string
   description: string
+  thumbnailMediaId?: string
+  galleryMediaIds?: string[]
+  videoMediaId?: string
   image?: string // Legacy field
   images?: string[] // Array of image URLs
   videoUrl?: string // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
   longDescription?: string
+  challenges?: string
+  solutions?: string
+  results?: string
+  features?: string[]
   tech: string[]
   categories: ProjectCategory[] // Support multiple categories
   category?: ProjectCategory // Deprecated: Keep for backward compatibility
   link: string
   github: string
   published: boolean
+  featured?: boolean
+  documents?: { name: string; url: string; type: 'srs' | 'erd' | 'readme' | 'mermaid' | 'other' }[]
+  documentsMediaIds?: string[]
 }
 
 export interface CommentFormData {
@@ -275,6 +386,7 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   isAdmin: boolean
+  isDeveloper: boolean
 }
 
 // Hook return types
@@ -321,7 +433,7 @@ export interface ContactMessageDocument {
   email: string
   subject: string
   message: string
-  timestamp: FirebaseFirestore.Timestamp
+  timestamp: Timestamp
   read: boolean
   replied: boolean
   createdAt: string

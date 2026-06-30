@@ -109,11 +109,8 @@ service cloud.firestore {
       
       // Users can delete their own comments, developers can delete any
       // Allow deletion if user is authenticated and either owns the comment or is a developer
-      // Also allow deletion if user document doesn't exist yet (new users)
       allow delete: if isAuthenticated() &&
-                       (resource.data.userId == request.auth.uid || 
-                        isDeveloperOrAdmin() ||
-                        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) == false));
+                       (resource.data.userId == request.auth.uid || isDeveloperOrAdmin());
     }
     
     // Feedback collection
@@ -188,6 +185,24 @@ service cloud.firestore {
     match /analytics/{document=**} {
       allow read: if isAuthenticated();
       allow write: if isDeveloper();
+    }
+
+    // Media assets collection
+    match /media_assets/{mediaId=**} {
+      // Everyone can view media assets
+      allow read: if true;
+      // Authenticated users can upload media assets
+      allow create: if isAuthenticated();
+      // Only developers can update or delete media assets
+      allow update, delete: if isDeveloper();
+    }
+
+    // Tech stack catalog (curated list of technologies for project forms)
+    match /tech_stack_catalog/{techId} {
+      // Everyone can read the tech catalog (needed for project creation form)
+      allow read: if true;
+      // Only developers/admins can manage the catalog
+      allow create, update, delete: if isDeveloper();
     }
   }
 }

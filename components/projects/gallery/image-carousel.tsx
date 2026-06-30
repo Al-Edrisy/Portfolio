@@ -45,7 +45,7 @@ export function ImageCarousel({
   const [errors, setErrors] = useState<Set<number>>(new Set())
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Auto-play functionality
@@ -382,7 +382,7 @@ export function CompactCarousel({
   autoPlayInterval = 3000
 }: CompactCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
     if (autoPlay && images.length > 1) {

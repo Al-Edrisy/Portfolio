@@ -231,7 +231,7 @@ export function useProjectComments(projectId: string) {
     try {
       // Check if user owns this comment or is admin/developer
       const comment = comments.find(c => c.id === commentId)
-      if (!comment || (comment.userId !== user.id && user.role !== 'admin' && user.role !== 'developer')) {
+      if (!comment || (comment.userId !== user.id && user.role !== 'developer')) {
         toast({
           title: "Permission denied",
           description: "You can only delete your own comments.",
@@ -303,8 +303,6 @@ export function useProjectComments(projectId: string) {
               userId: data.userId || '',
               content: data.content || '',
               parentCommentId: data.parentCommentId || null,
-              createdAt: data.createdAt?.toDate() || new Date(),
-              updatedAt: data.updatedAt?.toDate() || new Date(),
               createdAt: data.createdAt?.toDate() || new Date(),
               updatedAt: data.updatedAt?.toDate() || new Date(),
               likes: data.likes || 0,

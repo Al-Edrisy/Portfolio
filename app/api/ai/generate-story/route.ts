@@ -1,0 +1,111 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { DEFAULT_AI_MODEL } from '@/lib/ai/model-configs'
+
+const GenerateStorySchema = z.object({
+  title: z.string().min(1, 'Project title is required').max(200),
+  description: z.string().min(1, 'Project description is required').max(5000),
+  tech: z.array(z.string()).optional().default([]),
+  categories: z.array(z.string()).optional().default([]),
+  model: z.string().optional()
+})
+
+type GenerateStoryInput = z.infer<typeof GenerateStorySchema>
+
+export async function POST(request: NextRequest) {
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY
+    if (!apiKey || apiKey.trim() === '') {
+      return NextResponse.json(
+        { success: false, error: 'AI generation is not configured. OpenRouter API key missing.' },
+        { status: 503 }
+      )
+    }
+
+    let body: GenerateStoryInput
+    try {
+      const rawBody = await request.json()
+      body = GenerateStorySchema.parse(rawBody)
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message || 'Invalid request body' }, { status: 400 })
+    }
+
+    const selectedModel = body.model || DEFAULT_AI_MODEL
+
+    const systemPrompt = `You are an expert technical writer and software engineer. You write extremely detailed, professional case studies/stories for portfolio projects.
+You must return your output strictly in JSON format. The JSON object must contain exactly four keys: "longDescription", "challenges", "solutions", and "results".
+
+JSON Structure:
+{
+  "longDescription": "A detailed story supporting markdown formatting. Describe the case study history, architectural decisions, diagrams, infrastructure selections, database setup, and workflows.",
+  "challenges": "Engineering obstacles, scaling limitations, or complex requirements encountered.",
+  "solutions": "Technical resolutions applied, architectures designed, patterns implemented, and technologies chosen.",
+  "results": "Performance metrics, scaling outcomes, load test outcomes, or business impacts."
+}
+
+Rules:
+1. "longDescription" MUST be detailed and comprehensive. It must support clean Markdown (including headers, bullet points, code blocks). Do not write simple placeholders.
+2. Do not include any text before or after the JSON block. Do not include markdown code block syntax (like \`\`\`json) in your response, just return the raw JSON string.
+3. Be professional, technical, and realistic based on the project's domain.`
+
+    const userPrompt = `Project Title: "${body.title}"
+Project Description: "${body.description}"
+Technologies: ${body.tech.join(', ') || 'Various modern tech'}
+Categories: ${body.categories.join(', ') || 'Development'}
+
+Please generate a highly professional, detailed case study for this project. Keep it realistic, technical, and descriptive.`
+
+    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+        'X-Title': 'Portfolio Case Study Generator'
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500,
+        response_format: { type: 'json_object' }
+      })
+    })
+
+    if (!openRouterResponse.ok) {
+      const errText = await openRouterResponse.text()
+      console.error('OpenRouter error details:', errText)
+      return NextResponse.json({ success: false, error: `AI Service error: ${openRouterResponse.statusText}` }, { status: 500 })
+    }
+
+    const data = await openRouterResponse.json()
+    const content = data.choices?.[0]?.message?.content?.trim()
+
+    if (!content) {
+      return NextResponse.json({ success: false, error: 'AI returned an empty response' }, { status: 500 })
+    }
+
+    try {
+      const parsed = JSON.parse(content)
+      return NextResponse.json({
+        success: true,
+        data: {
+          longDescription: parsed.longDescription || '',
+          challenges: parsed.challenges || '',
+          solutions: parsed.solutions || '',
+          results: parsed.results || ''
+        }
+      })
+    } catch (parseError) {
+      console.error('Failed to parse AI JSON response:', content)
+      return NextResponse.json({ success: false, error: 'AI failed to output valid JSON format. Please try again.' }, { status: 500 })
+    }
+
+  } catch (error: any) {
+    console.error('Error in generate-story route:', error)
+    return NextResponse.json({ success: false, error: error.message || 'An unexpected error occurred' }, { status: 500 })
+  }
+}

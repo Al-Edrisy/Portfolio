@@ -56,7 +56,7 @@ export function CommentItem({
   const { toggleLike, loading: liking } = useLikeComment()
 
   const isAuthor = user?.id === comment.userId
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = user?.role === 'developer'
   const canEdit = isAuthor
   const canDelete = isAuthor || isAdmin
   const canReply = depth < maxDepth

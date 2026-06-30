@@ -394,7 +394,7 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  <span>{project.views || 0}</span>
+                  <span>{project.viewsCount || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Heart className="h-4 w-4" />
@@ -477,41 +477,27 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
 
                 <Separator />
 
-                {/* Action Buttons - Icon Only */}
+                {/* Action Buttons - Premium Prominent Links */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground">Links</h3>
-                  <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-foreground">Project Links</h3>
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
                     {project.link && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button asChild size="icon" className="h-10 w-10 rounded-full">
-                              <a href={project.link.startsWith('http') ? project.link : `https://${project.link}`} target="_blank" rel="noopener noreferrer">
-                                <Globe className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View Live Project</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Button asChild className="w-full sm:w-auto h-11 px-5 rounded-xl gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm">
+                        <a href={project.link.startsWith('http') ? project.link : `https://${project.link}`} target="_blank" rel="noopener noreferrer">
+                          <Globe className="h-4 w-4" />
+                          <span>View Live Project</span>
+                          <ArrowUpRight className="h-4 w-4 opacity-80" />
+                        </a>
+                      </Button>
                     )}
                     {project.github && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button asChild size="icon" variant="outline" className="h-10 w-10 rounded-full">
-                              <a href={project.github.startsWith('http') ? project.github : `https://${project.github}`} target="_blank" rel="noopener noreferrer">
-                                <Github className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View Source Code</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Button asChild variant="outline" className="w-full sm:w-auto h-11 px-5 rounded-xl gap-2 font-medium border-border hover:bg-muted/50 transition-all">
+                        <a href={project.github.startsWith('http') ? project.github : `https://${project.github}`} target="_blank" rel="noopener noreferrer">
+                          <Github className="h-4 w-4" />
+                          <span>View Source Code</span>
+                          <ArrowUpRight className="h-4 w-4 opacity-50" />
+                        </a>
+                      </Button>
                     )}
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { doc, deleteDoc, updateDoc, increment, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
+import { doc, deleteDoc, updateDoc, increment, serverTimestamp, query, where, getDocs, collection } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { ReactionType } from '@/types'
 import { COLLECTIONS } from '@/lib/firebase/utils'
@@ -148,10 +148,10 @@ export function useRemoveReaction() {
 
       // Delete all reaction documents and count them
       const deletePromises = reactionsSnapshot.docs.map(async (reactionDoc) => {
-        const reactionData = doc.data()
+        const reactionData = reactionDoc.data()
         const reactionType = reactionData.type as ReactionType
         reactionCounts[reactionType]++
-        return deleteDoc(doc.ref)
+        return deleteDoc(reactionDoc.ref)
       })
 
       await Promise.all(deletePromises)

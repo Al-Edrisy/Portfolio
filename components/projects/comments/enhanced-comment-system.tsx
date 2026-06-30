@@ -227,7 +227,7 @@ function CommentThread({
   const hasReplies = (comment.repliesCount ?? 0) > 0 || replies.length > 0
   const canReply = depth < maxDepth
   const isAuthor = currentUser?.id === comment.userId
-  const isDeveloper = currentUser?.role === 'developer'
+  const isDeveloper = currentUser?.role === 'developer' || currentUser?.role === 'admin'
   const canEdit = isAuthor || isDeveloper
   const canDelete = isAuthor || isDeveloper
 

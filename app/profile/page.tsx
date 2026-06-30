@@ -176,8 +176,7 @@ export default function ProfilePage() {
                         <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
                         <p className="text-muted-foreground">{user.email}</p>
                         <Badge variant="secondary" className="mt-1">
-                          {user.role === 'admin' ? 'Administrator' :
-                            user.role === 'developer' ? 'Developer' : 'User'}
+                          {user.role === 'admin' ? 'Admin' : user.role === 'developer' ? 'Developer' : 'User'}
                         </Badge>
                       </div>
                     </div>
@@ -263,11 +262,11 @@ export default function ProfilePage() {
                 <CardContent>
                   {canCreateProjects ? (
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className={`grid w-full ${user.role === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                      <TabsList className={`grid w-full ${(user.role === 'developer' || user.role === 'admin') ? 'grid-cols-4' : 'grid-cols-3'}`}>
                         <TabsTrigger value="all">Projects</TabsTrigger>
                         <TabsTrigger value="published">Published</TabsTrigger>
                         <TabsTrigger value="drafts">Drafts</TabsTrigger>
-                        {user.role === 'admin' && (
+                        {(user.role === 'developer' || user.role === 'admin') && (
                           <TabsTrigger value="messages" className="gap-2">
                             Messages
                             {unreadCount > 0 && (
@@ -306,7 +305,7 @@ export default function ProfilePage() {
                         />
                       </TabsContent>
 
-                      {user.role === 'admin' && (
+                      {(user.role === 'developer' || user.role === 'admin') && (
                         <TabsContent value="messages" className="mt-6">
                           <AdminMessages />
                         </TabsContent>
@@ -436,7 +435,7 @@ function ProjectList({
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Heart className="w-3 h-3" />
-                    {Object.values(project.reactionsCount || {}).reduce((a: number, b: number) => a + b, 0)}
+                    {(Object.values(project.reactionsCount || {}) as number[]).reduce((a, b) => a + b, 0)}
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageCircle className="w-3 h-3" />

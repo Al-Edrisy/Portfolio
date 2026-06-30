@@ -14,6 +14,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   isDeveloper: boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -148,7 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signInWithGoogle,
     logout,
-    isDeveloper: user?.role === 'developer',
+    isDeveloper: user?.role === 'developer' || user?.role === 'admin',
+    isAdmin: user?.role === 'admin' || user?.role === 'developer',
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

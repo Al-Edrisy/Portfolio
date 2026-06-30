@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Sparkles, Loader2, Wand2, ChevronDown } from 'lucide-react'
+import { Sparkles, Loader2, Wand2, ChevronDown, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   Tooltip,
@@ -17,6 +17,9 @@ import {
 } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { useAICommentGenerator } from '@/hooks/ai/use-ai-comment-generator'
 import { 
@@ -31,8 +34,7 @@ import {
 } from '@/lib/ai/comment-length-configs'
 import {
   AI_MODEL_CONFIGS,
-  DEFAULT_AI_MODEL,
-  RECOMMENDED_MODELS
+  DEFAULT_AI_MODEL
 } from '@/lib/ai/model-configs'
 import type { CommentTone, CommentLength, AIModel } from '@/types/ai'
 
@@ -40,18 +42,31 @@ interface AICommentGeneratorProps {
   projectTitle: string
   projectDescription: string
   onCommentGenerated: (comment: string) => void
+  onLoadingChange?: (loading: boolean) => void
   disabled?: boolean
   className?: string
 }
 
+interface OpenRouterModel {
+  id: string
+  name: string
+  description?: string
+  context_length?: number
+  pricing?: {
+    prompt: string
+    completion: string
+  }
+}
+
 /**
- * Redesigned AI Comment Generator Component
- * Clean, modern UI matching the design system
+ * Premium Dynamic AI Comment Generator Component
+ * Dynamic model fetching, shimmer loaders, and model capabilities lookup
  */
 export function AICommentGenerator({
   projectTitle,
   projectDescription,
   onCommentGenerated,
+  onLoadingChange,
   disabled = false,
   className
 }: AICommentGeneratorProps) {
@@ -62,6 +77,12 @@ export function AICommentGenerator({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  // Dynamic OpenRouter Models State
+  const [models, setModels] = useState<OpenRouterModel[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFreeOnly, setShowFreeOnly] = useState(true)
+
   const { 
     generateComment, 
     loading, 
@@ -69,6 +90,62 @@ export function AICommentGenerator({
   } = useAICommentGenerator({
     onCommentGenerated
   })
+
+  // Synchronize loading state with parent
+  useEffect(() => {
+    onLoadingChange?.(loading)
+  }, [loading, onLoadingChange])
+
+  // Load models from OpenRouter dynamically
+  useEffect(() => {
+    async function fetchModels() {
+      setLoadingModels(true)
+      try {
+        const res = await fetch('/api/ai/models?output_modalities=text&sort=pricing-low-to-high')
+        if (res.ok) {
+          const data = await res.json()
+          if (data && Array.isArray(data.data)) {
+            setModels(data.data)
+          }
+        }
+      } catch (err) {
+        console.error('Error loading AI models:', err)
+      } finally {
+        setLoadingModels(false)
+      }
+    }
+    fetchModels()
+  }, [])
+
+  // Offline / Fallback models array in correct format
+  const offlineModels = useMemo(() => {
+    return Object.values(AI_MODEL_CONFIGS).map(m => ({
+      id: m.value,
+      name: m.label,
+      description: m.description,
+      context_length: 8192,
+      pricing: {
+        prompt: m.value.includes(':free') ? '0' : '0.000001',
+        completion: m.value.includes(':free') ? '0' : '0.000002',
+      }
+    }))
+  }, [])
+
+  // Filter models based on search and free status
+  const filteredModels = useMemo(() => {
+    const list = models.length > 0 ? models : offlineModels
+    return list.filter(m => {
+      const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            m.id.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      const isModelFree = m.id.endsWith(':free') || 
+        (parseFloat(m.pricing?.prompt || '0') === 0 && parseFloat(m.pricing?.completion || '0') === 0)
+        
+      if (showFreeOnly && !isModelFree) return false
+      
+      return matchesSearch
+    })
+  }, [models, offlineModels, searchQuery, showFreeOnly])
 
   const handleGenerate = async () => {
     if (!projectTitle || !projectDescription) return
@@ -87,10 +164,52 @@ export function AICommentGenerator({
 
   if (!isAuthenticated) return null
 
-  const selectedModelConfig = AI_MODEL_CONFIGS[selectedModel]
+  // Get active model display config (either offline preset or dynamic lookup)
+  const selectedModelConfig = (() => {
+    const offlineConfig = AI_MODEL_CONFIGS[selectedModel as keyof typeof AI_MODEL_CONFIGS]
+    if (offlineConfig) return offlineConfig
+    
+    const liveMatch = models.find(m => m.id === selectedModel)
+    if (liveMatch) {
+      return {
+        value: liveMatch.id,
+        label: liveMatch.name,
+        provider: liveMatch.id.split('/')[0] || 'OpenRouter',
+        description: liveMatch.description || 'Dynamic custom model',
+        icon: '🤖'
+      }
+    }
+
+    const nameOnly = selectedModel.split('/').pop() || selectedModel
+    return {
+      value: selectedModel,
+      label: nameOnly.replace(/-instruct|:free/gi, ''),
+      provider: selectedModel.split('/')[0] || 'OpenRouter',
+      description: 'Custom selected model',
+      icon: '🤖'
+    }
+  })()
+
+  // Skeletons for model list loading
+  const ModelShimmer = () => (
+    <div className="space-y-1.5 p-2 animate-pulse">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="flex flex-col gap-1 p-2 border border-border/30 rounded-md bg-muted/5">
+          <div className="flex justify-between items-center">
+            <div className="h-3 bg-muted-foreground/20 rounded-md w-28" />
+            <div className="h-2 bg-muted-foreground/15 rounded-md w-12" />
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="h-2 bg-muted-foreground/10 rounded-md w-40" />
+            <div className="h-2 bg-muted-foreground/15 rounded-md w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className="flex items-center gap-2">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <TooltipProvider>
           <Tooltip>
@@ -110,12 +229,12 @@ export function AICommentGenerator({
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="animate-spin" />
+                      <Loader2 className="animate-spin h-3.5 w-3.5" />
                       <span>Generating...</span>
                     </>
                   ) : (
                     <>
-                      <Wand2 className="text-purple-600 dark:text-purple-400" />
+                      <Wand2 className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                       <span>AI Generate</span>
                       
                       {/* Shine effect */}
@@ -158,7 +277,7 @@ export function AICommentGenerator({
                   "p-1.5 rounded-lg",
                   "bg-purple-100 dark:bg-purple-950/50"
                 )}>
-                  <Sparkles className="size-4 text-purple-600 dark:text-purple-400" />
+                  <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold">AI Comment Generator</h4>
@@ -259,7 +378,7 @@ export function AICommentGenerator({
             >
               <span>Advanced Options</span>
               <ChevronDown className={cn(
-                "size-3.5 transition-transform",
+                "h-3.5 w-3.5 transition-transform",
                 showAdvanced && "rotate-180"
               )} />
             </button>
@@ -274,43 +393,103 @@ export function AICommentGenerator({
                   transition={{ duration: 0.2 }}
                   className="space-y-3 overflow-hidden"
                 >
-                  {/* Model Selection */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      AI Model
-                    </label>
-                    <div className="space-y-1">
-                      {RECOMMENDED_MODELS.map((modelConfig) => {
-                        const isSelected = modelConfig.value === selectedModel
+                  {/* Search and Filters */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-foreground">
+                        AI Model Browser
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="free-only" className="text-[10px] text-muted-foreground cursor-pointer">
+                          Free Only
+                        </Label>
+                        <Switch
+                          id="free-only"
+                          checked={showFreeOnly}
+                          onCheckedChange={setShowFreeOnly}
+                        />
+                      </div>
+                    </div>
 
-                        return (
-                          <button
-                            key={modelConfig.value}
-                            type="button"
-                            onClick={() => setSelectedModel(modelConfig.value)}
-                            className={cn(
-                              "w-full flex items-center justify-between px-3 py-2 rounded-md",
-                              "text-xs transition-all",
-                              "border shadow-xs",
-                              "outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-                              isSelected
-                                ? "bg-primary/10 dark:bg-primary/20 border-primary/50 dark:border-primary/40"
-                                : "bg-background border-border hover:bg-accent dark:bg-input/20 dark:hover:bg-input/40"
-                            )}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">{modelConfig.icon}</span>
-                              <div className="text-left">
-                                <p className="font-medium">{modelConfig.label}</p>
-                                <p className="text-[10px] text-muted-foreground">{modelConfig.provider}</p>
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search 400+ OpenRouter models..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 text-xs h-8 bg-muted/30 focus-visible:ring-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Scrollable Model List */}
+                  <div className="border border-border/50 rounded-lg overflow-hidden bg-muted/10">
+                    <div className="max-h-[160px] overflow-y-auto divide-y divide-border/50 scrollbar-thin">
+                      {loadingModels ? (
+                        <ModelShimmer />
+                      ) : filteredModels.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-muted-foreground">
+                          No models found
+                        </div>
+                      ) : (
+                        filteredModels.slice(0, 20).map((model) => {
+                          const isSelected = model.id === selectedModel
+                          const isFree = model.id.endsWith(':free') || 
+                            (parseFloat(model.pricing?.prompt || '0') === 0 && 
+                             parseFloat(model.pricing?.completion || '0') === 0)
+                          
+                          // Calculate pricing per million tokens
+                          const inputCost = parseFloat(model.pricing?.prompt || '0') * 1000000
+                          const outputCost = parseFloat(model.pricing?.completion || '0') * 1000000
+                          const costString = isFree 
+                            ? 'Free' 
+                            : `$${inputCost.toFixed(2)} / $${outputCost.toFixed(2)} per M tokens`
+
+                          const contextString = model.context_length
+                            ? `${(model.context_length / 1000).toFixed(0)}k context`
+                            : '8k context'
+
+                          return (
+                            <button
+                              key={model.id}
+                              type="button"
+                              onClick={() => setSelectedModel(model.id)}
+                              className={cn(
+                                "w-full text-left p-2.5 transition-colors flex flex-col gap-0.5",
+                                "hover:bg-accent focus:bg-accent outline-none",
+                                isSelected && "bg-primary/10 dark:bg-primary/20"
+                              )}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  {isSelected && <Check className="h-3 w-3 text-primary shrink-0" />}
+                                  <span className="font-semibold text-xs text-foreground truncate">
+                                    {model.name}
+                                  </span>
+                                  {isFree && (
+                                    <Badge variant="secondary" className="px-1 py-0 h-4 text-[9px] font-medium bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-300 border-0">
+                                      Free
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
+                                  {contextString}
+                                </span>
                               </div>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground">
-                              {modelConfig.description.split('-')[1]?.trim() || 'Fast'}
-                            </span>
-                          </button>
-                        )
-                      })}
+                              
+                              <div className="flex items-center justify-between w-full text-[10px] text-muted-foreground">
+                                <span className="truncate max-w-[200px]" title={model.description || model.id}>
+                                  {model.description || model.id}
+                                </span>
+                                <span className="font-medium font-mono text-[9px]">
+                                  {costString}
+                                </span>
+                              </div>
+                            </button>
+                          )
+                        })
+                      )}
                     </div>
                   </div>
 
@@ -330,10 +509,10 @@ export function AICommentGenerator({
                       maxLength={200}
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground font-medium leading-none">
                         Add specific focus points or style preferences
                       </p>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[10px] text-muted-foreground font-mono leading-none">
                         {customInstructions.length}/200
                       </span>
                     </div>
@@ -350,7 +529,7 @@ export function AICommentGenerator({
                 className="flex-1 gap-2 shadow-xs"
                 size="sm"
               >
-                <Sparkles className="size-4" />
+                <Sparkles className="h-4 w-4" />
                 <span>Generate Comment</span>
               </Button>
               
@@ -362,7 +541,7 @@ export function AICommentGenerator({
                       variant="outline" 
                       className={cn(
                         "gap-1 px-2 py-1 font-mono text-[10px]",
-                        "border-border/50 bg-background/50"
+                        "border-border/50 bg-background/50 cursor-pointer"
                       )}
                     >
                       <span>{selectedModelConfig.icon}</span>
@@ -370,7 +549,7 @@ export function AICommentGenerator({
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent side="top">
-                    <p className="text-xs font-medium">{selectedModelConfig.label}</p>
+                    <p className="text-xs font-semibold">{selectedModelConfig.label}</p>
                     <p className="text-xs text-muted-foreground">{selectedModelConfig.description}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -378,7 +557,7 @@ export function AICommentGenerator({
             </div>
 
             {/* Hint */}
-            <p className="text-[10px] text-center text-muted-foreground">
+            <p className="text-[10px] text-center text-muted-foreground font-medium leading-tight">
               AI will generate a comment based on the project description
             </p>
           </div>
@@ -397,13 +576,12 @@ export function AICommentGenerator({
             <Badge 
               variant="secondary" 
               className={cn(
-                "gap-1.5 animate-pulse",
+                "gap-1.5 animate-pulse border border-purple-200 dark:border-purple-800/50",
                 "bg-purple-100 dark:bg-purple-950/50",
-                "text-purple-700 dark:text-purple-300",
-                "border-purple-200 dark:border-purple-800/50"
+                "text-purple-700 dark:text-purple-300"
               )}
             >
-              <Loader2 className="size-3 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" />
               <span className="text-xs">Generating with {selectedModelConfig.label}...</span>
             </Badge>
           </motion.div>

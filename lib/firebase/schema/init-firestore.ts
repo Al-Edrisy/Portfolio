@@ -158,6 +158,7 @@ export async function initSampleProjects(): Promise<void> {
       },
       totalReactions: 0,
       viewsCount: 0,
+      sharesCount: 0,
       publishedAt: serverTimestamp() as any
     },
     {
@@ -196,6 +197,7 @@ export async function initSampleProjects(): Promise<void> {
       },
       totalReactions: 0,
       viewsCount: 0,
+      sharesCount: 0,
       publishedAt: serverTimestamp() as any
     },
     {
@@ -234,6 +236,7 @@ export async function initSampleProjects(): Promise<void> {
       },
       totalReactions: 0,
       viewsCount: 0,
+      sharesCount: 0,
       publishedAt: serverTimestamp() as any
     }
   ]

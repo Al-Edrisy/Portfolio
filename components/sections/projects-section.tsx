@@ -19,8 +19,8 @@ export default function ProjectsSection() {
   }, [])
 
   // Check if user can manage projects
-  const canManageProjects = isClient && (user?.role === 'developer' || user?.role === 'admin')
-  const isAdmin = isClient && user?.role === 'admin'
+  const canManageProjects = isClient && user?.role === 'developer'
+  const isAdmin = isClient && user?.role === 'developer'
 
   return (
     <section id="projects" className="py-8 bg-muted/30 relative overflow-hidden">
@@ -71,7 +71,7 @@ export default function ProjectsSection() {
 
 
         {/* Projects List */}
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full">
           <ModernProjectsList />
         </div>
       </div>

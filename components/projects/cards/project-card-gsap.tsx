@@ -60,6 +60,7 @@ interface LinkedInStyleProjectCardProps {
   onTogglePublished?: (projectId: string, currentStatus: boolean) => void
   onEdit?: (projectId: string) => void
   onDelete?: (projectId: string) => void
+  viewMode?: 'grid' | 'list'
 }
 
 const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP({
@@ -68,7 +69,8 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   showAdminControls = false,
   onTogglePublished,
   onEdit,
-  onDelete
+  onDelete,
+  viewMode = 'list'
 }: LinkedInStyleProjectCardProps) {
   const router = useRouter()
   const { user, isDeveloper } = useAuth()
@@ -175,7 +177,11 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
     if (e) {
       e.stopPropagation()
     }
-    setShowCommentsInline(!showCommentsInline)
+    if (viewMode === 'grid') {
+      setShowCommentsModal(true)
+    } else {
+      setShowCommentsInline(!showCommentsInline)
+    }
   }
 
   const handleViewAllCommentsInModal = (e?: React.MouseEvent) => {
@@ -334,13 +340,14 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
           </div>
         </div>
 
-        {/* Content - Static (View Details button handles navigation) */}
+        {/* Content - Clickable Title */}
         <div
           className="px-2.5 md:px-3 pb-1.5 rounded-lg"
         >
           <h3
             ref={titleRef}
-            className="text-sm md:text-base font-semibold text-foreground mb-1 line-clamp-1"
+            onClick={handleProjectClick}
+            className="text-sm md:text-base font-semibold text-foreground mb-1 line-clamp-1 cursor-pointer hover:text-primary transition-colors"
           >
             {project.title}
           </h3>
@@ -394,10 +401,10 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
         )}
 
         {/* Project Images Gallery - Display all images with error handling */}
-        {(project.image || project.images?.gallery?.length) && (
+        {(project.image || project.images?.length) && (
           <div className="px-2.5 md:px-3 pb-2 overflow-hidden">
             <SmartImageGrid
-              images={project.images?.gallery || [project.image].filter(Boolean) as string[]}
+              images={project.images || [project.image].filter(Boolean) as string[]}
               projectTitle={project.title}
               onImageClick={handleImageClick}
               imageRef={imageRef as React.RefObject<HTMLDivElement>}
@@ -439,7 +446,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
             </Tooltip>
           </div>
 
-          {/* Right: View Details */}
+          {/* Right: View Project */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -448,7 +455,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
                 onClick={handleProjectClick}
                 className="flex items-center gap-1.5 px-3 py-2 h-9 rounded-full hover:bg-muted font-normal text-muted-foreground hover:text-primary transition-colors group/view"
               >
-                <span className="text-xs">View Details</span>
+                <span className="text-xs">View Project</span>
                 <Eye className="h-4 w-4 group-hover/view:text-primary transition-colors" />
               </Button>
             </TooltipTrigger>
@@ -458,63 +465,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
           </Tooltip>
         </div>
 
-        {/* Comments Section - Only show when explicitly expanded */}
-        <AnimatePresence>
-          {showCommentsInline && !commentsLoading && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="px-4 py-3 border-t border-border bg-muted/30 overflow-hidden"
-            >
-              <div className="space-y-3">
-                {comments.slice(0, 3).map((comment) => (
-                  <div key={comment.id} className="space-y-2">
-                    <div className="flex gap-3">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage src={(isClient ? comment.user?.avatar : null) || '/placeholder-user.jpg'} />
-                        <AvatarFallback>
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm text-foreground">{(isClient ? comment.user?.name : null) || 'Anonymous'}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-                          </span>
-                        </div>
-                        <p className="text-sm text-foreground/80 line-clamp-2">{comment.content}</p>
-                        {(comment.repliesCount && comment.repliesCount > 0) && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleComment()
-                            }}
-                            className="mt-1 text-xs text-primary hover:underline font-medium"
-                          >
-                            View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {comments.length > 2 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleComment()
-                    }}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
-                  >
-                    View all {comments.length} comments
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Expanded Comments System */}
         <AnimatePresence>
@@ -625,7 +576,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
       </Dialog>
 
       <ImageGalleryModal
-        images={project.images?.gallery || [project.image].filter(Boolean) as string[]}
+        images={project.images || [project.image].filter(Boolean) as string[]}
         initialIndex={lightboxIndex}
         isOpen={showLightbox}
         onClose={() => setShowLightbox(false)}

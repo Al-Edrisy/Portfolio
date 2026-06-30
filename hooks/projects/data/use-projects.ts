@@ -41,7 +41,7 @@ export function useProjects(
 
       const result = await getPaginatedProjects(
         PROJECTS_PER_PAGE,
-        loadMore ? lastDocRef.current : undefined
+        loadMore ? (lastDocRef.current ?? undefined) : undefined
       )
 
       if (loadMore) {
@@ -92,8 +92,8 @@ export function useProjects(
 
   // Sort projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
-    const aValue = a[sortOptions.field]
-    const bValue = b[sortOptions.field]
+    const aValue = a[sortOptions.field] ?? ''
+    const bValue = b[sortOptions.field] ?? ''
     
     if (aValue < bValue) return sortOptions.direction === 'asc' ? -1 : 1
     if (aValue > bValue) return sortOptions.direction === 'asc' ? 1 : -1

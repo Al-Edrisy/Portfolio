@@ -43,6 +43,7 @@ import Navigation from '@/components/ui/navigation'
 import { ImageGalleryModal } from '@/components/projects/gallery/image-gallery-modal'
 import { ProjectVideoPlayer } from '@/components/projects/project-video-player'
 import { useIncrementView } from '@/hooks/projects'
+import { DocumentVisualizer } from '@/components/projects/docs/document-visualizer'
 
 interface ProjectPageClientProps {
   projectId: string
@@ -50,7 +51,7 @@ interface ProjectPageClientProps {
 
 export default function ProjectPageClient({ projectId }: ProjectPageClientProps) {
   const router = useRouter()
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('overview')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -330,17 +331,92 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
                 </div>
               </motion.div>
 
-              {/* Project Description (Case Study Content) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="prose prose-lg dark:prose-invert max-w-none"
-              >
-                <div className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-                  {project.description}
-                </div>
-              </motion.div>
+              {/* Tab Selector */}
+              <div className="flex gap-2 border-b border-border pb-2 mt-6">
+                <Button 
+                  variant={activeTab === 'overview' ? 'default' : 'ghost'} 
+                  onClick={() => setActiveTab('overview')}
+                  className="rounded-lg text-sm font-semibold"
+                >
+                  Case Study Overview
+                </Button>
+                {project.documents && project.documents.length > 0 && (
+                  <Button 
+                    variant={activeTab === 'architecture' ? 'default' : 'ghost'} 
+                    onClick={() => setActiveTab('architecture')}
+                    className="rounded-lg text-sm font-semibold gap-2"
+                  >
+                    System Architecture & Docs
+                    <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px]">{project.documents.length}</Badge>
+                  </Button>
+                )}
+              </div>
+
+              {activeTab === 'overview' ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="prose prose-lg dark:prose-invert max-w-none space-y-8 mt-6"
+                >
+                  <div className="space-y-4">
+                    <h3 className="text-2xl font-bold tracking-tight">Project Overview</h3>
+                    <div className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+                      {project.description}
+                    </div>
+                  </div>
+
+                  {(project as any).longDescription && (
+                    <div className="space-y-4 pt-6">
+                      <h3 className="text-2xl font-bold tracking-tight">The Story</h3>
+                      <div className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+                        {(project as any).longDescription}
+                      </div>
+                    </div>
+                  )}
+
+                  {(project as any).features && (project as any).features.length > 0 && (
+                    <div className="space-y-4 pt-6">
+                      <h3 className="text-2xl font-bold tracking-tight">Key Features</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {(project as any).features.map((feature: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2 p-3 bg-muted/40 rounded-lg border">
+                            <span className="text-primary font-bold text-lg leading-none">•</span>
+                            <span className="text-sm font-medium text-muted-foreground">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {((project as any).challenges || (project as any).solutions || (project as any).results) && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+                      {(project as any).challenges && (
+                        <div className="p-5 bg-red-500/5 border border-red-500/10 rounded-xl space-y-2">
+                          <h4 className="text-md font-bold text-red-600 dark:text-red-400">The Challenge</h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{(project as any).challenges}</p>
+                        </div>
+                      )}
+
+                      {(project as any).solutions && (
+                        <div className="p-5 bg-green-500/5 border border-green-500/10 rounded-xl space-y-2">
+                          <h4 className="text-md font-bold text-green-600 dark:text-green-400">The Solution</h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{(project as any).solutions}</p>
+                        </div>
+                      )}
+
+                      {(project as any).results && (
+                        <div className="p-5 bg-blue-500/5 border border-blue-500/10 rounded-xl space-y-2">
+                          <h4 className="text-md font-bold text-blue-600 dark:text-blue-400">The Result</h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{(project as any).results}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              ) : (
+                <DocumentVisualizer documents={project.documents || []} />
+              )}
 
               {/* Gallery Grid */}
               {projectImages.length > 1 && (

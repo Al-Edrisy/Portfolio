@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +31,12 @@ interface ProjectShareProps {
 }
 
 export function ProjectShare({ project, trigger }: ProjectShareProps) {
+  const [isShareSupported, setIsShareSupported] = useState(false)
+
+  useEffect(() => {
+    setIsShareSupported(typeof navigator !== 'undefined' && !!navigator.share)
+  }, [])
+
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
@@ -58,7 +64,7 @@ export function ProjectShare({ project, trigger }: ProjectShareProps) {
   }
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: shareTitle,
@@ -159,7 +165,7 @@ export function ProjectShare({ project, trigger }: ProjectShareProps) {
           </div>
 
           {/* Native Share (Mobile) */}
-          {navigator.share && (
+          {isShareSupported && (
             <Button
               onClick={handleNativeShare}
               className="w-full"
@@ -251,11 +257,16 @@ export function ProjectShare({ project, trigger }: ProjectShareProps) {
 export function QuickShareButton({ project }: { project: Project }) {
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
+  const [isShareSupported, setIsShareSupported] = useState(false)
+
+  useEffect(() => {
+    setIsShareSupported(typeof navigator !== 'undefined' && !!navigator.share)
+  }, [])
 
   const handleQuickShare = async () => {
     const projectUrl = `${window.location.origin}/projects/${project.id}`
 
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: `Project: ${project.title}`,

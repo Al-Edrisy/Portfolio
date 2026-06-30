@@ -176,7 +176,8 @@ export function CategoryPicker({
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map(categoryKey => {
-              const category = categories[categoryKey]
+              const category = categories[categoryKey as keyof typeof categories]
+              if (!category) return null
               const Icon = category.icon
               return (
                 <motion.div

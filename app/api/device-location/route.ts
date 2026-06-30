@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase/firebase-admin'
-import { uploadImageToS3 } from '@/lib/s3-client'
+import { MediaService } from '@/lib/storage/media-service'
 
 interface LocationData {
   latitude?: number
@@ -38,16 +38,31 @@ export async function POST(request: NextRequest) {
     const ipAddress = getIpAddress(request)
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
-    // Upload image to S3 if present
+    // Upload image if present using MediaService
     let imageUrl: string | null = null
+    let imageMediaId: string | null = null
+
     if (locationData.imageBase64) {
-      console.log('Uploading image to S3...')
-      const uploadResult = await uploadImageToS3(locationData.imageBase64)
-      if (uploadResult.success && uploadResult.url) {
-        imageUrl = uploadResult.url
-        console.log('Image uploaded successfully:', imageUrl)
-      } else {
-        console.error('Failed to upload image to S3:', uploadResult.error)
+      console.log('Uploading location image to MediaService...')
+      try {
+        const matches = locationData.imageBase64.match(/^data:([^;]+);base64,(.+)$/)
+        if (matches) {
+          const mimeType = matches[1]
+          const base64Data = matches[2]
+          const buffer = Buffer.from(base64Data, 'base64')
+
+          const asset = await MediaService.uploadMedia(
+            buffer,
+            `device-location-${Date.now()}.${mimeType.split('/')[1] || 'jpg'}`,
+            mimeType,
+            'device-locations'
+          )
+          imageUrl = asset.url
+          imageMediaId = asset.id
+          console.log('Image uploaded successfully:', imageUrl, 'ID:', imageMediaId)
+        }
+      } catch (uploadError) {
+        console.error('Failed to upload image:', uploadError)
       }
     }
 
@@ -64,7 +79,8 @@ export async function POST(request: NextRequest) {
       timezone: locationData.timezone || null,
       language: locationData.language || null,
       formData: locationData.formData || null,
-      imageUrl: imageUrl, // Store S3 URL instead of hasImage flag
+      imageUrl: imageUrl, // Legacy fallback
+      imageMediaId: imageMediaId, // Centralized media ID
     }
 
     // Store in Firestore
@@ -80,7 +96,8 @@ export async function POST(request: NextRequest) {
       { 
         success: true, 
         message: 'Location data received',
-        imageUrl: imageUrl 
+        imageUrl: imageUrl,
+        imageMediaId: imageMediaId
       },
       { status: 200 }
     )

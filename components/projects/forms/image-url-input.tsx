@@ -26,6 +26,7 @@ interface ImageUrlInputProps {
   value: string
   onChange: (url: string) => void
   onAddImage?: (url: string) => void
+  onAddMedia?: (media: any) => void
   placeholder?: string
   className?: string
   showPreview?: boolean
@@ -85,6 +86,7 @@ function ImagePreview({ url, onRemove, className }: ImagePreviewProps) {
             alt="Preview"
             onLoad={handleImageLoad}
             onError={handleImageError}
+            referrerPolicy="no-referrer"
             className={cn(
               "w-full h-full object-cover transition-opacity duration-200",
               isLoading ? "opacity-0" : "opacity-100"
@@ -133,11 +135,12 @@ export function ImageUrlInput({
   value,
   onChange,
   onAddImage,
+  onAddMedia,
   placeholder = "Enter image URL...",
   className,
   showPreview = true,
   allowMultiple = true,
-  maxImages = 10,
+  maxImages = 100,
   disabled = false
 }: ImageUrlInputProps) {
   const [isValidating, setIsValidating] = useState(false)
@@ -219,39 +222,50 @@ export function ImageUrlInput({
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
-    // Preview local file
-    const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64String = reader.result as string
-      setPreviewUrl(base64String)
+    setIsUploading(true)
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        return new Promise<void>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = async () => {
+            try {
+              const base64String = reader.result as string
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageBase64: base64String })
+              })
 
-      setIsUploading(true)
-      try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: base64String })
+              const data = await response.json()
+              if (data.success) {
+                onAddImage?.(data.url)
+                if (data.data) {
+                  onAddMedia?.(data.data)
+                }
+                resolve()
+              } else {
+                reject(new Error(data.error || 'Upload failed'))
+              }
+            } catch (err) {
+              reject(err)
+            }
+          }
+          reader.onerror = () => reject(new Error('File reading failed'))
+          reader.readAsDataURL(file)
         })
+      })
 
-        const data = await response.json()
-        if (data.success) {
-          onAddImage?.(data.url)
-          toast.success('Image uploaded successfully')
-          setPreviewUrl(null)
-        } else {
-          toast.error(data.error || 'Upload failed')
-        }
-      } catch (err) {
-        toast.error('Error uploading image')
-      } finally {
-        setIsUploading(false)
-        if (fileInputRef.current) fileInputRef.current.value = ''
-      }
+      await Promise.all(uploadPromises)
+      toast.success(`Uploaded ${files.length} file(s) successfully`)
+    } catch (err: any) {
+      toast.error(err.message || 'Error uploading some files')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
-    reader.readAsDataURL(file)
   }
 
   const handlePaste = async (e: React.ClipboardEvent) => {
@@ -325,6 +339,7 @@ export function ImageUrlInput({
               className="hidden"
               accept="image/*"
               onChange={handleFileChange}
+              multiple
             />
             <Button
               type="button"
@@ -354,7 +369,7 @@ export function ImageUrlInput({
             >
               <div className="p-3 bg-muted/30 rounded-xl border border-border/50 flex items-center gap-4">
                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-border bg-background flex-shrink-0">
-                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={previewUrl} alt="Preview" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium flex items-center gap-2">
@@ -477,6 +492,7 @@ function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageI
               alt="Preview"
               onLoad={() => { setIsLoading(false); setHasError(false) }}
               onError={() => { setIsLoading(false); setHasError(true) }}
+              referrerPolicy="no-referrer"
               className={cn(
                 "w-full h-full object-cover transition-opacity duration-200",
                 isLoading ? "opacity-0" : "opacity-100"
@@ -541,6 +557,7 @@ function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageI
 interface ImageGalleryInputProps {
   images: string[]
   onImagesChange: (images: string[]) => void
+  onAddMedia?: (media: any) => void
   className?: string
   maxImages?: number
 }
@@ -564,8 +581,9 @@ export function isAtMaxImages(images: string[], maxImages: number): boolean {
 export function ImageGalleryInput({
   images,
   onImagesChange,
+  onAddMedia,
   className,
-  maxImages = 10
+  maxImages = 100
 }: ImageGalleryInputProps) {
   const [inputUrl, setInputUrl] = useState('')
 
@@ -618,6 +636,9 @@ export function ImageGalleryInput({
           const newImages = [...images]
           newImages[index] = data.url
           onImagesChange(newImages)
+          if (data.data) {
+            onAddMedia?.(data.data)
+          }
           toast.success('Image replaced successfully')
         } else {
           toast.error(data.error || 'Upload failed')
@@ -642,6 +663,7 @@ export function ImageGalleryInput({
           value={inputUrl}
           onChange={setInputUrl}
           onAddImage={handleAddImage}
+          onAddMedia={onAddMedia}
           placeholder={isLimitReached ? "Maximum images reached" : "Add image URL..."}
           showPreview={false}
           disabled={isLimitReached}

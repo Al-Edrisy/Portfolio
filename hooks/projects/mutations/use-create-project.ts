@@ -32,20 +32,31 @@ export function useCreateProject() {
       // Prepare project document for Firestore
       const projectDoc = {
         title: projectData.title,
+        slug: projectData.slug,
         description: projectData.description,
         longDescription: projectData.longDescription || '',
+        challenges: projectData.challenges || '',
+        solutions: projectData.solutions || '',
+        results: projectData.results || '',
+        features: projectData.features || [],
+        documents: projectData.documents || [],
+        documentsMediaIds: projectData.documentsMediaIds || [],
+        thumbnailMediaId: projectData.thumbnailMediaId || null,
+        galleryMediaIds: projectData.galleryMediaIds || [],
+        videoMediaId: projectData.videoMediaId || null,
 
-        // Image structure
+        // Image structure (Legacy fallback)
         images: {
-          cover: projectData.image, // First image as cover
-          gallery: projectData.images || [projectData.image], // All images including cover
-          thumbnails: [projectData.image] // Optimized thumbnails (to be implemented)
+          cover: projectData.image || '', // First image as cover
+          gallery: projectData.images || (projectData.image ? [projectData.image] : []), // All images including cover
+          thumbnails: projectData.image ? [projectData.image] : [] // Optimized thumbnails
         },
 
-        // Video
+        // Video (Legacy fallback)
         videoUrl: projectData.videoUrl || null,
 
         tech: projectData.tech,
+        techStackIds: projectData.tech || [], // V2 Tech Stack ID mapping
         categories: projectData.categories || [], // New: support multiple categories
         category: projectData.categories?.[0] || projectData.category || '', // Legacy: keep for backward compatibility
         link: projectData.link || '',
@@ -53,7 +64,7 @@ export function useCreateProject() {
 
         // Status
         published: projectData.published,
-        featured: false, // New projects are not featured by default
+        featured: projectData.featured || false,
 
         // Author information
         authorId: user.id,
@@ -98,6 +109,9 @@ export function useCreateProject() {
         id: docRef.id,
         title: projectData.title,
         description: projectData.description,
+        thumbnailMediaId: projectData.thumbnailMediaId,
+        galleryMediaIds: projectData.galleryMediaIds,
+        videoMediaId: projectData.videoMediaId,
         image: projectData.image,
         videoUrl: projectData.videoUrl, // Include videoUrl in returned object
         tech: projectData.tech,
@@ -109,8 +123,11 @@ export function useCreateProject() {
         updatedAt: new Date(),
         published: projectData.published,
         authorId: user.id,
+        authorName: user.name,
         reactionsCount: projectDoc.reactionsCount,
-        commentsCount: 0
+        commentsCount: 0,
+        documents: projectDoc.documents,
+        documentsMediaIds: projectDoc.documentsMediaIds
       }
 
       toast({

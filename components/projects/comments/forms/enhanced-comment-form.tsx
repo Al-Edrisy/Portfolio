@@ -31,6 +31,7 @@ interface EnhancedCommentFormProps {
   autoFocus?: boolean
   className?: string
   variant?: 'default' | 'compact' | 'minimal'
+  showRichText?: boolean
 }
 
 export function EnhancedCommentForm({
@@ -49,6 +50,7 @@ export function EnhancedCommentForm({
   const [isFocused, setIsFocused] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
   const { user } = useAuth()
@@ -176,7 +178,7 @@ export function EnhancedCommentForm({
         
         <div className="flex-1 flex gap-2">
           <input
-            ref={textareaRef}
+            ref={textareaRef as any}
             type="text"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -228,16 +230,23 @@ export function EnhancedCommentForm({
           </Avatar>
           
           <div className="flex-1 space-y-2">
-            <Textarea
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              placeholder={placeholder}
-              disabled={loading}
-              className="min-h-[60px] resize-none text-sm border-2 focus:border-primary/50 transition-all duration-200"
-            />
+            {isGeneratingAI ? (
+              <div className="space-y-2 py-3 px-3 min-h-[60px] rounded-lg border border-purple-200 dark:border-purple-800/30 bg-purple-50/10 dark:bg-purple-950/5 animate-pulse">
+                <div className="h-3 bg-purple-300/30 dark:bg-purple-400/20 rounded-md w-[90%]" />
+                <div className="h-3 bg-purple-300/30 dark:bg-purple-400/20 rounded-md w-[75%]" />
+              </div>
+            ) : (
+              <Textarea
+                ref={textareaRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                placeholder={placeholder}
+                disabled={loading}
+                className="min-h-[60px] resize-none text-sm border-2 focus:border-primary/50 transition-all duration-200"
+              />
+            )}
             
             {/* AI Generator - Only show for top-level comments with project info */}
             {!parentCommentId && projectTitle && projectDescription && (
@@ -246,6 +255,7 @@ export function EnhancedCommentForm({
                   projectTitle={projectTitle}
                   projectDescription={projectDescription}
                   onCommentGenerated={handleAICommentGenerated}
+                  onLoadingChange={setIsGeneratingAI}
                   disabled={loading}
                 />
               </div>
@@ -281,7 +291,7 @@ export function EnhancedCommentForm({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!hasContent || loading || isOverLimit}
+                  disabled={!hasContent || loading || isOverLimit || isGeneratingAI}
                   className="gap-2"
                 >
                   {loading ? (
@@ -352,17 +362,25 @@ export function EnhancedCommentForm({
 
         {/* Textarea */}
         <div className="p-4">
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            disabled={loading}
-            className="min-h-[120px] resize-none border-0 p-0 text-base focus:ring-0 
-                     placeholder:text-muted-foreground/70 disabled:opacity-50"
-          />
+          {isGeneratingAI ? (
+            <div className="space-y-3 py-4 px-4 min-h-[120px] rounded-lg border border-purple-200 dark:border-purple-800/30 bg-purple-50/10 dark:bg-purple-950/5 animate-pulse">
+              <div className="h-4 bg-purple-300/30 dark:bg-purple-400/20 rounded-md w-[95%]" />
+              <div className="h-4 bg-purple-300/30 dark:bg-purple-400/20 rounded-md w-[85%]" />
+              <div className="h-4 bg-purple-300/30 dark:bg-purple-400/20 rounded-md w-[60%]" />
+            </div>
+          ) : (
+            <Textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              placeholder={placeholder}
+              disabled={loading}
+              className="min-h-[120px] resize-none border-0 p-0 text-base focus:ring-0 
+                       placeholder:text-muted-foreground/70 disabled:opacity-50"
+            />
+          )}
         </div>
 
 
@@ -404,9 +422,18 @@ export function EnhancedCommentForm({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
+                  {!parentCommentId && projectTitle && projectDescription && (
+                    <AICommentGenerator
+                      projectTitle={projectTitle}
+                      projectDescription={projectDescription}
+                      onCommentGenerated={handleAICommentGenerated}
+                      onLoadingChange={setIsGeneratingAI}
+                      disabled={loading}
+                    />
+                  )}
                   <Button
                     type="submit"
-                    disabled={!hasContent || loading || isOverLimit}
+                    disabled={!hasContent || loading || isOverLimit || isGeneratingAI}
                     className="gap-2 bg-primary hover:bg-primary/90"
                   >
                     {loading ? (

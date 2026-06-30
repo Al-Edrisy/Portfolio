@@ -24,8 +24,8 @@ export function useToggleFeatured() {
       return false
     }
 
-    // Check if user is admin (only admins should be able to toggle featured status)
-    if (user.role !== 'admin') {
+    // Check if user is developer (only developers should be able to toggle featured status)
+    if (user.role !== 'developer') {
       setError('Only administrators can manage featured projects')
       toast({
         title: "Permission Denied",
@@ -89,8 +89,8 @@ export function useToggleFeatured() {
       return false
     }
 
-    // Check if user is admin
-    if (user.role !== 'admin') {
+    // Check if user is developer
+    if (user.role !== 'developer') {
       setError('Only administrators can manage featured projects')
       toast({
         title: "Permission Denied",

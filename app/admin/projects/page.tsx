@@ -21,13 +21,13 @@ export default function AdminProjectsPage() {
   const { togglePublished } = useTogglePublished()
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== 'developer') {
       router.push('/')
       return
     }
   }, [user, router])
 
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== 'developer') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -41,8 +41,8 @@ export default function AdminProjectsPage() {
     )
   }
 
-  const handleToggleFeatured = async (projectId: string) => {
-    await toggleFeatured(projectId)
+  const handleToggleFeatured = async (projectId: string, currentFeatured: boolean, projectTitle?: string) => {
+    await toggleFeatured(projectId, currentFeatured, projectTitle)
     refresh()
   }
 
@@ -190,7 +190,7 @@ export default function AdminProjectsPage() {
                       <Button
                         size="sm"
                         variant={project.featured ? "default" : "secondary"}
-                        onClick={() => handleToggleFeatured(project.id)}
+                        onClick={() => handleToggleFeatured(project.id, project.featured || false, project.title)}
                       >
                         {project.featured ? (
                           <>
@@ -218,11 +218,11 @@ export default function AdminProjectsPage() {
                     {/* Stats */}
                     <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
                       <div className="flex justify-between">
-                        <span>Reactions: {project.reactionCount || 0}</span>
-                        <span>Comments: {project.commentCount || 0}</span>
+                        <span>Reactions: {Object.values(project.reactionsCount || {}).reduce((a, b) => a + b, 0)}</span>
+                        <span>Comments: {project.commentsCount || 0}</span>
                       </div>
                       <div className="mt-1">
-                        Created: {new Date(project.createdAt?.toDate?.() || project.createdAt).toLocaleDateString()}
+                        Created: {project.createdAt.toLocaleDateString()}
                       </div>
                     </div>
                   </div>

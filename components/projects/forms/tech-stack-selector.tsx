@@ -18,67 +18,19 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { TechStackItem } from '@/types'
 
-// Popular tech stack categories and items
-const techCategories = {
-  'Frontend': {
-    icon: Globe,
-    color: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
-    items: [
-      'React', 'Vue.js', 'Angular', 'Svelte', 'Next.js', 'Nuxt.js',
-      'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Sass', 'Tailwind CSS',
-      'Bootstrap', 'Material-UI', 'Chakra UI', 'Styled Components'
-    ]
-  },
-  'Mobile': {
-    icon: Smartphone,
-    color: 'bg-secondary/10 text-secondary-foreground border-secondary/20 hover:bg-secondary/20',
-    items: [
-      'React Native', 'Flutter', 'Swift', 'Kotlin', 'Dart', 'Ionic',
-      'Xamarin', 'Cordova', 'Expo', 'NativeScript'
-    ]
-  },
-  'Backend': {
-    icon: Code,
-    color: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
-    items: [
-      'Node.js', 'Python', 'Django', 'Flask', 'FastAPI', 'Express.js',
-      'Ruby', 'Ruby on Rails', 'PHP', 'Laravel', 'Symfony', 'Java',
-      'Spring Boot', 'C#', '.NET', 'Go', 'Rust', 'Elixir'
-    ]
-  },
-  'Database': {
-    icon: Database,
-    color: 'bg-accent/10 text-accent-foreground border-accent/20 hover:bg-accent/20',
-    items: [
-      'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Firebase', 'Supabase',
-      'SQLite', 'DynamoDB', 'Elasticsearch', 'Cassandra', 'Neo4j'
-    ]
-  },
-  'Cloud & DevOps': {
-    icon: Cloud,
-    color: 'bg-card/50 text-card-foreground border-border hover:bg-card',
-    items: [
-      'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'Vercel',
-      'Netlify', 'Heroku', 'Railway', 'DigitalOcean', 'Terraform', 'Jenkins'
-    ]
-  },
-  'Design & Tools': {
-    icon: Palette,
-    color: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20',
-    items: [
-      'Figma', 'Sketch', 'Adobe XD', 'Photoshop', 'Illustrator', 'Framer',
-      'Webflow', 'Git', 'GitHub', 'GitLab', 'Bitbucket', 'VS Code'
-    ]
-  },
-  'Other': {
-    icon: Wrench,
-    color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/30 dark:text-gray-300 dark:border-gray-800',
-    items: [
-      'GraphQL', 'REST API', 'WebSocket', 'Socket.io', 'Prisma', 'tRPC',
-      'Jest', 'Cypress', 'Storybook', 'Webpack', 'Vite', 'Parcel'
-    ]
-  }
+// Map category string to UI parameters
+const categoryConfig = {
+  'frontend': { label: 'Frontend', icon: Globe, color: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20' },
+  'mobile': { label: 'Mobile', icon: Smartphone, color: 'bg-secondary/10 text-secondary-foreground border-secondary/20 hover:bg-secondary/20' },
+  'backend': { label: 'Backend', icon: Code, color: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted' },
+  'database': { label: 'Database', icon: Database, color: 'bg-accent/10 text-accent-foreground border-accent/20 hover:bg-accent/20' },
+  'devops': { label: 'Cloud & DevOps', icon: Cloud, color: 'bg-card/50 text-card-foreground border-border hover:bg-card' },
+  'design': { label: 'Design & Tools', icon: Palette, color: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20' },
+  'other': { label: 'Other', icon: Wrench, color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/30 dark:text-gray-300 dark:border-gray-800' }
 }
 
 interface TechStackSelectorProps {
@@ -97,9 +49,27 @@ export function TechStackSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const [catalog, setCatalog] = useState<TechStackItem[]>([])
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+
+  // Fetch catalog from Firestore
+  useEffect(() => {
+    async function loadCatalog() {
+      try {
+        const q = query(collection(db, 'tech_stack_catalog'), orderBy('displayOrder', 'asc'))
+        const snapshot = await getDocs(q)
+        const items = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as any[]
+        setCatalog(items)
+      } catch (err) {
+        console.error('Error fetching tech stack catalog:', err)
+      }
+    }
+    loadCatalog()
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -122,52 +92,41 @@ export function TechStackSelector({
     }
   }, [isOpen])
 
-  // Filter tech items based on search and category
-  const getFilteredTech = () => {
-    let allItems: Array<{ item: string; category: string; icon: any; color: string }> = []
-    
-    Object.entries(techCategories).forEach(([category, config]) => {
-      if (selectedCategory && selectedCategory !== category) return
-      
-      config.items.forEach(item => {
-        if (searchQuery && !item.toLowerCase().includes(searchQuery.toLowerCase())) return
-        
-        allItems.push({
-          item,
-          category,
-          icon: config.icon,
-          color: config.color
-        })
-      })
-    })
-
-    return allItems
-  }
-
-  const handleAddTech = (tech: string) => {
+  const handleAddTech = (techId: string) => {
     if (selectedTech.length >= maxItems) {
       alert(`Maximum ${maxItems} technologies allowed`)
       return
     }
     
-    if (!selectedTech.includes(tech)) {
-      onTechChange([...selectedTech, tech])
+    if (!selectedTech.includes(techId)) {
+      onTechChange([...selectedTech, techId])
       setSearchQuery('')
       setSelectedCategory(null)
     }
   }
 
-  const handleRemoveTech = (tech: string) => {
-    onTechChange(selectedTech.filter(t => t !== tech))
+  const handleRemoveTech = (techId: string) => {
+    onTechChange(selectedTech.filter(t => t !== techId))
   }
 
-  const filteredTech = getFilteredTech()
+  // Filter and group items
+  const filteredCatalog = catalog.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = !selectedCategory || item.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
+
+  // Grouped items
+  const groupedCatalog = filteredCatalog.reduce((acc, item) => {
+    const cat = item.category || 'other'
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(item)
+    return acc
+  }, {} as Record<string, TechStackItem[]>)
 
   return (
     <div ref={dropdownRef} className={cn("relative", className)}>
-      {/* Selected Tech Display */}
       <div className="space-y-3">
-        {/* Trigger Button */}
         <Button
           type="button"
           variant="outline"
@@ -190,20 +149,18 @@ export function TechStackSelector({
           )} />
         </Button>
 
-        {/* Selected Items */}
         {selectedTech.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {selectedTech.map((tech) => {
-              const category = Object.entries(techCategories).find(([_, config]) => 
-                config.items.includes(tech)
-              )?.[0] || 'Other'
-              
-              const config = techCategories[category as keyof typeof techCategories]
+            {selectedTech.map((techId) => {
+              const catalogItem = catalog.find(item => item.id === techId)
+              const displayName = catalogItem ? catalogItem.name : techId
+              const cat = catalogItem?.category || 'other'
+              const config = categoryConfig[cat as keyof typeof categoryConfig] || categoryConfig.other
               const Icon = config.icon
 
               return (
                 <motion.div
-                  key={tech}
+                  key={techId}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -216,9 +173,10 @@ export function TechStackSelector({
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  <span>{tech}</span>
+                  <span>{displayName}</span>
                   <button
-                    onClick={() => handleRemoveTech(tech)}
+                    type="button"
+                    onClick={() => handleRemoveTech(techId)}
                     className="hover:bg-black/10 rounded-full p-0.5 transition-colors"
                   >
                     <X className="w-3 h-3" />
@@ -230,7 +188,6 @@ export function TechStackSelector({
         )}
       </div>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -246,9 +203,7 @@ export function TechStackSelector({
               "ring-1 ring-black/5 dark:ring-white/10"
             )}
           >
-            {/* Search & Categories */}
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              {/* Search Input */}
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -261,7 +216,6 @@ export function TechStackSelector({
                 />
               </div>
 
-              {/* Category Filters */}
               <div className="flex flex-wrap gap-1">
                 <Button
                   type="button"
@@ -272,45 +226,38 @@ export function TechStackSelector({
                 >
                   All
                 </Button>
-                {Object.entries(techCategories).map(([category, config]) => {
+                {Object.entries(categoryConfig).map(([key, config]) => {
                   const Icon = config.icon
                   return (
                     <Button
-                      key={category}
+                      key={key}
                       type="button"
-                      variant={selectedCategory === category ? "default" : "ghost"}
+                      variant={selectedCategory === key ? "default" : "ghost"}
                       size="sm"
-                      onClick={() => setSelectedCategory(category)}
+                      onClick={() => setSelectedCategory(key)}
                       className="text-xs flex items-center gap-1"
                     >
                       <Icon className="w-3 h-3" />
-                      {category}
+                      {config.label}
                     </Button>
                   )
                 })}
               </div>
             </div>
 
-            {/* Tech List */}
             <div className="max-h-60 overflow-y-auto">
-              {filteredTech.length > 0 ? (
+              {Object.keys(groupedCatalog).length > 0 ? (
                 <div className="p-2">
-                  {Object.entries(
-                    filteredTech.reduce((acc, item) => {
-                      if (!acc[item.category]) acc[item.category] = []
-                      acc[item.category].push(item)
-                      return acc
-                    }, {} as Record<string, typeof filteredTech>)
-                  ).map(([category, items]) => {
-                    const config = techCategories[category as keyof typeof techCategories]
+                  {Object.entries(groupedCatalog).map(([cat, items]) => {
+                    const config = categoryConfig[cat as keyof typeof categoryConfig] || categoryConfig.other
                     const Icon = config.icon
 
                     return (
-                      <div key={category} className="mb-4 last:mb-0">
+                      <div key={cat} className="mb-4 last:mb-0">
                         <div className="flex items-center gap-2 px-2 py-1 mb-2">
                           <Icon className="w-4 h-4" />
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {category}
+                            {config.label}
                           </span>
                           <span className="text-xs text-gray-500">
                             ({items.length})
@@ -318,14 +265,12 @@ export function TechStackSelector({
                         </div>
                         
                         <div className="grid grid-cols-2 gap-1">
-                          {items.map(({ item }) => (
+                          {items.map((item) => (
                             <motion.button
-                              key={item}
+                              key={item.id}
                               type="button"
-                              onClick={() => handleAddTech(item)}
-                              disabled={selectedTech.includes(item)}
-                              onMouseEnter={() => setHoveredItem(item)}
-                              onMouseLeave={() => setHoveredItem(null)}
+                              onClick={() => handleAddTech(item.id)}
+                              disabled={selectedTech.includes(item.id)}
                               className={cn(
                                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
                                 "text-left transition-all duration-200",
@@ -333,26 +278,17 @@ export function TechStackSelector({
                                 "hover:bg-gray-100 dark:hover:bg-gray-700",
                                 "hover:border-gray-200 dark:hover:border-gray-600",
                                 "hover:shadow-sm",
-                                selectedTech.includes(item) 
+                                selectedTech.includes(item.id) 
                                   ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800" 
                                   : "cursor-pointer hover:scale-[1.02]"
                               )}
-                              whileHover={!selectedTech.includes(item) ? { scale: 1.02 } : {}}
-                              whileTap={!selectedTech.includes(item) ? { scale: 0.98 } : {}}
+                              whileHover={!selectedTech.includes(item.id) ? { scale: 1.02 } : {}}
+                              whileTap={!selectedTech.includes(item.id) ? { scale: 0.98 } : {}}
                             >
-                              <Plus className={cn(
-                                "w-3 h-3 transition-colors",
-                                selectedTech.includes(item) 
-                                  ? "text-gray-400" 
-                                  : "text-gray-500 group-hover:text-gray-700"
-                              )} />
-                              <span className="font-medium">{item}</span>
-                              {selectedTech.includes(item) && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  className="ml-auto w-2 h-2 bg-green-500 rounded-full"
-                                />
+                              <Plus className="w-3 h-3" />
+                              <span className="font-medium">{item.name}</span>
+                              {selectedTech.includes(item.id) && (
+                                <div className="ml-auto w-2 h-2 bg-green-500 rounded-full" />
                               )}
                             </motion.button>
                           ))}
@@ -365,12 +301,10 @@ export function TechStackSelector({
                 <div className="p-8 text-center text-gray-500">
                   <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No technologies found</p>
-                  <p className="text-xs text-gray-400">Try adjusting your search</p>
                 </div>
               )}
             </div>
 
-            {/* Footer */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>{selectedTech.length}/{maxItems} selected</span>

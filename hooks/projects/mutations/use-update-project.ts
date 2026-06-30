@@ -41,9 +41,20 @@ export function useUpdateProject() {
 
       // Update fields if provided
       if (projectData.title !== undefined) updateData.title = projectData.title
+      if (projectData.slug !== undefined) updateData.slug = projectData.slug
       if (projectData.description !== undefined) updateData.description = projectData.description
       if (projectData.longDescription !== undefined) updateData.longDescription = projectData.longDescription
-      if (projectData.tech !== undefined) updateData.tech = projectData.tech
+      if (projectData.challenges !== undefined) updateData.challenges = projectData.challenges
+      if (projectData.solutions !== undefined) updateData.solutions = projectData.solutions
+      if (projectData.results !== undefined) updateData.results = projectData.results
+      if (projectData.features !== undefined) updateData.features = projectData.features
+      if (projectData.documents !== undefined) updateData.documents = projectData.documents
+      if (projectData.documentsMediaIds !== undefined) updateData.documentsMediaIds = projectData.documentsMediaIds
+      
+      if (projectData.tech !== undefined) {
+        updateData.tech = projectData.tech
+        updateData.techStackIds = projectData.tech || [] // Sync V2 techStackIds
+      }
       if (projectData.categories !== undefined) {
         updateData.categories = projectData.categories
         updateData.category = projectData.categories[0] || '' // Keep legacy field in sync
@@ -56,13 +67,27 @@ export function useUpdateProject() {
         // If empty string, set to null to remove it
         updateData.videoUrl = projectData.videoUrl || null
       }
+      if (projectData.featured !== undefined) {
+        updateData.featured = projectData.featured
+      }
+
+      // Centralized Media System updates
+      if (projectData.thumbnailMediaId !== undefined) {
+        updateData.thumbnailMediaId = projectData.thumbnailMediaId || null
+      }
+      if (projectData.galleryMediaIds !== undefined) {
+        updateData.galleryMediaIds = projectData.galleryMediaIds || []
+      }
+      if (projectData.videoMediaId !== undefined) {
+        updateData.videoMediaId = projectData.videoMediaId || null
+      }
 
       // Handle images update
       if (projectData.image !== undefined || projectData.images !== undefined) {
         // Use dot notation for nested fields
-        (updateData as any)['images.cover'] = projectData.image || projectData.images?.[0];
-        (updateData as any)['images.gallery'] = projectData.images || [projectData.image];
-        (updateData as any)['images.thumbnails'] = [projectData.image || projectData.images?.[0]];
+        (updateData as any)['images.cover'] = projectData.image || projectData.images?.[0] || '';
+        (updateData as any)['images.gallery'] = projectData.images || (projectData.image ? [projectData.image] : []);
+        (updateData as any)['images.thumbnails'] = projectData.image || projectData.images?.[0] ? [projectData.image || projectData.images?.[0]] : [];
       }
 
       // Handle published status
@@ -94,6 +119,9 @@ export function useUpdateProject() {
         id: projectId,
         title: projectData.title || '',
         description: projectData.description || '',
+        thumbnailMediaId: projectData.thumbnailMediaId,
+        galleryMediaIds: projectData.galleryMediaIds,
+        videoMediaId: projectData.videoMediaId,
         image: projectData.image || '',
         videoUrl: projectData.videoUrl, // Include videoUrl in return
         tech: projectData.tech || [],
@@ -117,7 +145,9 @@ export function useUpdateProject() {
           rocket: 0,
           clap: 0
         },
-        commentsCount: 0
+        commentsCount: 0,
+        documents: projectData.documents,
+        documentsMediaIds: projectData.documentsMediaIds
       }
 
       return updatedProject

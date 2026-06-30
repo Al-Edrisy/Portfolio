@@ -26,7 +26,8 @@ import {
   ReactionDocument,
   CommentDocument,
   UserDocument,
-  ReactionType
+  ReactionType,
+  MediaAsset
 } from '@/types'
 
 // Collection names
@@ -45,6 +46,84 @@ export const timestampToDate = (timestamp: Timestamp): Date => {
 // Convert Date to Firestore timestamp
 export const dateToTimestamp = (date: Date): Timestamp => {
   return Timestamp.fromDate(date)
+}
+
+/**
+ * Fetch a single MediaAsset from Firestore
+ */
+export const getMediaAsset = async (mediaId: string): Promise<MediaAsset | null> => {
+  if (!mediaId) return null
+  try {
+    const mediaDoc = await getDoc(doc(db, 'media_assets', mediaId))
+    if (!mediaDoc.exists()) return null
+    const data = mediaDoc.data()
+    return {
+      id: mediaDoc.id,
+      url: data.url || '',
+      mediaType: data.mediaType || 'image',
+      mimeType: data.mimeType || 'image/jpeg',
+      width: data.width,
+      height: data.height,
+      fileSize: data.fileSize || 0,
+      altText: data.altText,
+      uploadedBy: data.uploadedBy,
+      createdAt: data.createdAt ? data.createdAt.toDate() : new Date()
+    }
+  } catch (error) {
+    console.error('Error fetching media asset:', error)
+    return null
+  }
+}
+
+/**
+ * Fetch multiple MediaAssets from Firestore
+ */
+export const getMediaAssets = async (mediaIds: string[]): Promise<MediaAsset[]> => {
+  if (!mediaIds || mediaIds.length === 0) return []
+  try {
+    const assets = await Promise.all(mediaIds.map(id => getMediaAsset(id)))
+    return assets.filter((asset): asset is MediaAsset => asset !== null)
+  } catch (error) {
+    console.error('Error fetching media assets:', error)
+    return []
+  }
+}
+
+/**
+ * Resolves project media assets asynchronously
+ */
+export const resolveProjectMedia = async (project: Project): Promise<Project> => {
+  const resolved = { ...project }
+  
+  if (project.thumbnailMediaId) {
+    const thumb = await getMediaAsset(project.thumbnailMediaId)
+    if (thumb) {
+      resolved.thumbnail = thumb
+      resolved.image = thumb.url
+      if (!resolved.images) {
+        resolved.images = [thumb.url]
+      } else {
+        resolved.images = [thumb.url, ...resolved.images.slice(1)]
+      }
+    }
+  }
+  
+  if (project.galleryMediaIds && project.galleryMediaIds.length > 0) {
+    const gallery = await getMediaAssets(project.galleryMediaIds)
+    resolved.gallery = gallery
+    const galleryUrls = gallery.map(g => g.url)
+    resolved.images = resolved.thumbnail ? [resolved.thumbnail.url, ...galleryUrls] : galleryUrls
+  }
+  
+  if (project.videoMediaId) {
+    const vid = await getMediaAsset(project.videoMediaId)
+    if (vid) {
+      resolved.video = vid
+      resolved.videoUrl = vid.url
+    }
+  }
+  
+  return resolved
 }
 
 // Convert Firestore document to Project
@@ -86,6 +165,9 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     id: doc.id,
     title: data.title,
     description: data.description,
+    thumbnailMediaId: data.thumbnailMediaId,
+    galleryMediaIds: data.galleryMediaIds,
+    videoMediaId: data.videoMediaId,
     // Legacy field: use cover from images structure, or legacy image field
     image: data.images?.cover || data.image || '',
     // New images array: normalized flat array for UI consumption
@@ -93,6 +175,7 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
     videoUrl: data.videoUrl,
     tech: data.tech,
+    categories: data.categories || [],
     category: data.category,
     link: data.link || '',
     github: data.github || '',
@@ -106,6 +189,8 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     commentsCount: data.commentsCount || 0,
     viewsCount: data.viewsCount || 0,
     sharesCount: data.sharesCount || 0,
+    documents: data.documents || [],
+    documentsMediaIds: data.documentsMediaIds || [],
   }
 }
 
@@ -122,15 +207,15 @@ export const docToReaction = (doc: QueryDocumentSnapshot): Reaction => {
 }
 
 // Convert Firestore document to Comment
-export const docToComment = async (doc: QueryDocumentSnapshot): Promise<Comment> => {
-  const data = doc.data() as CommentDocument
+export const docToComment = async (docSnapshot: QueryDocumentSnapshot): Promise<Comment> => {
+  const data = docSnapshot.data() as CommentDocument
 
   // Get user data
   const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, data.userId))
   const userData = userDoc.exists() ? userDoc.data() as UserDocument : null
 
   return {
-    id: doc.id,
+    id: docSnapshot.id,
     projectId: data.projectId,
     userId: data.userId,
     content: data.content,
@@ -154,9 +239,25 @@ export const docToUser = (doc: QueryDocumentSnapshot): User => {
     email: data.email,
     name: data.name,
     avatar: data.avatar,
+    avatarMediaId: data.avatarMediaId,
     role: data.role,
     createdAt: timestampToDate(data.createdAt),
   }
+}
+
+/**
+ * Resolves user avatar media asset asynchronously
+ */
+export const resolveUserMedia = async (user: User): Promise<User> => {
+  const resolved = { ...user }
+  if (user.avatarMediaId) {
+    const avatar = await getMediaAsset(user.avatarMediaId)
+    if (avatar) {
+      resolved.avatarMedia = avatar
+      resolved.avatar = avatar.url
+    }
+  }
+  return resolved
 }
 
 // Get project by ID with reactions and comments count
@@ -169,6 +270,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
     }
 
     const project = docToProject(projectDoc as QueryDocumentSnapshot)
+    const resolvedProject = await resolveProjectMedia(project)
 
     // Get reactions count
     const reactionsSnapshot = await getDocs(
@@ -187,7 +289,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
     )
 
     return {
-      ...project,
+      ...resolvedProject,
       reactionsCount,
       commentsCount: commentsSnapshot.size,
     }
@@ -209,7 +311,8 @@ export const getUserById = async (userId: string): Promise<User | null> => {
       return null
     }
 
-    return docToUser(userDoc as QueryDocumentSnapshot)
+    const user = docToUser(userDoc as QueryDocumentSnapshot)
+    return resolveUserMedia(user)
   } catch (error) {
     console.error('Error getting user:', error)
     return null
@@ -220,7 +323,7 @@ export const getUserById = async (userId: string): Promise<User | null> => {
 export const isUserAdmin = async (userId: string): Promise<boolean> => {
   try {
     const user = await getUserById(userId)
-    return user?.role === 'admin' || false
+    return user?.role === 'developer' || false
   } catch (error) {
     console.error('Error checking admin status:', error)
     return false
@@ -248,6 +351,7 @@ export const getPaginatedProjects = async (
     const projects = await Promise.all(
       snapshot.docs.map(async (doc) => {
         const project = docToProject(doc)
+        const resolvedProject = await resolveProjectMedia(project)
 
         // Get reactions count
         const reactionsSnapshot = await getDocs(
@@ -266,7 +370,7 @@ export const getPaginatedProjects = async (
         )
 
         return {
-          ...project,
+          ...resolvedProject,
           reactionsCount,
           commentsCount: commentsSnapshot.size,
         }

@@ -10,7 +10,8 @@ import {
   addDoc, 
   deleteDoc, 
   doc,
-  getDoc
+  getDoc,
+  getDocs
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Reaction, ReactionType } from '@/types'
@@ -322,8 +323,8 @@ export function useReactionStats(projectId?: string) {
 
         const snapshot = await getDocs(q)
         
-        const reactionsByType = snapshot.docs.reduce((acc, doc) => {
-          const type = doc.data().type as ReactionType
+        const reactionsByType = snapshot.docs.reduce((acc: Record<ReactionType, number>, reactionDoc) => {
+          const type = reactionDoc.data().type as ReactionType
           acc[type] = (acc[type] || 0) + 1
           return acc
         }, {} as Record<ReactionType, number>)
