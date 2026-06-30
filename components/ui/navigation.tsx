@@ -28,8 +28,8 @@ export default function Navigation() {
   const { user } = useAuth()
 
   // Check user permissions
-  const canManageProjects = user?.role === 'developer'
-  const isAdmin = user?.role === 'developer'
+  const canManageProjects = user?.role === 'admin'
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     setMounted(true)

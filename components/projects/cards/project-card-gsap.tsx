@@ -73,7 +73,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
   viewMode = 'list'
 }: LinkedInStyleProjectCardProps) {
   const router = useRouter()
-  const { user, isDeveloper } = useAuth()
+  const { user, isAdmin } = useAuth()
   const [isClient, setIsClient] = useState(false)
   const [showCommentsInline, setShowCommentsInline] = useState(false)
   const [showCommentsModal, setShowCommentsModal] = useState(false)
@@ -265,7 +265,7 @@ const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCardGSAP(
             </div>
 
             <div className="flex items-center gap-2 relative">
-              {isClient && (showAdminControls || isDeveloper) && (
+              {isClient && (showAdminControls || isAdmin) && (
                 <>
                   <Button
                     variant="ghost"

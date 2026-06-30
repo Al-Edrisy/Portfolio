@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { parseVideoUrl, getVideoSourceName, getVideoSourceStyle, isValidVideoUrl } from '@/lib/utils/video-helpers'
 import { toast } from 'sonner'
+import { auth } from '@/lib/firebase'
 
 interface VideoUrlInputProps {
   videoUrl?: string
@@ -55,9 +56,13 @@ export const VideoUrlInput = memo(function VideoUrlInput({
     reader.onloadend = async () => {
       try {
         const base64String = reader.result as string
+        const idToken = await auth.currentUser?.getIdToken()
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+          },
           body: JSON.stringify({
             imageBase64: base64String,
             filename: file.name,

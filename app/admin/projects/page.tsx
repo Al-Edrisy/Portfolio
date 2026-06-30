@@ -21,13 +21,13 @@ export default function AdminProjectsPage() {
   const { togglePublished } = useTogglePublished()
 
   useEffect(() => {
-    if (!user || user.role !== 'developer') {
+    if (!user || user.role !== 'admin') {
       router.push('/')
       return
     }
   }, [user, router])
 
-  if (!user || user.role !== 'developer') {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

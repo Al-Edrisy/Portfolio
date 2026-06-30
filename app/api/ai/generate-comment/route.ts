@@ -4,6 +4,7 @@ import { generateAIComment } from '@/lib/ai/openrouter-client'
 import { checkRateLimit, getRateLimitInfo } from '@/lib/ai/rate-limiter'
 import { COMMENT_TONE_OPTIONS, MIN_DESCRIPTION_LENGTH, MAX_COMMENT_LENGTH } from '@/lib/ai/comment-tone-configs'
 import type { AICommentGenerateResponse } from '@/types/ai'
+import { requireUser } from '@/lib/auth-utils'
 
 /**
  * Zod schema for request validation
@@ -50,6 +51,16 @@ type GenerateCommentInput = z.infer<typeof GenerateCommentSchema>
  */
 export async function POST(request: NextRequest) {
   try {
+    // Authorize request on server
+    try {
+      await requireUser(request)
+    } catch (authError: any) {
+      if (authError instanceof Response) {
+        return authError
+      }
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Check if API key is configured
     const apiKey = process.env.OPENROUTER_API_KEY
     
@@ -195,6 +206,16 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // Authorize request on server
+    try {
+      await requireUser(request)
+    } catch (authError: any) {
+      if (authError instanceof Response) {
+        return authError
+      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 

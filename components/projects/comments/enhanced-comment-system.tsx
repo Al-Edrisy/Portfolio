@@ -227,9 +227,9 @@ function CommentThread({
   const hasReplies = (comment.repliesCount ?? 0) > 0 || replies.length > 0
   const canReply = depth < maxDepth
   const isAuthor = currentUser?.id === comment.userId
-  const isDeveloper = currentUser?.role === 'developer' || currentUser?.role === 'admin'
-  const canEdit = isAuthor || isDeveloper
-  const canDelete = isAuthor || isDeveloper
+  const isAdmin = currentUser?.role === 'admin'
+  const canEdit = isAuthor || isAdmin
+  const canDelete = isAuthor || isAdmin
 
   // Load replies when expanded
   useEffect(() => {
@@ -337,12 +337,12 @@ function CommentThread({
                 {isAuthor && (
                   <Badge variant="secondary" className="text-xs px-1.5 py-0">You</Badge>
                 )}
-                {!isAuthor && isDeveloper && (
+                {!isAuthor && isAdmin && (
                   <Badge 
                     variant="outline" 
                     className="text-xs px-1.5 py-0 border-blue-500 text-blue-600"
                   >
-                    Developer
+                    Admin
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground">
@@ -351,7 +351,7 @@ function CommentThread({
                 {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
                   <span className="text-xs text-muted-foreground italic">(edited)</span>
                 )}
-                {!isAuthor && isDeveloper && (
+                {!isAuthor && isAdmin && (
                   <span className="text-xs text-muted-foreground/70 italic">(moderated)</span>
                 )}
               </div>

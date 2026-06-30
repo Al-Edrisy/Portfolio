@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
 
 export function ModernProjectsList() {
   const router = useRouter()
-  const { isDeveloper } = useAuth()
+  const { isAdmin } = useAuth()
   const { toast } = useToast()
   const [isClient, setIsClient] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -249,7 +249,7 @@ export function ModernProjectsList() {
                     key={project.id}
                     project={project}
                     index={index}
-                    showAdminControls={isClient && isDeveloper}
+                    showAdminControls={isClient && isAdmin}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onTogglePublished={handleTogglePublished}

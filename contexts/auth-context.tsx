@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: firebaseUser.email!,
               name: firebaseUser.displayName!,
               avatar: firebaseUser.photoURL!,
-              role: userData.role || 'user',
+              role: (userData.role === 'developer' || userData.role === 'admin') ? 'admin' : 'user',
               createdAt: userData.createdAt.toDate(),
             }
             
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 name: firebaseUser.displayName,
                 avatar: firebaseUser.photoURL,
                 email: firebaseUser.email,
-                role: userData.role,
+                role: (userData.role === 'developer' || userData.role === 'admin') ? 'admin' : 'user',
                 createdAt: userData.createdAt,
                 updatedAt: new Date(),
               })
@@ -149,8 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signInWithGoogle,
     logout,
-    isDeveloper: user?.role === 'developer' || user?.role === 'admin',
-    isAdmin: user?.role === 'admin' || user?.role === 'developer',
+    isDeveloper: user?.role === 'admin',
+    isAdmin: user?.role === 'admin',
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

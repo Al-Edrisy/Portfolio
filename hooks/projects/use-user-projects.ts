@@ -22,8 +22,8 @@ export function useUserProjects() {
   const [error, setError] = useState<string | null>(null)
 
   const loadUserProjects = useCallback(async () => {
-    // Only load projects if user is developer
-    if (!user?.id || user.role !== 'developer') {
+    // Only load projects if user is admin
+    if (!user?.id || user.role !== 'admin') {
       setProjects([])
       setLoading(false)
       return
@@ -75,7 +75,7 @@ export function useUserProjects() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, user?.role])
 
   const refresh = useCallback(() => {
     loadUserProjects()
@@ -101,8 +101,8 @@ export function useUserProjectsRealtime() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Only load projects if user is developer
-    if (!user?.id || user.role !== 'developer') {
+    // Only load projects if user is admin
+    if (!user?.id || user.role !== 'admin') {
       setProjects([])
       setLoading(false)
       return
@@ -163,7 +163,7 @@ export function useUserProjectsRealtime() {
     )
 
     return unsubscribe
-  }, [user?.id])
+  }, [user?.id, user?.role])
 
   return {
     projects,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { DEFAULT_AI_MODEL } from '@/lib/ai/model-configs'
+import { requireAdmin } from '@/lib/auth-utils'
 
 const GenerateStorySchema = z.object({
   title: z.string().min(1, 'Project title is required').max(200),
@@ -14,6 +15,16 @@ type GenerateStoryInput = z.infer<typeof GenerateStorySchema>
 
 export async function POST(request: NextRequest) {
   try {
+    // Authorize request on server
+    try {
+      await requireAdmin(request)
+    } catch (authError: any) {
+      if (authError instanceof Response) {
+        return authError
+      }
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     const apiKey = process.env.OPENROUTER_API_KEY
     if (!apiKey || apiKey.trim() === '') {
       return NextResponse.json(

@@ -54,8 +54,8 @@ export default function ProfilePage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
-  // Check if user can create projects (developer or admin)
-  const canCreateProjects = user?.role === 'developer' || user?.role === 'admin'
+  // Check if user can create projects (admin)
+  const canCreateProjects = user?.role === 'admin'
 
   // Only load projects for developers/admins
   const { projects, loading, refresh } = useUserProjects()
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                         <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
                         <p className="text-muted-foreground">{user.email}</p>
                         <Badge variant="secondary" className="mt-1">
-                          {user.role === 'admin' ? 'Admin' : user.role === 'developer' ? 'Developer' : 'User'}
+                          {user.role === 'admin' ? 'Admin' : 'User'}
                         </Badge>
                       </div>
                     </div>
@@ -262,11 +262,11 @@ export default function ProfilePage() {
                 <CardContent>
                   {canCreateProjects ? (
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className={`grid w-full ${(user.role === 'developer' || user.role === 'admin') ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                      <TabsList className={`grid w-full ${user.role === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
                         <TabsTrigger value="all">Projects</TabsTrigger>
                         <TabsTrigger value="published">Published</TabsTrigger>
                         <TabsTrigger value="drafts">Drafts</TabsTrigger>
-                        {(user.role === 'developer' || user.role === 'admin') && (
+                        {user.role === 'admin' && (
                           <TabsTrigger value="messages" className="gap-2">
                             Messages
                             {unreadCount > 0 && (
@@ -305,7 +305,7 @@ export default function ProfilePage() {
                         />
                       </TabsContent>
 
-                      {(user.role === 'developer' || user.role === 'admin') && (
+                      {user.role === 'admin' && (
                         <TabsContent value="messages" className="mt-6">
                           <AdminMessages />
                         </TabsContent>

@@ -35,6 +35,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useCreateProject, useUpdateProject } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
+import { auth } from '@/lib/firebase'
 import { Project } from '@/types'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -128,10 +129,12 @@ export function EnhancedProjectForm({
 
     setIsGeneratingStory(true)
     try {
+      const idToken = await auth.currentUser?.getIdToken()
       const response = await fetch('/api/ai/generate-story', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
         },
         body: JSON.stringify({
           title: formData.title,
@@ -181,9 +184,13 @@ export function EnhancedProjectForm({
     reader.onloadend = async () => {
       try {
         const base64String = reader.result as string
+        const idToken = await auth.currentUser?.getIdToken()
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+          },
           body: JSON.stringify({
             imageBase64: base64String,
             filename: file.name,
@@ -338,9 +345,13 @@ export function EnhancedProjectForm({
         })
       )
 
+      const idToken = await auth.currentUser?.getIdToken()
       const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+        },
         body: JSON.stringify({
           imageBase64: base64String,
           filename,

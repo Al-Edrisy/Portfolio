@@ -8,6 +8,7 @@
 
 import { Timestamp } from 'firebase/firestore'
 import { ReactionType } from '@/constants/reaction-types'
+import { UserRole } from '@/types'
 
 // ============================================================================
 // PROJECTS COLLECTION
@@ -75,7 +76,7 @@ export interface CommentDocument {
   userId: string
   userDisplayName: string
   userAvatar?: string
-  userRole: 'developer' | 'client'
+  userRole: UserRole
   
   // Comment metadata
   depth: number // 0 for top-level, 1 for replies, etc.
@@ -124,7 +125,7 @@ export interface UserDocument {
   avatar?: string
   
   // User type (as requested)
-  role: 'developer' | 'client'
+  role: UserRole
   
   // Profile metadata
   bio?: string

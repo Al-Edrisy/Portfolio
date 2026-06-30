@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MediaService } from '@/lib/storage/media-service'
+import { requireAdmin } from '@/lib/auth-utils'
 
 export async function POST(request: NextRequest) {
     try {
+        // Authorize request on server
+        try {
+            await requireAdmin(request)
+        } catch (authError: any) {
+            if (authError instanceof Response) {
+                return authError
+            }
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+        }
+
         const body = await request.json()
         const { imageBase64, folder, filename, altText } = body
 

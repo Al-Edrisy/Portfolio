@@ -110,6 +110,8 @@ export interface Comment {
   userLikes?: string[] // Array of user IDs who liked the comment
 }
 
+export type UserRole = 'admin' | 'user'
+
 export interface User {
   id: string
   email: string
@@ -117,7 +119,7 @@ export interface User {
   avatar: string
   avatarMediaId?: string
   avatarMedia?: MediaAsset
-  role: 'developer' | 'user' | 'client' | 'admin'
+  role: UserRole
   createdAt: Date
 }
 
@@ -126,7 +128,7 @@ export interface UserProfile {
   name: string
   email: string
   avatar: string
-  role: 'developer' | 'user' | 'client' | 'admin'
+  role: UserRole
   bio?: string
   website?: string
   github?: string
@@ -282,7 +284,7 @@ export interface UserDocument {
   name: string
   avatar: string
   avatarMediaId?: string
-  role: 'developer' | 'user' | 'client' | 'admin'
+  role: UserRole
   createdAt: Timestamp
 }
 

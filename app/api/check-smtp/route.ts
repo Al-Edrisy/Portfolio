@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth-utils'
 
-export async function GET() {
+export async function GET(request: Request) {
+  try {
+    await requireAdmin(request)
+  } catch (authError: any) {
+    if (authError instanceof Response) {
+      return authError
+    }
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS)
   
   return NextResponse.json({

@@ -38,7 +38,7 @@ export default function CreateProjectPage() {
     // Check if user can create projects (developer)
     // Temporarily allow all authenticated users for testing
     const isDevelopment = process.env.NODE_ENV === 'development'
-    if (!isDevelopment && user.role !== 'developer') {
+    if (!isDevelopment && user.role !== 'admin') {
       console.log('User does not have permission to create projects. Role:', user.role)
       router.push('/')
       return
@@ -113,7 +113,7 @@ export default function CreateProjectPage() {
 
   // Check if user has permission to create projects
   const isDevelopment = process.env.NODE_ENV === 'development'
-  if (!isDevelopment && user.role !== 'developer') {
+  if (!isDevelopment && user.role !== 'admin') {
     return (
       <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <Navigation />

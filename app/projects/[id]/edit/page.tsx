@@ -28,7 +28,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     }
     
     // Check permissions
-    if (project && user.id !== project.authorId && user.role !== 'developer') {
+    if (project && user.id !== project.authorId && user.role !== 'admin') {
       router.push(`/projects/${id}`)
       return
     }

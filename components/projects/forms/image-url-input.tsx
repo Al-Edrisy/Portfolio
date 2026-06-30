@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { auth } from '@/lib/firebase'
 
 interface ImageUrlInputProps {
   value: string
@@ -263,9 +264,13 @@ export function ImageUrlInput({
           reader.onloadend = async () => {
             try {
               const base64String = reader.result as string
+              const idToken = await auth.currentUser?.getIdToken()
               const response = await fetch('/api/upload', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                  'Content-Type': 'application/json',
+                  ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+                },
                 body: JSON.stringify({ imageBase64: base64String })
               })
 
@@ -690,9 +695,13 @@ export function ImageGalleryInput({
       
       toast.info('Uploading replacement image...')
       try {
+        const idToken = await auth.currentUser?.getIdToken()
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+          },
           body: JSON.stringify({ imageBase64: base64String })
         })
 

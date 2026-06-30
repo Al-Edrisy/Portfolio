@@ -377,9 +377,9 @@ function UserCursor() {
         >
           <div className="flex items-center gap-2 text-sm">
             <span className="font-semibold text-foreground">{user.name}</span>
-            {user.role === 'developer' && (
+            {user.role === 'admin' && (
               <span className="text-xs bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                👑 Dev
+                👑 Admin
               </span>
             )}
           </div>
