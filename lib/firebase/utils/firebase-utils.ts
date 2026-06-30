@@ -129,6 +129,17 @@ export const resolveProjectMedia = async (project: Project): Promise<Project> =>
 // Convert Firestore document to Project
 // Normalizes images from Firestore structure to flat array for UI consumption
 // Handles backward compatibility with legacy single-image projects
+const sanitizeR2Url = (url: string | undefined | null): string => {
+  if (!url) return ''
+  if (url.includes('.r2.cloudflarestorage.com')) {
+    const matches = url.match(/https?:\/\/[^\/]+\/(.+)$/)
+    if (matches && matches[1]) {
+      return `/api/media/${matches[1]}`
+    }
+  }
+  return url
+}
+
 export const docToProject = (doc: QueryDocumentSnapshot): Project => {
   const data = doc.data() as ProjectDocument
 
@@ -139,11 +150,13 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     if (data.images) {
       const images: string[] = []
       if (data.images.cover) {
-        images.push(data.images.cover)
+        images.push(sanitizeR2Url(data.images.cover))
       }
       if (data.images.gallery && Array.isArray(data.images.gallery)) {
         // Filter out cover from gallery to avoid duplicates if it's already there
-        const galleryImages = data.images.gallery.filter(img => img !== data.images!.cover);
+        const galleryImages = data.images.gallery
+          .filter(img => img !== data.images!.cover)
+          .map(img => sanitizeR2Url(img));
         images.push(...galleryImages)
       }
       if (images.length > 0) {
@@ -153,7 +166,7 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
 
     // Fall back to legacy single image field
     if (data.image) {
-      return [data.image]
+      return [sanitizeR2Url(data.image)]
     }
 
     return []
@@ -169,11 +182,11 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     galleryMediaIds: data.galleryMediaIds,
     videoMediaId: data.videoMediaId,
     // Legacy field: use cover from images structure, or legacy image field
-    image: data.images?.cover || data.image || '',
+    image: sanitizeR2Url(data.images?.cover || data.image || ''),
     // New images array: normalized flat array for UI consumption
     images: images.length > 0 ? images : undefined,
     // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
-    videoUrl: data.videoUrl,
+    videoUrl: sanitizeR2Url(data.videoUrl),
     tech: data.tech,
     categories: data.categories || [],
     category: data.category,
@@ -189,7 +202,10 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     commentsCount: data.commentsCount || 0,
     viewsCount: data.viewsCount || 0,
     sharesCount: data.sharesCount || 0,
-    documents: data.documents || [],
+    documents: (data.documents || []).map((d: any) => ({
+      ...d,
+      url: sanitizeR2Url(d.url)
+    })),
     documentsMediaIds: data.documentsMediaIds || [],
   }
 }

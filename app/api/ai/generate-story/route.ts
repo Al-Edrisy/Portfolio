@@ -66,33 +66,64 @@ Categories: ${body.categories.join(', ') || 'Development'}
 
 Please generate a highly professional, detailed case study for this project. Keep it realistic, technical, and descriptive.`
 
-    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Portfolio Case Study Generator'
-      },
-      body: JSON.stringify({
-        model: selectedModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
-        response_format: { type: 'json_object' }
-      })
-    })
+    let responseText = ''
+    let openRouterResponse: Response | null = null
+    let lastErrorDetails = ''
 
-    if (!openRouterResponse.ok) {
-      const errText = await openRouterResponse.text()
-      console.error('OpenRouter error details:', errText)
-      return NextResponse.json({ success: false, error: `AI Service error: ${openRouterResponse.statusText}` }, { status: 500 })
+    // Unique list of models to try if the first one is rate-limited or fails
+    const modelsToTry = [
+      selectedModel,
+      'qwen/qwen3-coder:free',
+      'nvidia/nemotron-nano-9b-v2:free',
+      'openai/gpt-oss-20b:free'
+    ].filter((val, i, arr) => arr.indexOf(val) === i)
+
+    for (const modelToTry of modelsToTry) {
+      try {
+        console.log(`[AI Story Generator] Requesting completions using: ${modelToTry}`)
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+            'X-Title': 'Portfolio Case Study Generator'
+          },
+          body: JSON.stringify({
+            model: modelToTry,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 1500,
+            response_format: { type: 'json_object' }
+          })
+        })
+
+        responseText = await response.text()
+        if (response.ok) {
+          openRouterResponse = response
+          break
+        } else {
+          lastErrorDetails = `Model ${modelToTry} returned status ${response.status}: ${responseText}`
+          console.warn(`[AI Story Generator] Warning: ${lastErrorDetails}`)
+        }
+      } catch (err: any) {
+        lastErrorDetails = `Model ${modelToTry} exception: ${err.message}`
+        console.error(`[AI Story Generator] Error: ${lastErrorDetails}`)
+      }
     }
 
-    const data = await openRouterResponse.json()
+    if (!openRouterResponse) {
+      console.error('All OpenRouter models failed. Details:', lastErrorDetails)
+      return NextResponse.json({
+        success: false,
+        error: `AI Service is currently rate-limited or unavailable. Details: ${lastErrorDetails}`
+      }, { status: 500 })
+    }
+
+    const data = JSON.parse(responseText)
     const content = data.choices?.[0]?.message?.content?.trim()
 
     if (!content) {

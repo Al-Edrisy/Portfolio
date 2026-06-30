@@ -110,7 +110,7 @@ export interface Comment {
   userLikes?: string[] // Array of user IDs who liked the comment
 }
 
-export type UserRole = 'admin' | 'user'
+export type UserRole = 'admin' | 'user' | 'developer' | 'client'
 
 export interface User {
   id: string

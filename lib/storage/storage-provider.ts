@@ -22,12 +22,11 @@ export class CloudflareR2Provider implements StorageProviderInterface {
 
     this.client = new S3Client({
       endpoint,
-      region: 'us-east-1',
+      region: 'auto',
       credentials: {
         accessKeyId,
         secretAccessKey,
       },
-      forcePathStyle: true,
     })
 
     this.publicDomain = process.env.R2_PUBLIC_DOMAIN || ''
@@ -54,16 +53,14 @@ export class CloudflareR2Provider implements StorageProviderInterface {
   }
 
   getPublicUrl(key: string): string {
-    if (this.publicDomain) {
+    const cleanKey = key.startsWith('/') ? key.slice(1) : key
+    if (this.publicDomain && !this.publicDomain.includes('.r2.cloudflarestorage.com')) {
       // Remove trailing slash if present in publicDomain
       const base = this.publicDomain.endsWith('/') ? this.publicDomain.slice(0, -1) : this.publicDomain
-      // Remove leading slash if present in key
-      const cleanKey = key.startsWith('/') ? key.slice(1) : key
       return `${base}/${cleanKey}`
     }
-    // Fallback to path-style R2 URL if public domain is not configured
-    const accountId = process.env.R2_ACCOUNT_ID
-    return `https://${this.bucketName}.${accountId}.r2.cloudflarestorage.com/${key}`
+    // Fallback to our Next.js API proxy to serve authorized assets directly
+    return `/api/media/${cleanKey}`
   }
 
   async exists(key: string): Promise<boolean> {
