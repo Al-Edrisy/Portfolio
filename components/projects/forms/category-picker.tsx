@@ -2,123 +2,105 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Code,
-  Palette,
-  Smartphone,
-  Globe,
-  Database,
-  Cloud,
-  Gamepad2,
-  Briefcase,
-  Heart,
-  Book,
-  Music,
-  Camera,
-  ShoppingCart,
-  GraduationCap,
-  Home,
-  Zap
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ProjectCategory } from '@/types'
 
-// Project categories with icons and descriptions
+// Project categories with symbols (emojis) and descriptions
 const categories = {
   'web-development': {
     label: 'Web Development',
-    icon: Globe,
+    symbol: '🌐',
     description: 'Websites, web apps, and online platforms',
     color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/40'
   },
   'mobile-app': {
     label: 'Mobile App',
-    icon: Smartphone,
+    symbol: '📱',
     description: 'iOS, Android, and cross-platform apps',
     color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900/40'
   },
   'desktop-app': {
     label: 'Desktop App',
-    icon: Code,
+    symbol: '💻',
     description: 'Native desktop applications',
     color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-800 dark:hover:bg-purple-900/40'
   },
   'ui-ux-design': {
     label: 'UI/UX Design',
-    icon: Palette,
+    symbol: '🎨',
     description: 'User interface and experience design',
     color: 'bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 dark:bg-pink-950/30 dark:text-pink-300 dark:border-pink-800 dark:hover:bg-pink-900/40'
   },
   'backend-api': {
     label: 'Backend & API',
-    icon: Database,
+    symbol: '💾',
     description: 'Server-side development and APIs',
     color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-950/30 dark:text-orange-300 dark:border-orange-800 dark:hover:bg-orange-900/40'
   },
   'cloud-devops': {
     label: 'Cloud & DevOps',
-    icon: Cloud,
+    symbol: '☁️',
     description: 'Infrastructure and deployment',
     color: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:text-cyan-300 dark:border-cyan-800 dark:hover:bg-cyan-900/40'
   },
   'game-development': {
     label: 'Game Development',
-    icon: Gamepad2,
+    symbol: '🎮',
     description: 'Video games and interactive media',
     color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
   },
   'data-science': {
     label: 'Data Science',
-    icon: Zap,
+    symbol: '📊',
     description: 'Analytics, ML, and data visualization',
     color: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-950/30 dark:text-yellow-300 dark:border-yellow-800 dark:hover:bg-yellow-900/40'
   },
   'business': {
     label: 'Business',
-    icon: Briefcase,
+    symbol: '💼',
     description: 'Business applications and tools',
     color: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-950/30 dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900/40'
   },
   'education': {
     label: 'Education',
-    icon: GraduationCap,
+    symbol: '🎓',
     description: 'Educational platforms and tools',
     color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
   },
   'healthcare': {
     label: 'Healthcare',
-    icon: Heart,
+    symbol: '❤️',
     description: 'Medical and health applications',
     color: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900/40'
   },
   'e-commerce': {
     label: 'E-commerce',
-    icon: ShoppingCart,
+    symbol: '🛒',
     description: 'Online stores and marketplaces',
     color: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800 dark:hover:bg-teal-900/40'
   },
   'entertainment': {
     label: 'Entertainment',
-    icon: Music,
+    symbol: '🎵',
     description: 'Media, music, and entertainment apps',
     color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-800 dark:hover:bg-violet-900/40'
   },
   'photography': {
     label: 'Photography',
-    icon: Camera,
+    symbol: '📷',
     description: 'Photo editing and sharing platforms',
     color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800 dark:hover:bg-amber-900/40'
   },
   'portfolio': {
     label: 'Portfolio',
-    icon: Book,
+    symbol: '📖',
     description: 'Personal and professional portfolios',
     color: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 dark:bg-slate-950/30 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-900/40'
   },
   'home-automation': {
     label: 'Home & IoT',
-    icon: Home,
+    symbol: '🏠',
     description: 'Smart home and IoT projects',
     color: 'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100 dark:bg-lime-950/30 dark:text-lime-300 dark:border-lime-800 dark:hover:bg-lime-900/40'
   }
@@ -141,10 +123,8 @@ export function CategoryPicker({
 
   const handleCategoryToggle = (categoryKey: ProjectCategory) => {
     if (selectedCategories.includes(categoryKey)) {
-      // Remove category
       onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
     } else {
-      // Add category - no limit
       onCategoriesChange([...selectedCategories, categoryKey])
     }
   }
@@ -178,7 +158,6 @@ export function CategoryPicker({
             {selectedCategories.map(categoryKey => {
               const category = categories[categoryKey as keyof typeof categories]
               if (!category) return null
-              const Icon = category.icon
               return (
                 <motion.div
                   key={categoryKey}
@@ -189,9 +168,7 @@ export function CategoryPicker({
                     "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30"
                   )}
                 >
-                  <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center">
-                    <Icon className="w-3 h-3" />
-                  </div>
+                  <span className="text-lg leading-none">{category.symbol}</span>
                   <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                     {category.label}
                   </span>
@@ -215,7 +192,6 @@ export function CategoryPicker({
           const categoryKey = key as ProjectCategory
           const isSelected = selectedCategories.includes(categoryKey)
           const isHovered = hoveredCategory === categoryKey
-          const Icon = category.icon
 
           return (
             <motion.button
@@ -235,14 +211,14 @@ export function CategoryPicker({
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
-              {/* Icon */}
+              {/* Symbol */}
               <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                "w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors",
                 isSelected
                   ? "bg-blue-500 text-white"
                   : category.color
               )}>
-                <Icon className="w-5 h-5" />
+                {category.symbol}
               </div>
 
               {/* Label */}
@@ -345,7 +321,6 @@ export function CompactCategoryPicker({
       <div className="flex flex-wrap gap-2">
         {Object.entries(categories).map(([key, category]) => {
           const categoryKey = key as ProjectCategory
-          const Icon = category.icon
           const isSelected = selectedCategories.includes(categoryKey)
 
           return (
@@ -361,7 +336,7 @@ export function CompactCategoryPicker({
                   : category.color
               )}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <span>{category.symbol}</span>
               <span>{category.label}</span>
               {isSelected && <span className="ml-1">✓</span>}
             </button>

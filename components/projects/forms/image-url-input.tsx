@@ -173,20 +173,50 @@ export function ImageUrlInput({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const url = value.trim()
-    if (!url) return
+    const urlInput = value.trim()
+    if (!urlInput) return
 
     setIsValidating(true)
     setValidationError(null)
 
     try {
-      const isValid = await validateImageUrl(url)
+      // Split input by newlines, commas, or spaces to support bulk import
+      const urls = urlInput
+        .split(/[\n,\s]+/)
+        .map(u => u.trim())
+        .filter(u => u.length > 0)
 
-      if (isValid) {
-        onAddImage?.(url)
-        onChange('') // Clear input
+      if (urls.length > 1) {
+        let addedCount = 0
+        const skippedUrls: string[] = []
+
+        for (const url of urls) {
+          const isValid = await validateImageUrl(url)
+          if (isValid) {
+            onAddImage?.(url)
+            addedCount++
+          } else {
+            skippedUrls.push(url)
+          }
+        }
+
+        if (addedCount > 0) {
+          toast.success(`Bulk imported ${addedCount} images successfully`)
+          onChange('') // Clear input
+          if (skippedUrls.length > 0) {
+            toast.warning(`Skipped ${skippedUrls.length} invalid URLs`)
+          }
+        } else {
+          setValidationError('None of the entered URLs were valid image URLs')
+        }
       } else {
-        setValidationError('Please enter a valid image URL')
+        const isValid = await validateImageUrl(urlInput)
+        if (isValid) {
+          onAddImage?.(urlInput)
+          onChange('') // Clear input
+        } else {
+          setValidationError('Please enter a valid image URL')
+        }
       }
     } catch (error) {
       setValidationError('Invalid URL format')
@@ -421,9 +451,11 @@ interface DraggableImageItemProps {
   index: number
   onRemove: () => void
   onReplace: (file: File) => void
+  onSetCover?: () => void
+  onView?: () => void
 }
 
-function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageItemProps) {
+function DraggableImageItem({ url, index, onRemove, onReplace, onSetCover, onView }: DraggableImageItemProps) {
   const dragControls = useDragControls()
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -468,13 +500,13 @@ function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageI
 
         {/* Cover Image Indicator */}
         {index === 0 && (
-          <div className="absolute top-2 left-10 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-md">
-            Cover
+          <div className="absolute top-2 left-10 z-10 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+            ★ Cover
           </div>
         )}
 
         {/* Image */}
-        <div className="relative aspect-video">
+        <div className="relative aspect-video cursor-pointer" onClick={onView}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -506,7 +538,23 @@ function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageI
 
         {/* Actions */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="flex gap-1">
+          <div className="flex gap-1 items-center">
+            {index > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="h-8 px-2.5 bg-yellow-500/90 hover:bg-yellow-500 text-black font-bold text-xs shadow-md border-0"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSetCover?.()
+                }}
+                title="Set as Cover Image"
+              >
+                ★ Set Cover
+              </Button>
+            )}
+
             <input
               type="file"
               ref={replaceInputRef}
@@ -528,16 +576,23 @@ function DraggableImageItem({ url, index, onRemove, onReplace }: DraggableImageI
               size="sm"
               variant="secondary"
               className="h-8 w-8 p-0 bg-white/90 hover:bg-white text-gray-700"
-              onClick={() => window.open(url, '_blank')}
+              onClick={(e) => {
+                e.stopPropagation()
+                onView?.()
+              }}
+              title="View full screen"
             >
-              <ExternalLink className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
             </Button>
             
             <Button
               size="sm"
               variant="destructive"
               className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-500"
-              onClick={onRemove}
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -586,6 +641,7 @@ export function ImageGalleryInput({
   maxImages = 100
 }: ImageGalleryInputProps) {
   const [inputUrl, setInputUrl] = useState('')
+  const [activeLightboxUrl, setActiveLightboxUrl] = useState<string | null>(null)
 
   const isLimitReached = isAtMaxImages(images, maxImages)
 
@@ -615,6 +671,15 @@ export function ImageGalleryInput({
   const handleRemoveImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     onImagesChange(newImages)
+  }
+
+  const handleSetCover = (index: number) => {
+    if (index === 0) return
+    const newImages = [...images]
+    const [selectedImage] = newImages.splice(index, 1)
+    newImages.unshift(selectedImage)
+    onImagesChange(newImages)
+    toast.success('Cover image set successfully')
   }
 
   const handleReplaceImage = async (index: number, file: File) => {
@@ -716,6 +781,8 @@ export function ImageGalleryInput({
                 index={index}
                 onRemove={() => handleRemoveImage(index)}
                 onReplace={(file) => handleReplaceImage(index, file)}
+                onSetCover={() => handleSetCover(index)}
+                onView={() => setActiveLightboxUrl(url)}
               />
             ))}
           </Reorder.Group>
@@ -737,6 +804,49 @@ export function ImageGalleryInput({
           <p className="text-xs text-gray-400">Add image URLs above to get started</p>
         </div>
       )}
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {activeLightboxUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setActiveLightboxUrl(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 cursor-zoom-out"
+          >
+            <button
+              type="button"
+              onClick={() => setActiveLightboxUrl(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              src={activeLightboxUrl}
+              alt="Full screen preview"
+              referrerPolicy="no-referrer"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="text-white border-white/20 bg-white/10 hover:bg-white/20"
+                onClick={() => window.open(activeLightboxUrl, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open in New Tab
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

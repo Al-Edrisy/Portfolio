@@ -25,8 +25,14 @@ import {
   Database,
   HelpCircle,
   BookOpen,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Edit,
+  Check,
+  Copy,
+  X
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useCreateProject, useUpdateProject } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
 import { Project } from '@/types'
@@ -222,7 +228,177 @@ export function EnhancedProjectForm({
     }
     reader.readAsDataURL(file)
   }
+  // Document Creator/Editor states
+  const [isDocEditorOpen, setIsDocEditorOpen] = useState(false)
+  const [editingDocIndex, setEditingDocIndex] = useState<number | null>(null) // null = create, number = edit index
+  const [editDocName, setEditDocName] = useState('')
+  const [editDocType, setEditDocType] = useState<'readme' | 'srs' | 'erd' | 'mermaid' | 'other'>('readme')
+  const [editDocContent, setEditDocContent] = useState('')
+  const [isSavingDoc, setIsSavingDoc] = useState(false)
 
+  // Document Preview states
+  const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false)
+  const [previewDoc, setPreviewDoc] = useState<any>(null)
+  const [previewDocContent, setPreviewDocContent] = useState('')
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+
+  const handleOpenDocCreator = () => {
+    setEditingDocIndex(null)
+    setEditDocName('')
+    setEditDocType('readme')
+    setEditDocContent('')
+    setIsDocEditorOpen(true)
+  }
+
+  const handleOpenDocEditor = async (idx: number) => {
+    const docItem = formData.documents[idx]
+    if (!docItem) return
+
+    setEditingDocIndex(idx)
+    setEditDocName(docItem.name.replace(/\.(md|mmd|txt)$/i, '')) // Strip extension for cleaner editing
+    setEditDocType(docItem.type as any)
+    setEditDocContent('Loading content...')
+    setIsDocEditorOpen(true)
+
+    // Fetch current text content
+    try {
+      const res = await fetch(docItem.url)
+      if (res.ok) {
+        const text = await res.text()
+        setEditDocContent(text)
+      } else {
+        setEditDocContent('')
+      }
+    } catch {
+      setEditDocContent('')
+    }
+  }
+
+  const handleOpenDocPreview = async (docItem: any) => {
+    setPreviewDoc(docItem)
+    setIsDocPreviewOpen(true)
+    
+    const isTextDoc = docItem.type === 'readme' || docItem.type === 'srs' || docItem.type === 'mermaid' || docItem.url.endsWith('.md') || docItem.url.endsWith('.mmd') || docItem.url.endsWith('.txt')
+    
+    if (!isTextDoc) {
+      setPreviewDocContent('')
+      return
+    }
+
+    setIsLoadingPreview(true)
+    setPreviewDocContent('')
+    try {
+      const res = await fetch(docItem.url)
+      if (res.ok) {
+        const text = await res.text()
+        setPreviewDocContent(text)
+      } else {
+        setPreviewDocContent('Failed to load document content.')
+      }
+    } catch {
+      setPreviewDocContent('Failed to load document content.')
+    } finally {
+      setIsLoadingPreview(false)
+    }
+  }
+
+  const handleSaveDoc = async () => {
+    if (!editDocName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Document name is required",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsSavingDoc(true)
+    try {
+      // Determine file extension
+      let ext = 'md'
+      let mimeType = 'text/markdown'
+      if (editDocType === 'mermaid') {
+        ext = 'mmd'
+        mimeType = 'text/markdown'
+      } else if (editDocType === 'other') {
+        ext = 'txt'
+        mimeType = 'text/plain'
+      }
+
+      // Ensure filename has correct extension
+      let filename = editDocName.trim()
+      if (!filename.endsWith(`.${ext}`)) {
+        filename = `${filename}.${ext}`
+      }
+
+      // Convert text to base64 safely supporting Unicode/special characters
+      const base64String = `data:${mimeType};base64,` + btoa(
+        encodeURIComponent(editDocContent).replace(/%([0-9A-F]{2})/g, (_, p1) => {
+          return String.fromCharCode(parseInt(p1, 16))
+        })
+      )
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: base64String,
+          filename,
+          folder: 'project-documents'
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        const updatedDoc = {
+          name: filename,
+          type: editDocType,
+          url: data.url
+        }
+
+        setFormData(prev => {
+          const docs = [...(prev.documents || [])]
+          const mediaIds = [...(prev.documentsMediaIds || [])]
+
+          if (editingDocIndex !== null) {
+            // Replace existing
+            docs[editingDocIndex] = updatedDoc
+            mediaIds[editingDocIndex] = data.data?.id || ''
+          } else {
+            // Add new
+            docs.push(updatedDoc)
+            mediaIds.push(data.data?.id || '')
+          }
+
+          return {
+            ...prev,
+            documents: docs,
+            documentsMediaIds: mediaIds
+          }
+        })
+
+        toast({
+          title: editingDocIndex !== null ? "Document Updated" : "Document Created",
+          description: `"${filename}" saved successfully!`
+        })
+        setIsDocEditorOpen(false)
+      } else {
+        toast({
+          title: "Save Failed",
+          description: data.error || "Failed to save document",
+          variant: "destructive"
+        })
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "An error occurred while saving the document",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSavingDoc(false)
+    }
+  }
   const handleRemoveDocument = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -701,57 +877,101 @@ export function EnhancedProjectForm({
                   </div>
                 </div>
 
-                <div>
-                  <input
-                    type="file"
-                    accept=".md,.mmd,.pdf,.txt,image/*"
-                    onChange={handleDocumentUpload}
-                    className="hidden"
-                    id="doc-upload-input"
-                    disabled={isUploadingDoc}
-                  />
-                  <label htmlFor="doc-upload-input" className="block">
-                    <div className={cn(
-                      "flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-6 cursor-pointer transition-all hover:bg-primary/5 hover:border-primary/50 group text-center bg-background/30",
-                      isUploadingDoc && "pointer-events-none opacity-50"
-                    )}>
-                      {isUploadingDoc ? (
-                        <Loader2 className="w-6 h-6 animate-spin text-primary mb-1.5" />
-                      ) : (
-                        <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary mb-1.5 transition-colors" />
-                      )}
-                      <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                        {isUploadingDoc ? 'Uploading Document to Cloudflare R2...' : 'Select & Upload Reference File'}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Supports PDF, Markdown (.md, .mmd), Text, or Images</p>
-                    </div>
-                  </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <input
+                      type="file"
+                      accept=".md,.mmd,.pdf,.txt,image/*"
+                      onChange={handleDocumentUpload}
+                      className="hidden"
+                      id="doc-upload-input"
+                      disabled={isUploadingDoc}
+                    />
+                    <label htmlFor="doc-upload-input" className="block h-full">
+                      <div className={cn(
+                        "flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-6 cursor-pointer transition-all hover:bg-primary/5 hover:border-primary/50 group text-center bg-background/30 h-full",
+                        isUploadingDoc && "pointer-events-none opacity-50"
+                      )}>
+                        {isUploadingDoc ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-primary mb-1.5" />
+                        ) : (
+                          <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary mb-1.5 transition-colors" />
+                        )}
+                        <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                          {isUploadingDoc ? 'Uploading Document to Cloudflare R2...' : 'Select & Upload Reference File'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Supports PDF, Markdown (.md, .mmd), Text, or Images</p>
+                      </div>
+                    </label>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenDocCreator}
+                    className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-6 transition-all hover:bg-primary/5 hover:border-primary/50 group text-center bg-background/30"
+                  >
+                    <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary mb-1.5 transition-colors" />
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                      Create & Paste Document
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Write Markdown or Mermaid chart code directly</p>
+                  </button>
                 </div>
 
                 {formData.documents && formData.documents.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-4">
-                    {formData.documents.map((doc: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between p-3.5 bg-muted/40 rounded-xl border border-border/50 text-sm shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-background rounded-lg border">
-                            <FileText className="w-4 h-4 text-primary" />
+                    {formData.documents.map((doc: any, idx: number) => {
+                      const isTextDoc = doc.type === 'readme' || doc.type === 'srs' || doc.type === 'mermaid' || doc.url.endsWith('.md') || doc.url.endsWith('.mmd') || doc.url.endsWith('.txt')
+                      return (
+                        <div key={idx} className="flex items-center justify-between p-3.5 bg-muted/40 rounded-xl border border-border/50 text-sm shadow-sm">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 bg-background rounded-lg border flex-shrink-0">
+                              <FileText className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-foreground truncate max-w-[150px]" title={doc.name}>{doc.name}</p>
+                              <Badge variant="outline" className="text-[9px] uppercase tracking-wider mt-0.5">{doc.type}</Badge>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-foreground truncate max-w-[180px]">{doc.name}</p>
-                            <Badge variant="outline" className="text-[9px] uppercase tracking-wider mt-0.5">{doc.type}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-primary hover:bg-primary/10 h-8 w-8"
+                              onClick={() => handleOpenDocPreview(doc)}
+                              title="View Document"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+
+                            {isTextDoc && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:bg-muted h-8 w-8"
+                                onClick={() => handleOpenDocEditor(idx)}
+                                title="Edit Document"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:bg-destructive/10 h-8 w-8"
+                              onClick={() => handleRemoveDocument(idx)}
+                              title="Delete Document"
+                            >
+                              <Trash className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                          onClick={() => handleRemoveDocument(idx)}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -1077,6 +1297,238 @@ export function EnhancedProjectForm({
           )}
         </div>
       </Card>
+
+      {/* Doc Editor Modal */}
+      <AnimatePresence>
+        {isDocEditorOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-border bg-muted/20 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    {editingDocIndex !== null ? 'Edit Document' : 'Create Reference Document'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Define name, category type and document body contents.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsDocEditorOpen(false)}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Document Name</Label>
+                    <Input
+                      value={editDocName}
+                      onChange={(e) => setEditDocName(e.target.value)}
+                      placeholder="e.g. README or SystemSpec"
+                      className="bg-background h-10 font-medium"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Doc Type</Label>
+                    <select
+                      value={editDocType}
+                      onChange={(e) => setEditDocType(e.target.value as any)}
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="readme">README (.md)</option>
+                      <option value="srs">SRS Doc (.md)</option>
+                      <option value="erd">ERD Spec (.md)</option>
+                      <option value="mermaid">Mermaid Chart (.mmd)</option>
+                      <option value="other">Other Text (.txt)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2 flex-1 flex flex-col min-h-[300px]">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase">Document Body</Label>
+                  <Textarea
+                    value={editDocContent}
+                    onChange={(e) => setEditDocContent(e.target.value)}
+                    placeholder={
+                      editDocType === 'mermaid'
+                        ? "graph TD\n  A[Client] -->|HTTP| B(API Gateway)\n  B -->|gRPC| C(Microservice)"
+                        : "# Title\nWrite your document contents here. Supports markdown syntax..."
+                    }
+                    className="flex-1 font-mono text-xs bg-background min-h-[280px] p-4 resize-none leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-border bg-muted/10 flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDocEditorOpen(false)}
+                  className="font-bold border-border"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveDoc}
+                  disabled={isSavingDoc}
+                  className="font-bold gap-2 px-5"
+                >
+                  {isSavingDoc ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving Document...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Document
+                    </>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Doc Preview Modal */}
+      <AnimatePresence>
+        {isDocPreviewOpen && previewDoc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-border bg-muted/20 flex items-center justify-between">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold text-foreground truncate flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                    {previewDoc.name}
+                  </h3>
+                  <Badge variant="outline" className="text-[9px] uppercase tracking-wider mt-0.5">{previewDoc.type}</Badge>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 font-semibold text-xs h-8 border-border"
+                    asChild
+                  >
+                    <a href={previewDoc.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Open Link
+                    </a>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsDocPreviewOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 min-h-[300px]">
+                {isLoadingPreview ? (
+                  <div className="h-64 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <span className="text-sm">Loading document content...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* PDF viewer */}
+                    {previewDoc.url.endsWith('.pdf') && (
+                      <iframe src={previewDoc.url} className="w-full h-[500px] border rounded-lg bg-background" />
+                    )}
+
+                    {/* Image viewer */}
+                    {(previewDoc.url.endsWith('.png') || previewDoc.url.endsWith('.jpg') || previewDoc.url.endsWith('.webp') || previewDoc.url.endsWith('.gif')) && (
+                      <div className="flex items-center justify-center bg-muted/20 p-2 rounded-xl border border-border/50">
+                        <img src={previewDoc.url} referrerPolicy="no-referrer" alt={previewDoc.name} className="max-w-full max-h-[500px] object-contain rounded-lg shadow-sm" />
+                      </div>
+                    )}
+
+                    {/* Markdown / Text Document View */}
+                    {(previewDoc.type === 'readme' || previewDoc.type === 'srs' || previewDoc.type === 'erd' || previewDoc.type === 'other') && !previewDoc.url.endsWith('.pdf') && !previewDoc.url.endsWith('.png') && !previewDoc.url.endsWith('.jpg') && !previewDoc.url.endsWith('.webp') && !previewDoc.url.endsWith('.gif') && (
+                      <article className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary leading-relaxed">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {previewDocContent || '*No content available or empty document.*'}
+                        </ReactMarkdown>
+                      </article>
+                    )}
+
+                    {/* Mermaid diagram definition code */}
+                    {previewDoc.type === 'mermaid' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-muted-foreground uppercase">Mermaid Diagram Source Code</p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs gap-1 border-border border px-2.5"
+                            onClick={() => {
+                              navigator.clipboard.writeText(previewDocContent)
+                              toast({ title: "Copied!", description: "Mermaid chart source copied to clipboard" })
+                            }}
+                          >
+                            <Copy className="w-3 h-3" />
+                            Copy
+                          </Button>
+                        </div>
+                        <pre className="p-4 bg-muted/60 dark:bg-muted/20 border rounded-xl overflow-x-auto text-xs font-mono leading-normal shadow-inner">
+                          <code>{previewDocContent}</code>
+                        </pre>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="p-4 border-t border-border bg-muted/10 flex items-center justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDocPreviewOpen(false)}
+                  className="font-bold border-border"
+                >
+                  Close Preview
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
