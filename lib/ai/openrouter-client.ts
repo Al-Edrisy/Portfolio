@@ -129,89 +129,85 @@ Be concise and specific. Focus on the most interesting aspects.`
       timestamp: new Date().toISOString()
     })
 
-    // Set up timeout for API call
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
+    // List of models to try if the requested model fails or is unavailable
+    const modelsToTry = [
+      selectedModel && !selectedModel.includes('gpt-oss-20b') && !selectedModel.includes('qwen3-coder') ? selectedModel : 'openrouter/free',
+      'openrouter/free',
+      'openai/gpt-4o-mini',
+      'google/gemini-2.5-flash',
+      'deepseek/deepseek-chat',
+      'nvidia/nemotron-3.5-lightning:free'
+    ].filter((val, i, arr) => arr.indexOf(val) === i)
 
-    let response: Response
-    try {
-      // Call OpenRouter API with timeout
-      response = await fetch(OPENROUTER_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-          'X-Title': 'Portfolio Comment Generator'
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: [
-            {
-              role: 'system',
-              content: SYSTEM_PROMPT
-            },
-            {
-              role: 'user',
-              content: userPrompt
-            }
-          ],
-          max_tokens: 120,
-          temperature: 0.6,
-          top_p: 0.8,
-          frequency_penalty: 0.2,
-          presence_penalty: 0.1
-        }),
-        signal: controller.signal
-      })
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId)
-      
-      // Handle abort/timeout
-      if (fetchError.name === 'AbortError') {
-        return {
-          success: false,
-          error: 'Request timed out. Please try again.'
+    let successfulData: any = null
+    let successfulModelName = selectedModel
+    let lastErrorMessage = ''
+
+    for (const modelToTry of modelsToTry) {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
+
+      try {
+        const response = await fetch(OPENROUTER_API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://al-edrisy.space',
+            'X-Title': 'Portfolio Comment Generator'
+          },
+          body: JSON.stringify({
+            model: modelToTry,
+            messages: [
+              {
+                role: 'system',
+                content: SYSTEM_PROMPT
+              },
+              {
+                role: 'user',
+                content: userPrompt
+              }
+            ],
+            max_tokens: 150,
+            temperature: 0.6,
+            top_p: 0.8,
+            frequency_penalty: 0.2,
+            presence_penalty: 0.1,
+            include_reasoning: false
+          }),
+          signal: controller.signal
+        })
+
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          const resData = await response.json()
+          if (resData.choices?.[0]?.message?.content || resData.choices?.[0]?.message?.reasoning) {
+            successfulData = resData
+            successfulModelName = modelToTry
+            break
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}))
+          lastErrorMessage = errorData.error?.message || `HTTP ${response.status}`
+          console.warn(`[AI Comment Generator] Model ${modelToTry} failed: ${lastErrorMessage}`)
         }
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId)
+        lastErrorMessage = fetchError.message
+        console.warn(`[AI Comment Generator] Model ${modelToTry} error: ${fetchError.message}`)
       }
-      
-      // Handle network errors
-      throw fetchError
-    } finally {
-      clearTimeout(timeoutId)
     }
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error('❌ OpenRouter API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData,
-        model: selectedModel,
-        errorMessage: errorData.error?.message,
-        timestamp: new Date().toISOString()
-      })
-      
-      // Provide helpful error messages with fallback suggestions
-      let errorMessage = errorData.error?.message || `API request failed with status ${response.status}`
-      
-      if (response.status === 429) {
-        errorMessage = 'API rate limit exceeded. Please try again in a moment.'
-      } else if (response.status === 401) {
-        errorMessage = 'API authentication failed. Please check your API key.'
-      } else if (response.status === 503 || response.status === 500) {
-        errorMessage = 'AI service is temporarily unavailable. The model may be overloaded - please try again.'
-      } else if (response.status === 400) {
-        errorMessage = 'Invalid request. Please try a different tone or length.'
-      }
-      
+    if (!successfulData) {
       return {
         success: false,
-        error: errorMessage
+        error: lastErrorMessage || 'AI service is temporarily unavailable. Please try again.'
       }
     }
 
-    const data = await response.json()
+    const data = successfulData
+    const selectedModelFinal = successfulModelName
 
     // Log the response for debugging (production-safe)
     console.log('✅ OpenRouter API Response:', {
@@ -335,7 +331,7 @@ Be concise and specific. Focus on the most interesting aspects.`
       success: true,
       comment: cleanedComment,
       tokensUsed: data.usage?.total_tokens,
-      model: selectedModel
+      model: selectedModelFinal
     }
 
   } catch (error: any) {

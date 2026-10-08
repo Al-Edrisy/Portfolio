@@ -13,6 +13,52 @@ const GenerateStorySchema = z.object({
 
 type GenerateStoryInput = z.infer<typeof GenerateStorySchema>
 
+/**
+ * Robustly extract JSON object from raw LLM responses
+ * Handles raw JSON, markdown code blocks, and reasoning-prefixed outputs
+ */
+function extractJsonFromText(rawText: string): any {
+  if (!rawText) return null
+
+  // 1. Direct JSON parse
+  try {
+    return JSON.parse(rawText.trim())
+  } catch {}
+
+  // 2. Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  if (fenceMatch && fenceMatch[1]) {
+    try {
+      return JSON.parse(fenceMatch[1].trim())
+    } catch {}
+  }
+
+  // 3. Search for outermost balanced { ... } braces
+  const firstBrace = rawText.indexOf('{')
+  const lastBrace = rawText.lastIndexOf('}')
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = rawText.substring(firstBrace, lastBrace + 1)
+    try {
+      return JSON.parse(candidate)
+    } catch {}
+  }
+
+  return null
+}
+
+/**
+ * Normalizes fields that may be returned as arrays, strings, or objects
+ */
+function formatField(val: any): string {
+  if (!val) return ''
+  if (Array.isArray(val)) {
+    return val.map(item => (typeof item === 'string' ? item.trim() : JSON.stringify(item))).join('\n')
+  }
+  if (typeof val === 'string') return val.trim()
+  if (typeof val === 'object') return JSON.stringify(val, null, 2)
+  return String(val)
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Authorize request on server
@@ -41,9 +87,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message || 'Invalid request body' }, { status: 400 })
     }
 
-    const selectedModel = body.model || DEFAULT_AI_MODEL
+    const requestedModel = body.model || DEFAULT_AI_MODEL
 
-    const systemPrompt = `You are an expert technical writer and software engineer. You write extremely detailed, professional case studies/stories for portfolio projects.
+    const systemPrompt = `You are an expert technical writer and software engineer. You write extremely detailed, professional case studies and technical stories for portfolio projects.
 You must return your output strictly in JSON format. The JSON object must contain exactly four keys: "longDescription", "challenges", "solutions", and "results".
 
 JSON Structure:
@@ -56,7 +102,7 @@ JSON Structure:
 
 Rules:
 1. "longDescription" MUST be detailed and comprehensive. It must support clean Markdown (including headers, bullet points, code blocks). Do not write simple placeholders.
-2. Do not include any text before or after the JSON block. Do not include markdown code block syntax (like \`\`\`json) in your response, just return the raw JSON string.
+2. Return ONLY the valid JSON string. Do not include introductory or concluding conversational text.
 3. Be professional, technical, and realistic based on the project's domain.`
 
     const userPrompt = `Project Title: "${body.title}"
@@ -66,27 +112,29 @@ Categories: ${body.categories.join(', ') || 'Development'}
 
 Please generate a highly professional, detailed case study for this project. Keep it realistic, technical, and descriptive.`
 
-    let responseText = ''
-    let openRouterResponse: Response | null = null
-    let lastErrorDetails = ''
-
-    // Unique list of models to try if the first one is rate-limited or fails
+    // Filter out obsolete/dead models from fallback chain
     const modelsToTry = [
-      selectedModel,
-      'qwen/qwen3-coder:free',
-      'nvidia/nemotron-nano-9b-v2:free',
-      'openai/gpt-oss-20b:free'
+      requestedModel && !requestedModel.includes('gpt-oss-20b') && !requestedModel.includes('qwen3-coder') ? requestedModel : 'openrouter/free',
+      'openrouter/free',
+      'openai/gpt-4o-mini',
+      'google/gemini-2.5-flash',
+      'deepseek/deepseek-chat',
+      'nvidia/nemotron-3.5-lightning:free'
     ].filter((val, i, arr) => arr.indexOf(val) === i)
+
+    let parsedResult: any = null
+    let successfulModel = ''
+    let lastErrorDetails = ''
 
     for (const modelToTry of modelsToTry) {
       try {
-        console.log(`[AI Story Generator] Requesting completions using: ${modelToTry}`)
+        console.log(`[AI Story Generator] Requesting completion with: ${modelToTry}`)
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://al-edrisy.space',
             'X-Title': 'Portfolio Case Study Generator'
           },
           body: JSON.stringify({
@@ -96,17 +144,29 @@ Please generate a highly professional, detailed case study for this project. Kee
               { role: 'user', content: userPrompt }
             ],
             temperature: 0.7,
-            max_tokens: 1500,
-            response_format: { type: 'json_object' }
+            max_tokens: 2200,
+            include_reasoning: false
           })
         })
 
-        responseText = await response.text()
-        if (response.ok) {
-          openRouterResponse = response
+        const responseText = await response.text()
+        if (!response.ok) {
+          lastErrorDetails = `Model ${modelToTry} returned status ${response.status}: ${responseText}`
+          console.warn(`[AI Story Generator] Warning: ${lastErrorDetails}`)
+          continue
+        }
+
+        const data = JSON.parse(responseText)
+        const rawContent = data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.reasoning || ''
+        const extracted = extractJsonFromText(rawContent)
+
+        if (extracted && (extracted.longDescription || extracted.description || extracted.story)) {
+          parsedResult = extracted
+          successfulModel = modelToTry
+          console.log(`[AI Story Generator] Successfully generated story using: ${modelToTry}`)
           break
         } else {
-          lastErrorDetails = `Model ${modelToTry} returned status ${response.status}: ${responseText}`
+          lastErrorDetails = `Model ${modelToTry} returned unparseable content: ${rawContent.slice(0, 150)}`
           console.warn(`[AI Story Generator] Warning: ${lastErrorDetails}`)
         }
       } catch (err: any) {
@@ -115,7 +175,7 @@ Please generate a highly professional, detailed case study for this project. Kee
       }
     }
 
-    if (!openRouterResponse) {
+    if (!parsedResult) {
       console.error('All OpenRouter models failed. Details:', lastErrorDetails)
       return NextResponse.json({
         success: false,
@@ -123,28 +183,16 @@ Please generate a highly professional, detailed case study for this project. Kee
       }, { status: 500 })
     }
 
-    const data = JSON.parse(responseText)
-    const content = data.choices?.[0]?.message?.content?.trim()
-
-    if (!content) {
-      return NextResponse.json({ success: false, error: 'AI returned an empty response' }, { status: 500 })
-    }
-
-    try {
-      const parsed = JSON.parse(content)
-      return NextResponse.json({
-        success: true,
-        data: {
-          longDescription: parsed.longDescription || '',
-          challenges: parsed.challenges || '',
-          solutions: parsed.solutions || '',
-          results: parsed.results || ''
-        }
-      })
-    } catch (parseError) {
-      console.error('Failed to parse AI JSON response:', content)
-      return NextResponse.json({ success: false, error: 'AI failed to output valid JSON format. Please try again.' }, { status: 500 })
-    }
+    return NextResponse.json({
+      success: true,
+      data: {
+        longDescription: formatField(parsedResult.longDescription || parsedResult.description || parsedResult.story),
+        challenges: formatField(parsedResult.challenges),
+        solutions: formatField(parsedResult.solutions),
+        results: formatField(parsedResult.results),
+        modelUsed: successfulModel
+      }
+    })
 
   } catch (error: any) {
     console.error('Error in generate-story route:', error)
