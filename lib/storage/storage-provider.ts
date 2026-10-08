@@ -13,11 +13,12 @@ export class CloudflareR2Provider implements StorageProviderInterface {
   private publicDomain: string
 
   constructor() {
+    this.publicDomain = process.env.R2_PUBLIC_DOMAIN || ''
+    this.bucketName = process.env.R2_BUCKET_NAME || 'salih-otman-portfolio'
+
     const accountId = process.env.R2_ACCOUNT_ID
     const accessKeyId = process.env.R2_ACCESS_KEY_ID || ''
     const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || ''
-    this.bucketName = process.env.R2_BUCKET_NAME || ''
-    
     const endpoint = `https://${accountId}.r2.cloudflarestorage.com`
 
     this.client = new S3Client({
@@ -28,13 +29,20 @@ export class CloudflareR2Provider implements StorageProviderInterface {
         secretAccessKey,
       },
     })
+  }
 
-    this.publicDomain = process.env.R2_PUBLIC_DOMAIN || ''
+  private getBucketName(): string {
+    return process.env.R2_BUCKET_NAME || this.bucketName || 'salih-otman-portfolio'
   }
 
   async upload(fileBuffer: Buffer, key: string, mimeType: string): Promise<string> {
+    const bucket = this.getBucketName()
+    if (!bucket) {
+      throw new Error('Storage configuration error: R2_BUCKET_NAME is not configured')
+    }
+
     const command = new PutObjectCommand({
-      Bucket: this.bucketName,
+      Bucket: bucket,
       Key: key,
       Body: fileBuffer,
       ContentType: mimeType,
@@ -45,8 +53,9 @@ export class CloudflareR2Provider implements StorageProviderInterface {
   }
 
   async delete(key: string): Promise<void> {
+    const bucket = this.getBucketName()
     const command = new DeleteObjectCommand({
-      Bucket: this.bucketName,
+      Bucket: bucket,
       Key: key,
     })
     await this.client.send(command)
@@ -65,8 +74,9 @@ export class CloudflareR2Provider implements StorageProviderInterface {
 
   async exists(key: string): Promise<boolean> {
     try {
+      const bucket = this.getBucketName()
       const command = new HeadObjectCommand({
-        Bucket: this.bucketName,
+        Bucket: bucket,
         Key: key,
       })
       await this.client.send(command)
