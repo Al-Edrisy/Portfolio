@@ -28,12 +28,13 @@ yarn-error.log*
 !firestore.indexes.json
 !tsconfig.json
 
-# Lock files (generated during build)
-package-lock.json
+# Lock files
+!package-lock.json
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts.DS_Store
+next-env.d.ts
+.DS_Store
