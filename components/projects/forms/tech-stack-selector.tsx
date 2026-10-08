@@ -13,24 +13,26 @@ import {
   Database,
   Cloud,
   Palette,
-  Wrench
+  Wrench,
+  Check
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { TechStackItem } from '@/types'
 
-// Map category string to UI parameters
+// Monochrome-compatible category mapping
 const categoryConfig = {
-  'frontend': { label: 'Frontend', icon: Globe, color: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20' },
-  'mobile': { label: 'Mobile', icon: Smartphone, color: 'bg-secondary/10 text-secondary-foreground border-secondary/20 hover:bg-secondary/20' },
-  'backend': { label: 'Backend', icon: Code, color: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted' },
-  'database': { label: 'Database', icon: Database, color: 'bg-accent/10 text-accent-foreground border-accent/20 hover:bg-accent/20' },
-  'devops': { label: 'Cloud & DevOps', icon: Cloud, color: 'bg-card/50 text-card-foreground border-border hover:bg-card' },
-  'design': { label: 'Design & Tools', icon: Palette, color: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20' },
-  'other': { label: 'Other', icon: Wrench, color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/30 dark:text-gray-300 dark:border-gray-800' }
+  'frontend': { label: 'Frontend', icon: Globe },
+  'mobile': { label: 'Mobile', icon: Smartphone },
+  'backend': { label: 'Backend', icon: Code },
+  'database': { label: 'Database', icon: Database },
+  'devops': { label: 'Cloud & DevOps', icon: Cloud },
+  'design': { label: 'Design & UI', icon: Palette },
+  'other': { label: 'Other Tools', icon: Wrench }
 }
 
 interface TechStackSelectorProps {
@@ -43,7 +45,7 @@ interface TechStackSelectorProps {
 export function TechStackSelector({
   selectedTech,
   onTechChange,
-  maxItems = 20,
+  maxItems = 25,
   className
 }: TechStackSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -53,7 +55,6 @@ export function TechStackSelector({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  // Fetch catalog from Firestore
   useEffect(() => {
     async function loadCatalog() {
       try {
@@ -71,7 +72,6 @@ export function TechStackSelector({
     loadCatalog()
   }, [])
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -85,7 +85,6 @@ export function TechStackSelector({
     }
   }, [isOpen])
 
-  // Focus search input when dropdown opens
   useEffect(() => {
     if (isOpen && searchRef.current) {
       setTimeout(() => searchRef.current?.focus(), 100)
@@ -94,14 +93,10 @@ export function TechStackSelector({
 
   const handleAddTech = (techId: string) => {
     if (selectedTech.length >= maxItems) {
-      alert(`Maximum ${maxItems} technologies allowed`)
       return
     }
-    
     if (!selectedTech.includes(techId)) {
       onTechChange([...selectedTech, techId])
-      setSearchQuery('')
-      setSelectedCategory(null)
     }
   }
 
@@ -109,14 +104,12 @@ export function TechStackSelector({
     onTechChange(selectedTech.filter(t => t !== techId))
   }
 
-  // Filter and group items
   const filteredCatalog = catalog.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = !selectedCategory || item.category === selectedCategory
     return matchesSearch && matchesCategory
   })
 
-  // Grouped items
   const groupedCatalog = filteredCatalog.reduce((acc, item) => {
     const cat = item.category || 'other'
     if (!acc[cat]) acc[cat] = []
@@ -125,32 +118,39 @@ export function TechStackSelector({
   }, {} as Record<string, TechStackItem[]>)
 
   return (
-    <div ref={dropdownRef} className={cn("relative", className)}>
-      <div className="space-y-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setIsOpen(!isOpen)}
-          className={cn(
-            "w-full justify-between",
-            selectedTech.length > 0 && "border-blue-500"
-          )}
-        >
-          <span className="flex items-center gap-2">
-            <Code className="w-4 h-4" />
+    <div ref={dropdownRef} className={cn("relative space-y-3", className)}>
+      {/* Dropdown trigger button */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "w-full justify-between h-11 px-4 bg-card hover:bg-muted/50 border-border/70 text-foreground transition-all duration-200",
+          isOpen && "ring-1 ring-ring border-foreground/30"
+        )}
+      >
+        <span className="flex items-center gap-2.5 text-sm">
+          <Code className="w-4 h-4 text-muted-foreground" />
+          <span className="font-medium">
             {selectedTech.length > 0 
               ? `${selectedTech.length} technologies selected`
-              : "Select technologies"
-            }
+              : "Search & select technologies..."}
           </span>
-          <ChevronDown className={cn(
-            "w-4 h-4 transition-transform",
-            isOpen && "rotate-180"
-          )} />
-        </Button>
+        </span>
+        <ChevronDown className={cn(
+          "w-4 h-4 text-muted-foreground transition-transform duration-200",
+          isOpen && "rotate-180"
+        )} />
+      </Button>
 
-        {selectedTech.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+      {/* Selected Tech Chips in Monochrome Palette */}
+      {selectedTech.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-wrap gap-1.5 p-3 rounded-xl bg-card border border-border/70"
+        >
+          <AnimatePresence>
             {selectedTech.map((techId) => {
               const catalogItem = catalog.find(item => item.id === techId)
               const displayName = catalogItem ? catalogItem.name : techId
@@ -161,155 +161,147 @@ export function TechStackSelector({
               return (
                 <motion.div
                   key={techId}
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
-                    "border-2 shadow-sm hover:shadow-md transition-all duration-200",
-                    "bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-700",
-                    config.color,
-                    "hover:scale-105"
-                  )}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-semibold shadow-xs"
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5 opacity-80" />
                   <span>{displayName}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTech(techId)}
-                    className="hover:bg-black/10 rounded-full p-0.5 transition-colors"
+                    className="ml-1 opacity-70 hover:opacity-100 transition-opacity p-0.5 rounded focus:outline-none"
+                    aria-label={`Remove ${displayName}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3 h-3 stroke-[2.5]" />
                   </button>
                 </motion.div>
               )
             })}
-          </div>
-        )}
-      </div>
+          </AnimatePresence>
+        </motion.div>
+      )}
 
+      {/* Dropdown Panel in Monochrome */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
             className={cn(
               "absolute top-full left-0 right-0 z-50 mt-2",
-              "bg-white dark:bg-gray-800",
-              "border border-gray-200 dark:border-gray-700",
-              "rounded-xl shadow-xl backdrop-blur-sm",
-              "max-h-96 overflow-hidden",
-              "ring-1 ring-black/5 dark:ring-white/10"
+              "bg-popover text-popover-foreground border border-border",
+              "rounded-xl shadow-xl backdrop-blur-md overflow-hidden"
             )}
           >
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            {/* Search Input & Category Filters */}
+            <div className="p-3 border-b border-border bg-muted/20 space-y-2.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   ref={searchRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search technologies..."
-                  className="pl-10"
+                  placeholder="Filter frameworks, libraries, tools..."
+                  className="pl-9 h-9 bg-background border-border text-xs"
                 />
               </div>
 
               <div className="flex flex-wrap gap-1">
-                <Button
+                <button
                   type="button"
-                  variant={selectedCategory === null ? "default" : "ghost"}
-                  size="sm"
                   onClick={() => setSelectedCategory(null)}
-                  className="text-xs"
+                  className={cn(
+                    "text-xs px-2.5 py-1 rounded-md transition-all font-medium",
+                    selectedCategory === null
+                      ? "bg-foreground text-background font-semibold"
+                      : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
                 >
                   All
-                </Button>
+                </button>
                 {Object.entries(categoryConfig).map(([key, config]) => {
                   const Icon = config.icon
+                  const isCatSelected = selectedCategory === key
                   return (
-                    <Button
+                    <button
                       key={key}
                       type="button"
-                      variant={selectedCategory === key ? "default" : "ghost"}
-                      size="sm"
                       onClick={() => setSelectedCategory(key)}
-                      className="text-xs flex items-center gap-1"
+                      className={cn(
+                        "text-xs px-2 py-1 rounded-md transition-all font-medium flex items-center gap-1",
+                        isCatSelected
+                          ? "bg-foreground text-background font-semibold"
+                          : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
                     >
                       <Icon className="w-3 h-3" />
-                      {config.label}
-                    </Button>
+                      <span>{config.label}</span>
+                    </button>
                   )
                 })}
               </div>
             </div>
 
-            <div className="max-h-60 overflow-y-auto">
+            {/* Catalog Grid */}
+            <div className="max-h-64 overflow-y-auto p-2 divide-y divide-border/40">
               {Object.keys(groupedCatalog).length > 0 ? (
-                <div className="p-2">
-                  {Object.entries(groupedCatalog).map(([cat, items]) => {
-                    const config = categoryConfig[cat as keyof typeof categoryConfig] || categoryConfig.other
-                    const Icon = config.icon
+                Object.entries(groupedCatalog).map(([cat, items]) => {
+                  const config = categoryConfig[cat as keyof typeof categoryConfig] || categoryConfig.other
+                  const Icon = config.icon
 
-                    return (
-                      <div key={cat} className="mb-4 last:mb-0">
-                        <div className="flex items-center gap-2 px-2 py-1 mb-2">
-                          <Icon className="w-4 h-4" />
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {config.label}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({items.length})
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-1">
-                          {items.map((item) => (
-                            <motion.button
+                  return (
+                    <div key={cat} className="py-2.5 first:pt-1 last:pb-1">
+                      <div className="flex items-center gap-1.5 px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Icon className="w-3 h-3" />
+                        <span>{config.label}</span>
+                        <span className="font-mono opacity-60">({items.length})</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1">
+                        {items.map((item) => {
+                          const isPicked = selectedTech.includes(item.id)
+                          return (
+                            <button
                               key={item.id}
                               type="button"
-                              onClick={() => handleAddTech(item.id)}
-                              disabled={selectedTech.includes(item.id)}
+                              onClick={() => isPicked ? handleRemoveTech(item.id) : handleAddTech(item.id)}
                               className={cn(
-                                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
-                                "text-left transition-all duration-200",
-                                "border border-transparent",
-                                "hover:bg-gray-100 dark:hover:bg-gray-700",
-                                "hover:border-gray-200 dark:hover:border-gray-600",
-                                "hover:shadow-sm",
-                                selectedTech.includes(item.id) 
-                                  ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800" 
-                                  : "cursor-pointer hover:scale-[1.02]"
+                                "flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-left transition-all",
+                                isPicked 
+                                  ? "bg-foreground text-background font-semibold"
+                                  : "hover:bg-muted text-foreground/90 border border-transparent hover:border-border"
                               )}
-                              whileHover={!selectedTech.includes(item.id) ? { scale: 1.02 } : {}}
-                              whileTap={!selectedTech.includes(item.id) ? { scale: 0.98 } : {}}
                             >
-                              <Plus className="w-3 h-3" />
-                              <span className="font-medium">{item.name}</span>
-                              {selectedTech.includes(item.id) && (
-                                <div className="ml-auto w-2 h-2 bg-green-500 rounded-full" />
+                              <span className="truncate">{item.name}</span>
+                              {isPicked ? (
+                                <Check className="w-3.5 h-3.5 stroke-[2.5] shrink-0 ml-1" />
+                              ) : (
+                                <Plus className="w-3 h-3 text-muted-foreground opacity-50 shrink-0 ml-1" />
                               )}
-                            </motion.button>
-                          ))}
-                        </div>
+                            </button>
+                          )
+                        })}
                       </div>
-                    )
-                  })}
-                </div>
+                    </div>
+                  )
+                })
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No technologies found</p>
+                <div className="p-8 text-center text-muted-foreground">
+                  <Search className="w-6 h-6 mx-auto mb-2 opacity-40" />
+                  <p className="text-xs">No matching technologies found</p>
                 </div>
               )}
             </div>
 
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{selectedTech.length}/{maxItems} selected</span>
-                <span>Click to add technologies</span>
-              </div>
+            {/* Footer Summary */}
+            <div className="p-2.5 border-t border-border bg-muted/30 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{selectedTech.length} of {maxItems} max selected</span>
+              <span className="font-mono">Click to toggle</span>
             </div>
           </motion.div>
         )}

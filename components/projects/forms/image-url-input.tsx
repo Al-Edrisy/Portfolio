@@ -505,23 +505,23 @@ function DraggableImageItem({ url, index, onRemove, onReplace, onSetCover, onVie
 
         {/* Cover Image Indicator */}
         {index === 0 && (
-          <div className="absolute top-2 left-10 z-10 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
-            ★ Cover
+          <div className="absolute top-2 left-10 z-10 bg-foreground text-background text-[11px] font-mono tracking-wider font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm">
+            <span>COVER</span>
           </div>
         )}
 
         {/* Image */}
         <div className="relative aspect-video cursor-pointer" onClick={onView}>
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           )}
 
           {hasError ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400">
-              <AlertCircle className="w-8 h-8 mb-2" />
-              <span className="text-sm">Failed to load image</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/40 text-muted-foreground">
+              <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
+              <span className="text-xs">Failed to load image</span>
             </div>
           ) : (
             <img
@@ -539,7 +539,7 @@ function DraggableImageItem({ url, index, onRemove, onReplace, onSetCover, onVie
         </div>
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
 
         {/* Actions */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -549,14 +549,14 @@ function DraggableImageItem({ url, index, onRemove, onReplace, onSetCover, onVie
                 type="button"
                 size="sm"
                 variant="secondary"
-                className="h-8 px-2.5 bg-yellow-500/90 hover:bg-yellow-500 text-black font-bold text-xs shadow-md border-0"
+                className="h-7 px-2 bg-background/90 hover:bg-background text-foreground font-semibold text-xs shadow-sm border border-border"
                 onClick={(e) => {
                   e.stopPropagation()
                   onSetCover?.()
                 }}
                 title="Set as Cover Image"
               >
-                ★ Set Cover
+                Set Cover
               </Button>
             )}
 

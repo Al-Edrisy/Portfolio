@@ -1,108 +1,89 @@
 "use client"
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ProjectCategory } from '@/types'
 
-// Project categories with symbols (emojis) and descriptions
-const categories = {
+// Project categories with clean typography and icons
+export const categories = {
   'web-development': {
     label: 'Web Development',
     symbol: '🌐',
-    description: 'Websites, web apps, and online platforms',
-    color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/40'
+    description: 'Websites, web apps, and modern online platforms'
   },
   'mobile-app': {
     label: 'Mobile App',
     symbol: '📱',
-    description: 'iOS, Android, and cross-platform apps',
-    color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900/40'
+    description: 'iOS, Android, and cross-platform mobile apps'
   },
   'desktop-app': {
     label: 'Desktop App',
     symbol: '💻',
-    description: 'Native desktop applications',
-    color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-800 dark:hover:bg-purple-900/40'
+    description: 'Native and cross-platform desktop applications'
   },
   'ui-ux-design': {
     label: 'UI/UX Design',
     symbol: '🎨',
-    description: 'User interface and experience design',
-    color: 'bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 dark:bg-pink-950/30 dark:text-pink-300 dark:border-pink-800 dark:hover:bg-pink-900/40'
+    description: 'User interface craft, system design & interaction'
   },
   'backend-api': {
     label: 'Backend & API',
     symbol: '💾',
-    description: 'Server-side development and APIs',
-    color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-950/30 dark:text-orange-300 dark:border-orange-800 dark:hover:bg-orange-900/40'
+    description: 'Server-side microservices, distributed APIs & pipelines'
   },
   'cloud-devops': {
     label: 'Cloud & DevOps',
     symbol: '☁️',
-    description: 'Infrastructure and deployment',
-    color: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:text-cyan-300 dark:border-cyan-800 dark:hover:bg-cyan-900/40'
+    description: 'Cloud infrastructure, containers, CI/CD & orchestration'
   },
   'game-development': {
     label: 'Game Development',
     symbol: '🎮',
-    description: 'Video games and interactive media',
-    color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/40'
+    description: 'Game engines, WebGL, shaders and interactive media'
   },
   'data-science': {
-    label: 'Data Science',
-    symbol: '📊',
-    description: 'Analytics, ML, and data visualization',
-    color: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-950/30 dark:text-yellow-300 dark:border-yellow-800 dark:hover:bg-yellow-900/40'
+    label: 'AI & Data Science',
+    symbol: '🧠',
+    description: 'Machine learning, LLMs, neural networks & data pipelines'
   },
   'business': {
-    label: 'Business',
+    label: 'Business SaaS',
     symbol: '💼',
-    description: 'Business applications and tools',
-    color: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-950/30 dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900/40'
+    description: 'Enterprise workflows, SaaS tools & productivity platforms'
   },
   'education': {
     label: 'Education',
     symbol: '🎓',
-    description: 'Educational platforms and tools',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/40'
+    description: 'Academic tools, LMS systems & learning platforms'
   },
   'healthcare': {
     label: 'Healthcare',
-    symbol: '❤️',
-    description: 'Medical and health applications',
-    color: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900/40'
+    symbol: '🩺',
+    description: 'Health informatics, clinical tools & telemedicine'
   },
   'e-commerce': {
     label: 'E-commerce',
     symbol: '🛒',
-    description: 'Online stores and marketplaces',
-    color: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-800 dark:hover:bg-teal-900/40'
+    description: 'Storefronts, inventory management & checkout platforms'
   },
   'entertainment': {
-    label: 'Entertainment',
-    symbol: '🎵',
-    description: 'Media, music, and entertainment apps',
-    color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-800 dark:hover:bg-violet-900/40'
-  },
-  'photography': {
-    label: 'Photography',
-    symbol: '📷',
-    description: 'Photo editing and sharing platforms',
-    color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800 dark:hover:bg-amber-900/40'
+    label: 'Media & Entertainment',
+    symbol: '🎬',
+    description: 'Audio, streaming media and interactive content'
   },
   'portfolio': {
-    label: 'Portfolio',
-    symbol: '📖',
-    description: 'Personal and professional portfolios',
-    color: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 dark:bg-slate-950/30 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-900/40'
+    label: 'Portfolio & Personal',
+    symbol: '✨',
+    description: 'Personal projects, showcases and developer tools'
   },
   'home-automation': {
-    label: 'Home & IoT',
-    symbol: '🏠',
-    description: 'Smart home and IoT projects',
-    color: 'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100 dark:bg-lime-950/30 dark:text-lime-300 dark:border-lime-800 dark:hover:bg-lime-900/40'
+    label: 'IoT & Systems',
+    symbol: '⚡',
+    description: 'Hardware interfaces, automation & embedded devices'
   }
 } as const
 
@@ -131,63 +112,67 @@ export function CategoryPicker({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Selected Categories Display */}
+      {/* Selected Categories Pill Row */}
       {selectedCategories.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
+          className="p-3 rounded-xl bg-card border border-border/70 space-y-2 shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Selected ({selectedCategories.length})
-            </p>
-            {allowClear && selectedCategories.length > 0 && (
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <span>Selected Categories</span>
+              <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-mono">
+                {selectedCategories.length}
+              </Badge>
+            </span>
+            {allowClear && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => onCategoriesChange([])}
-                className="text-gray-400 hover:text-gray-600 h-auto py-1"
+                className="text-xs text-muted-foreground hover:text-foreground h-7 px-2 hover:bg-muted"
               >
-                Clear All
+                Clear all
               </Button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {selectedCategories.map(categoryKey => {
-              const category = categories[categoryKey as keyof typeof categories]
-              if (!category) return null
-              return (
-                <motion.div
-                  key={categoryKey}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                  )}
-                >
-                  <span className="text-lg leading-none">{category.symbol}</span>
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    {category.label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCategoryToggle(categoryKey)}
-                    className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+
+          <div className="flex flex-wrap gap-1.5">
+            <AnimatePresence>
+              {selectedCategories.map(categoryKey => {
+                const category = categories[categoryKey as keyof typeof categories]
+                if (!category) return null
+                return (
+                  <motion.div
+                    key={categoryKey}
+                    initial={{ scale: 0.85, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.85, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium shadow-sm"
                   >
-                    <span className="text-lg leading-none">×</span>
-                  </button>
-                </motion.div>
-              )
-            })}
+                    <span className="text-sm leading-none">{category.symbol}</span>
+                    <span>{category.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCategoryToggle(categoryKey)}
+                      className="ml-1 opacity-70 hover:opacity-100 transition-opacity p-0.5 rounded focus:outline-none"
+                      aria-label={`Remove ${category.label}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         </motion.div>
       )}
 
-      {/* Category Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      {/* Category Grid in Monochrome */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
         {Object.entries(categories).map(([key, category]) => {
           const categoryKey = key as ProjectCategory
           const isSelected = selectedCategories.includes(categoryKey)
@@ -201,57 +186,51 @@ export function CategoryPicker({
               onMouseEnter={() => setHoveredCategory(categoryKey)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={cn(
-                "relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200",
-                "hover:scale-105 hover:shadow-md",
+                "relative group flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all duration-200 min-h-[92px]",
                 isSelected
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
-                "bg-white dark:bg-gray-800"
+                  ? "bg-foreground text-background border-foreground shadow-sm shadow-black/10 dark:shadow-white/5 font-semibold"
+                  : "bg-card/70 hover:bg-card border-border/70 hover:border-foreground/30 text-muted-foreground hover:text-foreground"
               )}
               whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.97 }}
             >
               {/* Symbol */}
-              <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors",
-                isSelected
-                  ? "bg-blue-500 text-white"
-                  : category.color
-              )}>
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center text-base mb-1.5 transition-colors",
+                  isSelected
+                    ? "bg-background/15 text-background"
+                    : "bg-muted/60 text-foreground group-hover:bg-muted"
+                )}
+              >
                 {category.symbol}
               </div>
 
               {/* Label */}
-              <span className={cn(
-                "text-sm font-medium text-center leading-tight",
-                isSelected
-                  ? "text-blue-700 dark:text-blue-300"
-                  : "text-gray-700 dark:text-gray-300"
-              )}>
+              <span className="text-xs tracking-tight line-clamp-1">
                 {category.label}
               </span>
 
-              {/* Selection Indicator */}
+              {/* Selection Checkmark */}
               {isSelected && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center"
+                  className="absolute top-1.5 right-1.5 w-4 h-4 bg-background text-foreground rounded-full flex items-center justify-center shadow-xs"
                 >
-                  <span className="text-xs">✓</span>
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </motion.div>
               )}
 
-              {/* Hover Description */}
-              {(isHovered || isSelected) && (
+              {/* Tooltip Description */}
+              {isHovered && !isSelected && (
                 <motion.div
-                  initial={{ opacity: 0, y: 5 }}
+                  initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-10"
+                  className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
                 >
-                  <div className="bg-gray-900 text-white text-xs rounded-md px-3 py-2 whitespace-nowrap shadow-lg">
+                  <div className="bg-popover text-popover-foreground border border-border text-[11px] font-normal rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
                     {category.description}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
                   </div>
                 </motion.div>
               )}
@@ -259,27 +238,16 @@ export function CategoryPicker({
           )
         })}
       </div>
-
-      {/* Instructions */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Select all categories that describe your project
-      </div>
     </div>
   )
 }
 
 // Compact version for forms
-interface CompactCategoryPickerProps {
-  selectedCategories: ProjectCategory[]
-  onCategoriesChange: (categories: ProjectCategory[]) => void
-  className?: string
-}
-
 export function CompactCategoryPicker({
   selectedCategories,
   onCategoriesChange,
   className
-}: CompactCategoryPickerProps) {
+}: CategoryPickerProps) {
   const handleCategoryToggle = (categoryKey: ProjectCategory) => {
     if (selectedCategories.includes(categoryKey)) {
       onCategoriesChange(selectedCategories.filter(c => c !== categoryKey))
@@ -290,35 +258,7 @@ export function CompactCategoryPicker({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {/* Current Selection */}
-      <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        {selectedCategories.length > 0 ? (
-          <div className="flex-1">
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {selectedCategories.length} {selectedCategories.length === 1 ? 'category' : 'categories'} selected
-            </span>
-          </div>
-        ) : (
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Select categories
-          </span>
-        )}
-
-        {selectedCategories.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onCategoriesChange([])}
-            className="text-gray-400 hover:text-gray-600 h-auto py-1"
-          >
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Quick Selection */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {Object.entries(categories).map(([key, category]) => {
           const categoryKey = key as ProjectCategory
           const isSelected = selectedCategories.includes(categoryKey)
@@ -329,16 +269,15 @@ export function CompactCategoryPicker({
               type="button"
               onClick={() => handleCategoryToggle(categoryKey)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm",
-                "border transition-colors",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all",
                 isSelected
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500"
-                  : category.color
+                  ? "bg-foreground text-background border border-foreground font-semibold shadow-xs"
+                  : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <span>{category.symbol}</span>
               <span>{category.label}</span>
-              {isSelected && <span className="ml-1">✓</span>}
+              {isSelected && <Check className="w-3 h-3 ml-0.5 stroke-[2.5]" />}
             </button>
           )
         })}

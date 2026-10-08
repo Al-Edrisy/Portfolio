@@ -635,36 +635,36 @@ export function EnhancedProjectForm({
       {/* Title Header */}
       <div className="text-center sm:text-left">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <Badge variant="secondary" className="gap-2 px-3 py-1 mb-2 bg-primary/10 text-primary border-primary/10 hover:bg-primary/15 transition-all">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              {isEdit ? 'Refine Details' : 'Portfolio Showcase'}
-            </Badge>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">
-              {isEdit ? 'Update Your Project' : 'Build Your Showcase'}
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-foreground/10 text-foreground border border-foreground/15 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-pulse" />
+              <span>{isEdit ? 'Project Refinement' : 'Project Studio'}</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground">
+              {isEdit ? 'Update Your Project' : 'Create New Project'}
             </h1>
-            <p className="text-muted-foreground text-sm max-w-xl">
+            <p className="text-muted-foreground text-xs sm:text-sm max-w-xl leading-relaxed">
               {isEdit
                 ? 'Update metadata, replace screenshots, edit code links, and polish long description.'
-                : 'Create an impressive case study highlighting architecture, features, and engineering metrics.'}
+                : 'Architect an impressive case study showcasing systems architecture, features, and engineering metrics.'}
             </p>
           </div>
           
-          <div className="flex items-center gap-3 bg-muted/30 border border-border/50 rounded-xl px-4 py-2 text-sm shadow-sm backdrop-blur-md">
-            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Progress</span>
-            <div className="w-20 bg-muted rounded-full h-2 overflow-hidden border">
+          <div className="flex items-center gap-3 bg-card border border-border/70 rounded-xl px-4 py-2.5 text-xs shadow-xs backdrop-blur-md">
+            <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider font-mono">Progress</span>
+            <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
               <div 
-                className="bg-primary h-full rounded-full transition-all duration-300"
+                className="bg-foreground h-full rounded-full transition-all duration-300"
                 style={{ width: `${formProgress}%` }}
               />
             </div>
-            <span className="font-bold text-foreground text-xs">{Math.round(formProgress)}%</span>
+            <span className="font-bold text-foreground font-mono">{Math.round(formProgress)}%</span>
           </div>
         </div>
       </div>
 
       {/* Horizontal Connected Steps Timeline (Desktop) */}
-      <div className="hidden md:flex items-center justify-between gap-2 p-2 bg-card/60 backdrop-blur-md rounded-xl border border-border/50 shadow-sm">
+      <div className="hidden md:flex items-center justify-between gap-1.5 p-1.5 bg-card/80 backdrop-blur-md rounded-2xl border border-border/70 shadow-xs">
         {steps.map((step, idx) => {
           const Icon = step.icon
           const isActive = currentStep === step.id
@@ -675,28 +675,28 @@ export function EnhancedProjectForm({
                 type="button"
                 onClick={() => goToStep(step.id)}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
+                  "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 w-full justify-center sm:justify-start",
                   isActive 
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.03]" 
+                    ? "bg-foreground text-background shadow-xs shadow-black/10 dark:shadow-white/5 font-bold" 
                     : isCompleted
-                      ? "text-green-500 hover:text-green-600 bg-green-500/5 hover:bg-green-500/10 border border-green-500/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      ? "text-foreground bg-muted/60 hover:bg-muted border border-border/60"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
                 <span className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] border font-bold shrink-0",
+                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-bold shrink-0 transition-colors",
                   isActive
-                    ? "bg-primary-foreground text-primary border-transparent"
+                    ? "bg-background text-foreground"
                     : isCompleted
-                      ? "bg-green-500 text-white border-transparent"
-                      : "bg-background text-muted-foreground border-border"
+                      ? "bg-foreground text-background"
+                      : "bg-muted text-muted-foreground border border-border"
                 )}>
-                  {step.id}
+                  {isCompleted ? "✓" : step.id}
                 </span>
                 <span className="truncate">{step.title}</span>
               </button>
               {idx < steps.length - 1 && (
-                <div className="h-[1px] flex-1 bg-border/60 mx-4" />
+                <div className="h-[1px] flex-1 bg-border/60 mx-2" />
               )}
             </div>
           )
@@ -704,19 +704,19 @@ export function EnhancedProjectForm({
       </div>
 
       {/* Mobile Timeline Status Bar */}
-      <div className="flex md:hidden items-center justify-between bg-card/60 backdrop-blur-md border border-border/50 rounded-xl p-3.5 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-md shadow-primary/25">
+      <div className="flex md:hidden items-center justify-between bg-card backdrop-blur-md border border-border/70 rounded-xl p-3 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-mono font-bold shadow-xs">
             {currentStep}
           </span>
           <div>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Step {currentStep} of 6</p>
-            <p className="text-sm font-bold text-foreground">{steps[currentStep - 1].title}</p>
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider font-mono">Step {currentStep} of 6</p>
+            <p className="text-xs font-bold text-foreground">{steps[currentStep - 1].title}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Next:</span>
-          <span className="font-bold text-foreground/80">{steps[Math.min(currentStep, 5)].title}</span>
+          <span className="text-[11px]">Next:</span>
+          <span className="font-semibold text-foreground">{steps[Math.min(currentStep, 5)].title}</span>
         </div>
       </div>
 
@@ -724,12 +724,12 @@ export function EnhancedProjectForm({
       {getStepTip(currentStep) && (
         <motion.div
           key={currentStep}
-          initial={{ opacity: 0, y: -5 }}
+          initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-3 shadow-sm"
+          className="p-3.5 rounded-xl border border-border bg-card/60 flex items-start gap-3 shadow-xs"
         >
-          <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <div className="text-xs text-foreground/80 leading-relaxed font-medium">
+          <Lightbulb className="w-4 h-4 text-foreground shrink-0 mt-0.5" />
+          <div className="text-xs text-muted-foreground leading-relaxed">
             {getStepTip(currentStep)}
           </div>
         </motion.div>
@@ -875,8 +875,8 @@ export function EnhancedProjectForm({
                             className={cn(
                               "flex items-center gap-1.5 justify-center py-2 px-2.5 rounded-lg border text-xs font-semibold transition-all duration-200",
                               isSelected
-                                ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20 scale-[1.02]"
-                                : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted border-border"
+                                ? "bg-foreground text-background border-foreground shadow-xs scale-[1.02]"
+                                : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border-border"
                             )}
                           >
                             <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -888,7 +888,7 @@ export function EnhancedProjectForm({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <input
                       type="file"
@@ -900,18 +900,18 @@ export function EnhancedProjectForm({
                     />
                     <label htmlFor="doc-upload-input" className="block h-full">
                       <div className={cn(
-                        "flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-6 cursor-pointer transition-all hover:bg-primary/5 hover:border-primary/50 group text-center bg-background/30 h-full",
+                        "flex flex-col items-center justify-center border border-dashed border-border/80 rounded-xl p-5 cursor-pointer transition-all hover:bg-muted/40 hover:border-foreground/40 group text-center bg-card/50 h-full",
                         isUploadingDoc && "pointer-events-none opacity-50"
                       )}>
                         {isUploadingDoc ? (
-                          <Loader2 className="w-6 h-6 animate-spin text-primary mb-1.5" />
+                          <Loader2 className="w-5 h-5 animate-spin text-foreground mb-1.5" />
                         ) : (
-                          <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary mb-1.5 transition-colors" />
+                          <Plus className="w-5 h-5 text-muted-foreground group-hover:text-foreground mb-1.5 transition-colors" />
                         )}
-                        <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                          {isUploadingDoc ? 'Uploading Document to Cloudflare R2...' : 'Select & Upload Reference File'}
+                        <p className="text-xs font-semibold text-foreground">
+                          {isUploadingDoc ? 'Uploading to Storage...' : 'Upload Reference File'}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Supports PDF, Markdown (.md, .mmd), Text, or Images</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">PDF, Markdown (.md, .mmd), Text or Diagram</p>
                       </div>
                     </label>
                   </div>
@@ -919,10 +919,10 @@ export function EnhancedProjectForm({
                   <button
                     type="button"
                     onClick={handleOpenDocCreator}
-                    className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-6 transition-all hover:bg-primary/5 hover:border-primary/50 group text-center bg-background/30"
+                    className="flex flex-col items-center justify-center border border-dashed border-border/80 rounded-xl p-5 transition-all hover:bg-muted/40 hover:border-foreground/40 group text-center bg-card/50 cursor-pointer"
                   >
-                    <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary mb-1.5 transition-colors" />
-                    <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                    <Plus className="w-5 h-5 text-muted-foreground group-hover:text-foreground mb-1.5 transition-colors" />
+                    <p className="text-xs font-semibold text-foreground">
                       Create & Paste Document
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">Write Markdown or Mermaid chart code directly</p>
@@ -1015,17 +1015,17 @@ export function EnhancedProjectForm({
                     size="sm"
                     onClick={handleGenerateStory}
                     disabled={isGeneratingStory}
-                    className="gap-2 border-primary/20 hover:border-primary/50 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                    className="gap-2 border-border text-foreground hover:bg-muted bg-card text-xs font-semibold shadow-xs transition-colors"
                   >
                     {isGeneratingStory ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating Case Study...
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Generating Story...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        Generate with AI
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Generate with AI</span>
                       </>
                     )}
                   </Button>
@@ -1266,24 +1266,24 @@ export function EnhancedProjectForm({
         </div>
 
         {/* Navigation Footer */}
-        <div className="p-6 border-t border-border/50 bg-muted/10 flex items-center justify-between shadow-inner">
+        <div className="p-5 sm:p-6 border-t border-border/70 bg-card/80 backdrop-blur-md flex items-center justify-between">
           <Button
             type="button"
             variant="outline"
             onClick={currentStep === 1 ? onCancel : prevStep}
-            className="gap-2 px-5 py-2 hover:bg-muted font-bold transition-all shadow-sm border-border"
+            className="gap-2 px-4 py-2 border-border/70 text-foreground hover:bg-muted font-semibold transition-all shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
-            {currentStep === 1 ? 'Cancel' : 'Previous'}
+            <span>{currentStep === 1 ? 'Cancel' : 'Previous Step'}</span>
           </Button>
 
           {currentStep < 6 ? (
             <Button
               type="button"
               onClick={nextStep}
-              className="gap-2 px-6 py-2 shadow font-bold"
+              className="gap-2 px-6 py-2 bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-xs transition-all active:scale-[0.98]"
             >
-              Next
+              <span>Continue</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
@@ -1291,17 +1291,17 @@ export function EnhancedProjectForm({
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="gap-2 px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="gap-2 px-7 py-2 bg-foreground text-background hover:bg-foreground/90 font-bold shadow-xs transition-all active:scale-[0.98]"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
+                  <span>Saving Project...</span>
                 </>
               ) : (
                 <>
                   <Rocket className="w-4 h-4" />
-                  {isEdit ? 'Update Project' : 'Publish Project'}
+                  <span>{isEdit ? 'Update Project' : 'Publish to Showcase'}</span>
                 </>
               )}
             </Button>
@@ -1400,17 +1400,17 @@ export function EnhancedProjectForm({
                   type="button"
                   onClick={handleSaveDoc}
                   disabled={isSavingDoc}
-                  className="font-bold gap-2 px-5"
+                  className="bg-foreground text-background hover:bg-foreground/90 font-semibold gap-2 px-5 shadow-xs"
                 >
                   {isSavingDoc ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving Document...
+                      <span>Saving Document...</span>
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      Save Document
+                      <span>Save Document</span>
                     </>
                   )}
                 </Button>
