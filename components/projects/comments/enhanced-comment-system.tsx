@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { 
   MessageCircle, 
   Reply, 
@@ -17,7 +17,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
 import { useProjectComments } from '@/hooks/comments/use-project-comments'
-import { EnhancedCommentForm, CompactCommentForm } from './forms/enhanced-comment-form'
+import { EnhancedCommentForm, CompactCommentForm } from './forms/comment-form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

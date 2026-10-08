@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Send, X, Loader2 } from 'lucide-react'
 import { useCreateComment } from '@/hooks/comments'
 import { useAuth } from '@/contexts/auth-context'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AICommentGenerator } from '../ai/ai-comment-generator'
 
-interface CommentFormProps {
+export interface CommentFormProps {
   projectId: string
   parentCommentId?: string
   projectTitle?: string
@@ -20,7 +20,10 @@ interface CommentFormProps {
   placeholder?: string
   autoFocus?: boolean
   className?: string
+  variant?: 'default' | 'compact' | 'minimal'
 }
+
+export type EnhancedCommentFormProps = CommentFormProps
 
 export function CommentForm({
   projectId,
@@ -297,3 +300,5 @@ export function CompactCommentForm({
     </form>
   )
 }
+
+export const EnhancedCommentForm = CommentForm

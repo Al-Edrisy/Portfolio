@@ -1,15 +1,16 @@
 "use client"
 
 import { useState, useCallback, memo } from 'react'
-import { ImageOff } from 'lucide-react'
+import { ImageOff, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { filterFailedImages, type ImageErrorState } from '@/lib/utils/image-helpers'
 
 interface SmartImageGridProps {
   images: string[]
   projectTitle: string
-  onImageClick: (e: React.MouseEvent, index: number) => void
-  imageRef?: React.RefObject<HTMLDivElement>
+  onImageClick?: (e: React.MouseEvent, index: number) => void
+  imageRef?: React.RefObject<HTMLDivElement | null>
+  className?: string
 }
 
 /**
@@ -30,10 +31,10 @@ const GridImage = memo(function GridImage({
 }) {
   if (hasError) {
     return (
-      <div className={cn("flex items-center justify-center bg-muted", className)}>
+      <div className={cn("flex items-center justify-center bg-muted/50 w-full h-full", className)}>
         <div className="flex flex-col items-center gap-1 text-muted-foreground">
           <ImageOff className="h-5 w-5" />
-          <span className="text-[9px]">Failed</span>
+          <span className="text-[10px]">Unavailable</span>
         </div>
       </div>
     )
@@ -53,16 +54,15 @@ const GridImage = memo(function GridImage({
 })
 
 /**
- * Smart Image Grid with error handling
- * 
- * Implements Requirements 4.4: IF an image URL fails to load THEN the System 
- * SHALL display a placeholder and continue showing other images
+ * Smart Image Grid with streamlined feed presentation
+ * Supports 1, 2, 3, or 4+ images with clean layouts
  */
 export const SmartImageGrid = memo(function SmartImageGrid({
   images,
   projectTitle,
   onImageClick,
   imageRef,
+  className
 }: SmartImageGridProps) {
   const [errorState, setErrorState] = useState<ImageErrorState>({})
 
@@ -70,16 +70,26 @@ export const SmartImageGrid = memo(function SmartImageGrid({
     setErrorState(prev => ({ ...prev, [url]: true }))
   }, [])
 
-  // Get valid images for display (filter out failed ones for layout calculation)
+  const handleClick = useCallback((e: React.MouseEvent, index: number) => {
+    if (onImageClick) {
+      onImageClick(e, index)
+    } else {
+      // Default: Cleanly open full-res in new tab if user wants to inspect
+      e.stopPropagation()
+      if (images[index]) {
+        window.open(images[index], '_blank', 'noopener,noreferrer')
+      }
+    }
+  }, [onImageClick, images])
+
   const validImages = filterFailedImages(images, errorState)
   const displayCount = validImages.length
 
-  // If all images failed, show placeholder
   if (displayCount === 0 && images.length > 0) {
     return (
-      <div className="relative w-full aspect-[2/1] overflow-hidden rounded-md bg-muted flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-          <ImageOff className="h-8 w-8" />
+      <div className={cn("relative w-full aspect-[16/9] overflow-hidden rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center", className)}>
+        <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+          <ImageOff className="h-6 w-6" />
           <span className="text-xs">Images unavailable</span>
         </div>
       </div>
@@ -90,19 +100,24 @@ export const SmartImageGrid = memo(function SmartImageGrid({
   if (images.length === 1) {
     return (
       <div
-        className="relative w-full aspect-[2/1] overflow-hidden rounded-md bg-muted group/image cursor-pointer"
-        onClick={(e) => onImageClick(e, 0)}
+        className={cn(
+          "relative w-full aspect-[16/9] overflow-hidden rounded-lg bg-muted/20 border border-border/50 group/image cursor-pointer",
+          className
+        )}
+        onClick={(e) => handleClick(e, 0)}
       >
-        <div ref={imageRef} className="w-full h-full">
+        <div ref={imageRef as React.RefObject<HTMLDivElement>} className="w-full h-full">
           <GridImage
             src={images[0]}
             alt={projectTitle}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-[1.02]"
             onError={() => handleImageError(images[0])}
             hasError={!!errorState[images[0]]}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover/image:opacity-100 transition-opacity">
+          <ExternalLink className="h-3 w-3" />
+        </div>
       </div>
     )
   }
@@ -110,55 +125,57 @@ export const SmartImageGrid = memo(function SmartImageGrid({
   // Multiple images - smart grid
   return (
     <div
-      ref={imageRef}
-      className="relative w-full aspect-[2/1] overflow-hidden rounded-md cursor-pointer group/image"
+      ref={imageRef as React.RefObject<HTMLDivElement>}
+      className={cn(
+        "relative w-full aspect-[16/9] overflow-hidden rounded-lg border border-border/50 cursor-pointer group/image",
+        className
+      )}
     >
       {images.length === 2 ? (
         // 2 Images: Split 50/50
-        <div className="flex h-full w-full gap-0.5">
+        <div className="flex h-full w-full gap-1">
           {images.slice(0, 2).map((img, i) => (
             <div
               key={i}
               className="flex-1 overflow-hidden relative"
-              onClick={(e) => onImageClick(e, i)}
+              onClick={(e) => handleClick(e, i)}
             >
               <GridImage
                 src={img}
                 alt={`${projectTitle} ${i + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
                 onError={() => handleImageError(img)}
                 hasError={!!errorState[img]}
               />
-              <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors" />
             </div>
           ))}
         </div>
       ) : images.length === 3 ? (
-        // 3 Images: 1 Main (66%), 2 Stacked (33%)
-        <div className="flex h-full w-full gap-0.5">
+        // 3 Images: 1 Main (65%), 2 Stacked (35%)
+        <div className="flex h-full w-full gap-1">
           <div
-            className="w-2/3 overflow-hidden relative"
-            onClick={(e) => onImageClick(e, 0)}
+            className="w-[65%] overflow-hidden relative"
+            onClick={(e) => handleClick(e, 0)}
           >
             <GridImage
               src={images[0]}
               alt={`${projectTitle} 1`}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
               onError={() => handleImageError(images[0])}
               hasError={!!errorState[images[0]]}
             />
           </div>
-          <div className="w-1/3 flex flex-col gap-0.5">
+          <div className="w-[35%] flex flex-col gap-1">
             {images.slice(1, 3).map((img, i) => (
               <div
                 key={i}
                 className="flex-1 overflow-hidden relative"
-                onClick={(e) => onImageClick(e, i + 1)}
+                onClick={(e) => handleClick(e, i + 1)}
               >
                 <GridImage
                   src={img}
                   alt={`${projectTitle} ${i + 2}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
                   onError={() => handleImageError(img)}
                   hasError={!!errorState[img]}
                 />
@@ -167,47 +184,47 @@ export const SmartImageGrid = memo(function SmartImageGrid({
           </div>
         </div>
       ) : (
-        // 4+ Images: 1 Main (Left), Grid (Right) with overflow indicator
-        <div className="flex h-full w-full gap-0.5">
+        // 4+ Images: 1 Main (Left), 2 Stacked (Right) with overflow indicator
+        <div className="flex h-full w-full gap-1">
           <div
             className="flex-1 overflow-hidden relative"
-            onClick={(e) => onImageClick(e, 0)}
+            onClick={(e) => handleClick(e, 0)}
           >
             <GridImage
               src={images[0]}
               alt={`${projectTitle} 1`}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
               onError={() => handleImageError(images[0])}
               hasError={!!errorState[images[0]]}
             />
           </div>
-          <div className="w-1/3 flex flex-col gap-0.5">
+          <div className="w-[35%] flex flex-col gap-1">
             <div
               className="flex-1 overflow-hidden relative"
-              onClick={(e) => onImageClick(e, 1)}
+              onClick={(e) => handleClick(e, 1)}
             >
               <GridImage
                 src={images[1]}
                 alt={`${projectTitle} 2`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
                 onError={() => handleImageError(images[1])}
                 hasError={!!errorState[images[1]]}
               />
             </div>
             <div
               className="flex-1 overflow-hidden relative"
-              onClick={(e) => onImageClick(e, 2)}
+              onClick={(e) => handleClick(e, 2)}
             >
               <GridImage
                 src={images[2]}
                 alt={`${projectTitle} 3`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-110"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover/image:scale-105"
                 onError={() => handleImageError(images[2])}
                 hasError={!!errorState[images[2]]}
               />
               {images.length > 3 && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <span className="text-white text-xs font-medium">+{images.length - 3}</span>
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
+                  <span className="text-white text-xs font-semibold">+{images.length - 3}</span>
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getProjectById } from "@/lib/firebase/utils/firebase-utils"
 import ProjectPageClient from "@/components/projects/project-page-client"
 import ErrorBoundary from "@/components/ui/error-boundary"
+import Footer from "@/components/ui/footer"
 
 interface ProjectPageProps {
   params: Promise<{
@@ -60,6 +61,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <main className="min-h-screen bg-background">
         <ProjectPageClient projectId={id} />
       </main>
+      <Footer />
     </ErrorBoundary>
   )
 }

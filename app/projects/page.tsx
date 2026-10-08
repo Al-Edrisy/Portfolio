@@ -4,6 +4,7 @@ import ProjectsSection from "@/components/sections/projects-section"
 import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
+import Footer from "@/components/ui/footer"
 // Custom cursor removed - using default browser cursor
 import { FeedbackTrigger } from "@/components/feedback"
 
@@ -42,6 +43,7 @@ export default function ProjectsPage() {
         </div>
         {/* Feedback drawer trigger - shows when user scrolls 70% of page */}
         <FeedbackTrigger triggerScrollPercentage={70} />
+        <Footer />
       </main>
     </ErrorBoundary>
   )

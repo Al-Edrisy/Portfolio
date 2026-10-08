@@ -1,4 +1,4 @@
-// Reactions System
-export { ReactionPicker, QuickReactionButton } from './picker/reaction-picker'
+// Reactions System - Unified Single Source of Truth
+export { EnhancedReactionPicker, ReactionPicker } from './enhanced-reaction-picker'
 export { ReactionSummary, InlineReactionDisplay } from './display/reaction-summary'
-export { SimpleReactionPicker, InlineReactions } from './simple-reaction-picker'
+export { ReactionList } from './reaction-list'

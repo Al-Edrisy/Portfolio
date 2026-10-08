@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -106,7 +106,7 @@ interface ReactionListProps {
   maxVisible?: number
 }
 
-export default function ReactionList({
+export function ReactionList({
   reactions,
   loading = false,
   className,
@@ -324,3 +324,4 @@ export default function ReactionList({
   )
 }
 
+export default ReactionList

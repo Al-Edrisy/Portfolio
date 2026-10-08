@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion'
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react'
 import {
   Image,
   Link,

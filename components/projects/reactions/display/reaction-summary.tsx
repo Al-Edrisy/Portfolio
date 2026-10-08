@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ThumbsUp, Heart, Flame, Sparkles, Laugh, Lightbulb, Rocket, HandMetal } from 'lucide-react'
 import { ReactionType } from '@/types'
 import { cn } from '@/lib/utils'

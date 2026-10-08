@@ -10,7 +10,6 @@ import TextType from "@/components/ui/text-type"
 import StarBorder from "@/components/ui/star-border"
 import CircularText from "@/components/ui/circular-text"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
-import { Github, Linkedin, Code, ExternalLink } from "lucide-react"
 
 export default function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null)
@@ -134,13 +133,12 @@ export default function HeroSection() {
               <div className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-4">
                 <TextType
                   text={[
-                    "Software & AI Systems Engineer",
-                    "Full-Stack Developer (Next.js 15 • TypeScript • Python)",
-                    "AI Agent & LLM Systems Builder (LangChain • Langflow)",
-                    `Production Systems Architect with ${yearsOfExperience}+ Years Experience`,
+                    "UI/UX Engineer & AI Systems Builder",
+                    `Full-Stack Developer with ${yearsOfExperience}+ Years Experience`,
+                    "Specialist in OpenAI, Langflow & Modern Web Tech",
                   ]}
-                  typingSpeed={65}
-                  pauseDuration={1800}
+                  typingSpeed={75}
+                  pauseDuration={1500}
                   showCursor={true}
                   cursorCharacter="|"
                   className="font-medium"
@@ -148,82 +146,15 @@ export default function HeroSection() {
               </div>
             </motion.div>
 
-            {/* Interactive Tech & Identity Badges (inspired by best-in-class developer profiles) */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}
-              className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-xl"
-            >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-sm backdrop-blur-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                Final International Univ. (Cyprus)
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm backdrop-blur-sm">
-                Clean Architecture
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm backdrop-blur-sm">
-                AI Agents & LLMs
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-sm backdrop-blur-sm">
-                Next.js 15 & TS
-              </span>
-            </motion.div>
-
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-              className="text-base sm:text-lg text-muted-foreground max-w-2xl lg:max-w-none mb-8 sm:mb-10 text-pretty leading-relaxed will-change-transform"
+              className="text-base sm:text-lg text-muted-foreground max-w-2xl lg:max-w-none mb-8 sm:mb-12 text-pretty leading-relaxed will-change-transform"
             >
               Every project starts with a question: what if technology could think smarter?
               I design and engineer products that make intelligence feel effortless and intuitive.
             </motion.p>
-
-            {/* Social & Profile Action Badges */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
-              className="flex items-center justify-center gap-3 mb-8"
-            >
-              <a
-                href="https://github.com/Al-Edrisy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-card/80 hover:bg-card border border-border/80 hover:border-primary/50 text-foreground transition-all duration-200 hover:scale-105 shadow-sm"
-              >
-                <Github className="w-3.5 h-3.5 text-foreground" />
-                <span>GitHub</span>
-              </a>
-              <a
-                href="https://www.linkedin.com/in/%D8%B5%D8%A7%D9%84%D8%AD-%D8%A8%D9%86-%D8%B9%D8%AB%D9%85%D8%A7%D9%86-a565a2242"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 border border-[#0A66C2]/30 text-[#0A66C2] dark:text-[#38BDF8] transition-all duration-200 hover:scale-105 shadow-sm"
-              >
-                <Linkedin className="w-3.5 h-3.5" />
-                <span>LinkedIn</span>
-              </a>
-              <a
-                href="https://leetcode.com/u/salehfree33"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#FFA116]/10 hover:bg-[#FFA116]/20 border border-[#FFA116]/30 text-[#FFA116] transition-all duration-200 hover:scale-105 shadow-sm"
-              >
-                <Code className="w-3.5 h-3.5" />
-                <span>LeetCode</span>
-              </a>
-              <a
-                href="https://al-edrisy.space"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary transition-all duration-200 hover:scale-105 shadow-sm"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>al-edrisy.space</span>
-              </a>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}

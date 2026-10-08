@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence, PanInfo } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo } from 'motion/react'
 import { 
   ChevronLeft, 
   ChevronRight, 

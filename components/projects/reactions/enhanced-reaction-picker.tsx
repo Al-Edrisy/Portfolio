@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   ThumbsUp,
   Heart,
@@ -416,3 +416,6 @@ export default function EnhancedReactionPicker({
     </div>
   )
 }
+
+export { EnhancedReactionPicker }
+export const ReactionPicker = EnhancedReactionPicker

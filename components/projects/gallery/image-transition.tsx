@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence, Variants } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'motion/react'
 import { Loader2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
