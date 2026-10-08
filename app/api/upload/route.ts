@@ -37,10 +37,12 @@ export async function POST(request: NextRequest) {
         const base64Data = matches[2]
         const buffer = Buffer.from(base64Data, 'base64')
 
-        // Security check: Size limit (10MB for images)
-        if (buffer.length > 10 * 1024 * 1024) {
+        // Security check: Size limit (100MB for videos, 25MB for other files)
+        const isVideo = mimeType.startsWith('video/')
+        const maxSizeBytes = isVideo ? 100 * 1024 * 1024 : 25 * 1024 * 1024
+        if (buffer.length > maxSizeBytes) {
             return NextResponse.json(
-                { success: false, error: 'File size exceeds 10MB limit' },
+                { success: false, error: `File size exceeds ${isVideo ? '100MB' : '25MB'} limit` },
                 { status: 400 }
             )
         }

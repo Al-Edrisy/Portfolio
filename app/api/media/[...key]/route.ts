@@ -9,7 +9,7 @@ export async function GET(
     const accountId = process.env.R2_ACCOUNT_ID
     const accessKeyId = process.env.R2_ACCESS_KEY_ID || ''
     const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || ''
-    const bucketName = process.env.R2_BUCKET_NAME || ''
+    const bucketName = process.env.R2_BUCKET_NAME || 'salih-otman-portfolio'
     const endpoint = `https://${accountId}.r2.cloudflarestorage.com`
 
     const client = new S3Client({
@@ -24,11 +24,15 @@ export async function GET(
     const { key } = await params
     const objectKey = key.join('/')
 
+    // Range support for streaming videos & audio
+    const rangeHeader = request.headers.get('range')
+
     let response;
     try {
       const command = new GetObjectCommand({
         Bucket: bucketName,
         Key: objectKey,
+        Range: rangeHeader || undefined,
       })
       response = await client.send(command)
     } catch (error: any) {
@@ -39,6 +43,7 @@ export async function GET(
         const fallbackCommand = new GetObjectCommand({
           Bucket: bucketName,
           Key: rootKey,
+          Range: rangeHeader || undefined,
         })
         response = await client.send(fallbackCommand)
       } else {
@@ -51,12 +56,26 @@ export async function GET(
     }
 
     const bodyArray = await response.Body.transformToByteArray()
+    const contentType = response.ContentType || 'application/octet-stream'
+
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    }
+
+    if (response.ContentRange) {
+      headers['Content-Range'] = response.ContentRange
+    }
+    if (response.ContentLength !== undefined) {
+      headers['Content-Length'] = response.ContentLength.toString()
+    }
+
+    const status = response.$metadata?.httpStatusCode === 206 || rangeHeader ? 206 : 200
 
     return new NextResponse(Buffer.from(bodyArray), {
-      headers: {
-        'Content-Type': response.ContentType || 'application/octet-stream',
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
+      status,
+      headers,
     })
   } catch (error: any) {
     console.error('Error fetching R2 asset via proxy:', error)

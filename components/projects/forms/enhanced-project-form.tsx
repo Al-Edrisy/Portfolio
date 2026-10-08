@@ -13,6 +13,7 @@ import {
   Github,
   FileText,
   Image as ImageIcon,
+  Video as Film,
   Code,
   ArrowLeft,
   ArrowRight,
@@ -1233,19 +1234,51 @@ export function EnhancedProjectForm({
 
                   <Separator className="bg-border/60" />
 
-                  <div>
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Media & Files</h3>
-                    {formData.images.length > 0 ? (
-                      <div className="flex gap-2.5 overflow-x-auto py-2">
-                        {formData.images.map((img, i) => (
-                          <div key={i} className="relative w-24 h-16 rounded-xl border border-border/50 overflow-hidden flex-shrink-0 shadow-sm bg-muted">
-                            <img src={img} className="object-cover w-full h-full" referrerPolicy="no-referrer" alt="preview" />
-                            {i === 0 && <span className="absolute bottom-0 inset-x-0 bg-primary/95 text-primary-foreground text-[9px] text-center font-extrabold py-0.5 uppercase tracking-wider">Cover</span>}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Screenshots & Gallery</h3>
+                      {formData.images.length > 0 ? (
+                        <div className="flex gap-2.5 overflow-x-auto py-2">
+                          {formData.images.map((img, i) => (
+                            <div key={i} className="relative w-24 h-16 rounded-xl border border-border/50 overflow-hidden flex-shrink-0 shadow-sm bg-muted">
+                              <img src={img} className="object-cover w-full h-full" referrerPolicy="no-referrer" alt="preview" />
+                              {i === 0 && <span className="absolute bottom-0 inset-x-0 bg-primary/95 text-primary-foreground text-[9px] text-center font-extrabold py-0.5 uppercase tracking-wider">Cover</span>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic font-medium">No screenshots added yet.</p>
+                      )}
+                    </div>
+
+                    {formData.videoUrl && (
+                      <div>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Demonstration Video</h3>
+                        <div className="p-3 bg-muted/30 border border-border/50 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center shrink-0">
+                              <Film className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground truncate">{formData.videoUrl}</span>
                           </div>
-                        ))}
+                          <Badge variant="outline" className="text-[10px] font-mono shrink-0">Attached</Badge>
+                        </div>
                       </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground italic font-medium">No screenshots added yet.</p>
+                    )}
+
+                    {formData.documents && formData.documents.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Architecture & Reference Files ({formData.documents.length})</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {formData.documents.map((doc: any, i: number) => (
+                            <div key={i} className="p-2.5 bg-muted/20 border border-border/40 rounded-lg flex items-center gap-2.5 text-xs">
+                              <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                              <span className="font-medium truncate flex-1">{doc.title || doc.name}</span>
+                              <Badge variant="secondary" className="text-[9px] uppercase">{doc.type}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
 
