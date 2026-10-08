@@ -52,25 +52,32 @@ export default function AboutSection() {
           <div className="space-y-8">
             {/* Story Section */}
             <div className="space-y-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">My Story</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">My Story & Focus</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  With over {yearsOfExperience} years of experience in full-stack development, I specialize in creating innovative digital
-                  solutions that bridge the gap between cutting-edge technology and exceptional user experience. My
-                  journey began with a fascination for how technology can solve real-world problems.
+                  I am a Software & AI Systems Engineer studying at <strong className="text-foreground">Final International University</strong> in North Cyprus, with over {yearsOfExperience} years of hands-on experience building full-stack applications and intelligent systems.
                 </p>
                 <p>
-                  My expertise spans across modern web technologies, AI integrations with OpenAI and Langflow, and
-                  scalable system architecture. I've had the privilege of working with startups and established
-                  companies, helping them transform their ideas into successful digital products.
+                  My engineering philosophy is rooted in <strong className="text-foreground">Clean Architecture</strong>, type-safety, and modular design. I build systems where backend robustness meets high-caliber frontend execution—from high-throughput APIs to fluid micro-interactions.
                 </p>
                 <p>
-                  What drives me is the intersection of design and technology. I believe that great software isn't just
-                  functional—it's intuitive, beautiful, and makes people's lives better. Every project I work on is an
-                  opportunity to push boundaries and create something meaningful.
+                  Recently, my focus is dedicated to the forefront of <strong className="text-foreground">Agentic AI & LLM Orchestration</strong>—leveraging Langflow, LangChain, and fine-tuned models to build autonomous agents and intelligent workflows that solve tangible real-world challenges.
                 </p>
               </div>
+
+              {/* Focus Pillars Badges */}
+              <div className="pt-2 flex flex-wrap gap-2">
+                <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
+                  ⚡ Clean Architecture & SOLID
+                </span>
+                <span className="px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold">
+                  🧠 AI Agents & Langflow
+                </span>
+                <span className="px-3 py-1.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold">
+                  🌐 Next.js 15 & Type-Safe Systems
+                </span>
               </div>
+            </div>
 
           </div>
 
