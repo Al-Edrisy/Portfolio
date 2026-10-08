@@ -41,8 +41,8 @@ export default function ProjectsPage() {
             <ProjectsSection />
           </Suspense>
         </div>
-        {/* Feedback drawer trigger - shows when user scrolls 70% of page */}
-        <FeedbackTrigger triggerScrollPercentage={70} />
+        {/* Non-intrusive floating feedback pill (reveals when user scrolls past 50%) */}
+        <FeedbackTrigger triggerScrollPercentage={50} />
         <Footer />
       </main>
     </ErrorBoundary>

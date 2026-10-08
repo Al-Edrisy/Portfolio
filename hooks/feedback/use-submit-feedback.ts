@@ -36,8 +36,8 @@ export function useSubmitFeedback() {
       }
 
       // Validate rating
-      if (feedbackData.rating < 1 || feedbackData.rating > 6) {
-        setError('Rating must be between 1 and 6 stars')
+      if (feedbackData.rating < 1 || feedbackData.rating > 5) {
+        setError('Rating must be between 1 and 5 stars')
         setLoading(false)
         return null
       }

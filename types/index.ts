@@ -169,7 +169,7 @@ export interface Feedback {
   userAvatarMediaId?: string
   userAvatarMedia?: MediaAsset
   userEmail: string
-  rating: number // 1-6 stars
+  rating: number // 1-5 stars
   comment: string
   projectId?: string
   projectTitle?: string

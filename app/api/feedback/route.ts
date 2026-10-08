@@ -74,11 +74,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!rating || rating < 1 || rating > 6) {
+    if (!rating || rating < 1 || rating > 5) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Rating must be between 1 and 6 stars'
+          error: 'Rating must be between 1 and 5 stars'
         },
         { status: 400 }
       )

@@ -185,7 +185,7 @@ export interface FeedbackDocument {
   userEmail: string
   
   // Feedback content
-  rating: number // 1-6 stars
+  rating: number // 1-5 stars
   comment: string
   projectId?: string // Optional: specific project reference
   projectTitle?: string // Denormalized for display
@@ -285,6 +285,6 @@ export const VALIDATION_RULES = {
   
   FEEDBACK: {
     comment: { min: 10, max: 500 },
-    rating: { min: 1, max: 6 }
+    rating: { min: 1, max: 5 }
   }
 } as const
