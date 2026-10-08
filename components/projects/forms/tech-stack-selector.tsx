@@ -14,7 +14,8 @@ import {
   Cloud,
   Palette,
   Wrench,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -31,9 +32,81 @@ const categoryConfig = {
   'backend': { label: 'Backend', icon: Code },
   'database': { label: 'Database', icon: Database },
   'devops': { label: 'Cloud & DevOps', icon: Cloud },
+  'ai': { label: 'AI & ML', icon: Sparkles },
   'design': { label: 'Design & UI', icon: Palette },
   'other': { label: 'Other Tools', icon: Wrench }
 }
+
+export const DEFAULT_TECH_CATALOG: TechStackItem[] = [
+  // Frontend
+  { id: 'react', name: 'React', slug: 'react', category: 'frontend', logoMediaId: '', displayOrder: 1, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'nextjs', name: 'Next.js', slug: 'nextjs', category: 'frontend', logoMediaId: '', displayOrder: 2, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'typescript', name: 'TypeScript', slug: 'typescript', category: 'frontend', logoMediaId: '', displayOrder: 3, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'javascript', name: 'JavaScript', slug: 'javascript', category: 'frontend', logoMediaId: '', displayOrder: 4, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'tailwind', name: 'Tailwind CSS', slug: 'tailwind', category: 'frontend', logoMediaId: '', displayOrder: 5, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'vuejs', name: 'Vue.js', slug: 'vuejs', category: 'frontend', logoMediaId: '', displayOrder: 6, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'angular', name: 'Angular', slug: 'angular', category: 'frontend', logoMediaId: '', displayOrder: 7, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'svelte', name: 'Svelte', slug: 'svelte', category: 'frontend', logoMediaId: '', displayOrder: 8, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'redux', name: 'Redux', slug: 'redux', category: 'frontend', logoMediaId: '', displayOrder: 9, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'vite', name: 'Vite', slug: 'vite', category: 'frontend', logoMediaId: '', displayOrder: 10, createdAt: new Date(), updatedAt: new Date() },
+
+  // Mobile
+  { id: 'flutter', name: 'Flutter', slug: 'flutter', category: 'mobile', logoMediaId: '', displayOrder: 11, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'react-native', name: 'React Native', slug: 'react-native', category: 'mobile', logoMediaId: '', displayOrder: 12, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'dart', name: 'Dart', slug: 'dart', category: 'mobile', logoMediaId: '', displayOrder: 13, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'swift', name: 'Swift', slug: 'swift', category: 'mobile', logoMediaId: '', displayOrder: 14, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'kotlin', name: 'Kotlin', slug: 'kotlin', category: 'mobile', logoMediaId: '', displayOrder: 15, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'expo', name: 'Expo', slug: 'expo', category: 'mobile', logoMediaId: '', displayOrder: 16, createdAt: new Date(), updatedAt: new Date() },
+
+  // Backend
+  { id: 'nodejs', name: 'Node.js', slug: 'nodejs', category: 'backend', logoMediaId: '', displayOrder: 17, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'python', name: 'Python', slug: 'python', category: 'backend', logoMediaId: '', displayOrder: 18, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'fastapi', name: 'FastAPI', slug: 'fastapi', category: 'backend', logoMediaId: '', displayOrder: 19, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'nestjs', name: 'NestJS', slug: 'nestjs', category: 'backend', logoMediaId: '', displayOrder: 20, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'express', name: 'Express.js', slug: 'express', category: 'backend', logoMediaId: '', displayOrder: 21, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'django', name: 'Django', slug: 'django', category: 'backend', logoMediaId: '', displayOrder: 22, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'golang', name: 'Go (Golang)', slug: 'golang', category: 'backend', logoMediaId: '', displayOrder: 23, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'csharp', name: 'C# / .NET', slug: 'csharp', category: 'backend', logoMediaId: '', displayOrder: 24, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'graphql', name: 'GraphQL', slug: 'graphql', category: 'backend', logoMediaId: '', displayOrder: 25, createdAt: new Date(), updatedAt: new Date() },
+
+  // Database
+  { id: 'postgresql', name: 'PostgreSQL', slug: 'postgresql', category: 'database', logoMediaId: '', displayOrder: 26, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'mongodb', name: 'MongoDB', slug: 'mongodb', category: 'database', logoMediaId: '', displayOrder: 27, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'redis', name: 'Redis', slug: 'redis', category: 'database', logoMediaId: '', displayOrder: 28, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'supabase', name: 'Supabase', slug: 'supabase', category: 'database', logoMediaId: '', displayOrder: 29, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'firebase', name: 'Firebase', slug: 'firebase', category: 'database', logoMediaId: '', displayOrder: 30, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'mysql', name: 'MySQL', slug: 'mysql', category: 'database', logoMediaId: '', displayOrder: 31, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'prisma', name: 'Prisma ORM', slug: 'prisma', category: 'database', logoMediaId: '', displayOrder: 32, createdAt: new Date(), updatedAt: new Date() },
+
+  // Cloud & DevOps
+  { id: 'docker', name: 'Docker', slug: 'docker', category: 'devops', logoMediaId: '', displayOrder: 33, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cloudflare', name: 'Cloudflare', slug: 'cloudflare', category: 'devops', logoMediaId: '', displayOrder: 34, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'aws', name: 'AWS', slug: 'aws', category: 'devops', logoMediaId: '', displayOrder: 35, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'gcp', name: 'Google Cloud', slug: 'gcp', category: 'devops', logoMediaId: '', displayOrder: 36, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'vercel', name: 'Vercel', slug: 'vercel', category: 'devops', logoMediaId: '', displayOrder: 37, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'railway', name: 'Railway', slug: 'railway', category: 'devops', logoMediaId: '', displayOrder: 38, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'linux', name: 'Linux', slug: 'linux', category: 'devops', logoMediaId: '', displayOrder: 39, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'git', name: 'Git & GitHub', slug: 'git', category: 'devops', logoMediaId: '', displayOrder: 40, createdAt: new Date(), updatedAt: new Date() },
+
+  // AI & Intelligent Systems
+  { id: 'langchain', name: 'LangChain', slug: 'langchain', category: 'ai', logoMediaId: '', displayOrder: 41, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'langflow', name: 'Langflow', slug: 'langflow', category: 'ai', logoMediaId: '', displayOrder: 42, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'pytorch', name: 'PyTorch', slug: 'pytorch', category: 'ai', logoMediaId: '', displayOrder: 43, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'huggingface', name: 'Hugging Face', slug: 'huggingface', category: 'ai', logoMediaId: '', displayOrder: 44, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'openai', name: 'OpenAI / LLMs', slug: 'openai', category: 'ai', logoMediaId: '', displayOrder: 45, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'ollama', name: 'Ollama', slug: 'ollama', category: 'ai', logoMediaId: '', displayOrder: 46, createdAt: new Date(), updatedAt: new Date() },
+
+  // Design & UI
+  { id: 'figma', name: 'Figma', slug: 'figma', category: 'design', logoMediaId: '', displayOrder: 47, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'framer-motion', name: 'Framer Motion', slug: 'framer-motion', category: 'design', logoMediaId: '', displayOrder: 48, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'gsap', name: 'GSAP', slug: 'gsap', category: 'design', logoMediaId: '', displayOrder: 49, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'shadcn', name: 'shadcn/ui', slug: 'shadcn', category: 'design', logoMediaId: '', displayOrder: 50, createdAt: new Date(), updatedAt: new Date() },
+
+  // Other Tools
+  { id: 'rest-api', name: 'REST APIs', slug: 'rest-api', category: 'other', logoMediaId: '', displayOrder: 51, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'websockets', name: 'WebSockets', slug: 'websockets', category: 'other', logoMediaId: '', displayOrder: 52, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'postman', name: 'Postman', slug: 'postman', category: 'other', logoMediaId: '', displayOrder: 53, createdAt: new Date(), updatedAt: new Date() }
+]
 
 interface TechStackSelectorProps {
   selectedTech: string[]
@@ -51,7 +124,7 @@ export function TechStackSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [catalog, setCatalog] = useState<TechStackItem[]>([])
+  const [catalog, setCatalog] = useState<TechStackItem[]>(DEFAULT_TECH_CATALOG)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -60,13 +133,23 @@ export function TechStackSelector({
       try {
         const q = query(collection(db, 'tech_stack_catalog'), orderBy('displayOrder', 'asc'))
         const snapshot = await getDocs(q)
-        const items = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as any[]
-        setCatalog(items)
+        if (!snapshot.empty) {
+          const remoteItems = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as any[]
+          
+          // Merge remote items with default catalog to guarantee rich options
+          const merged = [...remoteItems]
+          DEFAULT_TECH_CATALOG.forEach(defaultItem => {
+            if (!merged.some(m => m.id === defaultItem.id || m.name.toLowerCase() === defaultItem.name.toLowerCase())) {
+              merged.push(defaultItem)
+            }
+          })
+          setCatalog(merged)
+        }
       } catch (err) {
-        console.error('Error fetching tech stack catalog:', err)
+        console.warn('Using default tech stack catalog fallback:', err)
       }
     }
     loadCatalog()
@@ -98,6 +181,30 @@ export function TechStackSelector({
     if (!selectedTech.includes(techId)) {
       onTechChange([...selectedTech, techId])
     }
+  }
+
+  const handleAddCustomTech = (name: string) => {
+    const trimmed = name.trim()
+    if (!trimmed || selectedTech.length >= maxItems) return
+    const id = trimmed.toLowerCase().replace(/[^a-z0-9_-]/g, '-')
+    
+    // Add to catalog if not present so it has a display item
+    if (!catalog.some(i => i.id === id || i.name.toLowerCase() === trimmed.toLowerCase())) {
+      const newItem: TechStackItem = {
+        id,
+        name: trimmed,
+        slug: id,
+        category: (selectedCategory as any) || 'other',
+        logoMediaId: '',
+        displayOrder: catalog.length + 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      setCatalog(prev => [newItem, ...prev])
+    }
+
+    handleAddTech(id)
+    setSearchQuery('')
   }
 
   const handleRemoveTech = (techId: string) => {
@@ -206,9 +313,29 @@ export function TechStackSelector({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter frameworks, libraries, tools..."
-                  className="pl-9 h-9 bg-background border-border text-xs"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (filteredCatalog.length === 1) {
+                        handleAddTech(filteredCatalog[0].id)
+                        setSearchQuery('')
+                      } else if (searchQuery.trim()) {
+                        handleAddCustomTech(searchQuery.trim())
+                      }
+                    }
+                  }}
+                  placeholder="Search technologies or type custom name and press Enter..."
+                  className="pl-9 pr-14 h-9 bg-background border-border text-xs"
                 />
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddCustomTech(searchQuery.trim())}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 text-[10px] font-semibold bg-foreground text-background rounded hover:bg-foreground/90 transition-all"
+                  >
+                    Add
+                  </button>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-1">
@@ -246,6 +373,23 @@ export function TechStackSelector({
                 })}
               </div>
             </div>
+
+            {/* Custom tech quick add prompt when query doesn't match an existing name */}
+            {searchQuery.trim() && !catalog.some(i => i.name.toLowerCase() === searchQuery.trim().toLowerCase()) && (
+              <div className="p-2 border-b border-border bg-muted/40">
+                <button
+                  type="button"
+                  onClick={() => handleAddCustomTech(searchQuery.trim())}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 transition-all shadow-xs"
+                >
+                  <span className="flex items-center gap-1.5 truncate">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add &quot;{searchQuery.trim()}&quot; as custom technology</span>
+                  </span>
+                  <span className="text-[10px] opacity-75 font-mono">Press Enter</span>
+                </button>
+              </div>
+            )}
 
             {/* Catalog Grid */}
             <div className="max-h-64 overflow-y-auto p-2 divide-y divide-border/40">
@@ -291,9 +435,20 @@ export function TechStackSelector({
                   )
                 })
               ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <Search className="w-6 h-6 mx-auto mb-2 opacity-40" />
-                  <p className="text-xs">No matching technologies found</p>
+                <div className="p-8 text-center text-muted-foreground space-y-3">
+                  <Search className="w-6 h-6 mx-auto opacity-40" />
+                  <p className="text-xs">No matching technologies in this filter</p>
+                  {searchQuery.trim() && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => handleAddCustomTech(searchQuery.trim())}
+                      className="text-xs bg-foreground text-background"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Add &quot;{searchQuery.trim()}&quot;
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

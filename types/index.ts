@@ -6,7 +6,7 @@ export interface TechStackItem {
   id: string
   name: string
   slug: string
-  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other'
+  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other' | 'ai'
   logoMediaId: string
   officialUrl?: string
   displayOrder: number
@@ -17,7 +17,7 @@ export interface TechStackItem {
 export interface TechStackItemDocument {
   name: string
   slug: string
-  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other'
+  category: 'frontend' | 'mobile' | 'backend' | 'database' | 'devops' | 'design' | 'other' | 'ai'
   logoMediaId: string
   officialUrl?: string
   displayOrder: number

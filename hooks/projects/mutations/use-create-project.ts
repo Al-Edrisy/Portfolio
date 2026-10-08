@@ -45,11 +45,16 @@ export function useCreateProject() {
         galleryMediaIds: projectData.galleryMediaIds || [],
         videoMediaId: projectData.videoMediaId || null,
 
-        // Image structure (Legacy fallback)
+        // Image structure (Sync both legacy cover and full gallery)
+        image: projectData.image || (Array.isArray(projectData.images) ? projectData.images[0] : '') || '',
         images: {
-          cover: projectData.image || '', // First image as cover
-          gallery: projectData.images || (projectData.image ? [projectData.image] : []), // All images including cover
-          thumbnails: projectData.image ? [projectData.image] : [] // Optimized thumbnails
+          cover: projectData.image || (Array.isArray(projectData.images) ? projectData.images[0] : '') || '',
+          gallery: Array.isArray(projectData.images) && projectData.images.length > 0
+            ? projectData.images
+            : (projectData.image ? [projectData.image] : []),
+          thumbnails: Array.isArray(projectData.images) && projectData.images.length > 0
+            ? projectData.images
+            : (projectData.image ? [projectData.image] : [])
         },
 
         // Video (Legacy fallback)

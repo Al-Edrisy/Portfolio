@@ -84,10 +84,16 @@ export function useUpdateProject() {
 
       // Handle images update
       if (projectData.image !== undefined || projectData.images !== undefined) {
+        const imageList = Array.isArray(projectData.images) && projectData.images.length > 0
+          ? projectData.images
+          : (projectData.image ? [projectData.image] : []);
+        const cover = projectData.image || imageList[0] || '';
+        
+        updateData.image = cover;
         // Use dot notation for nested fields
-        (updateData as any)['images.cover'] = projectData.image || projectData.images?.[0] || '';
-        (updateData as any)['images.gallery'] = projectData.images || (projectData.image ? [projectData.image] : []);
-        (updateData as any)['images.thumbnails'] = projectData.image || projectData.images?.[0] ? [projectData.image || projectData.images?.[0]] : [];
+        (updateData as any)['images.cover'] = cover;
+        (updateData as any)['images.gallery'] = imageList;
+        (updateData as any)['images.thumbnails'] = imageList;
       }
 
       // Handle published status

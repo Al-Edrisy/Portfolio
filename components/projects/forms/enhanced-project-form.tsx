@@ -824,7 +824,10 @@ export function EnhancedProjectForm({
                 <Label className="text-sm font-bold">Main Images Gallery</Label>
                 <ImageGalleryInput
                   images={formData.images}
-                  onImagesChange={(imgs) => handleInputChange('images', imgs)}
+                  onImagesChange={(imgs) => {
+                    handleInputChange('images', imgs)
+                    handleInputChange('image', imgs[0] || '')
+                  }}
                 />
                 {errors.image && <p className="text-xs text-destructive font-semibold">{errors.image}</p>}
               </div>

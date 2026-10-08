@@ -27,6 +27,7 @@ interface ImageUrlInputProps {
   value: string
   onChange: (url: string) => void
   onAddImage?: (url: string) => void
+  onAddImages?: (urls: string[]) => void
   onAddMedia?: (media: any) => void
   placeholder?: string
   className?: string
@@ -136,6 +137,7 @@ export function ImageUrlInput({
   value,
   onChange,
   onAddImage,
+  onAddImages,
   onAddMedia,
   placeholder = "Enter image URL...",
   className,
@@ -188,21 +190,25 @@ export function ImageUrlInput({
         .filter(u => u.length > 0)
 
       if (urls.length > 1) {
-        let addedCount = 0
+        const validUrls: string[] = []
         const skippedUrls: string[] = []
 
         for (const url of urls) {
           const isValid = await validateImageUrl(url)
           if (isValid) {
-            onAddImage?.(url)
-            addedCount++
+            validUrls.push(url)
           } else {
             skippedUrls.push(url)
           }
         }
 
-        if (addedCount > 0) {
-          toast.success(`Bulk imported ${addedCount} images successfully`)
+        if (validUrls.length > 0) {
+          if (onAddImages) {
+            onAddImages(validUrls)
+          } else {
+            validUrls.forEach(u => onAddImage?.(u))
+          }
+          toast.success(`Bulk imported ${validUrls.length} images successfully`)
           onChange('') // Clear input
           if (skippedUrls.length > 0) {
             toast.warning(`Skipped ${skippedUrls.length} invalid URLs`)
@@ -253,50 +259,69 @@ export function ImageUrlInput({
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0) return
 
+    const files = Array.from(fileList)
     setIsUploading(true)
-    try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        return new Promise<void>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onloadend = async () => {
-            try {
-              const base64String = reader.result as string
-              const idToken = await auth.currentUser?.getIdToken()
-              const response = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 
-                  'Content-Type': 'application/json',
-                  ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
-                },
-                body: JSON.stringify({ imageBase64: base64String })
-              })
+    const uploadedUrls: string[] = []
+    const failedFiles: string[] = []
 
-              const data = await response.json()
-              if (data.success) {
-                onAddImage?.(data.url)
-                if (data.data) {
-                  onAddMedia?.(data.data)
-                }
-                resolve()
-              } else {
-                reject(new Error(data.error || 'Upload failed'))
-              }
-            } catch (err) {
-              reject(err)
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      
+      const uploadPromises = files.map(async (file) => {
+        try {
+          const base64String = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.onerror = () => reject(new Error('File reading failed'))
+            reader.readAsDataURL(file)
+          })
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(idToken ? { 'Authorization': `Bearer ${idToken}` } : {})
+            },
+            body: JSON.stringify({ 
+              imageBase64: base64String,
+              filename: file.name,
+              folder: 'project-images'
+            })
+          })
+
+          const data = await response.json()
+          if (data.success && data.url) {
+            uploadedUrls.push(data.url)
+            if (data.data) {
+              onAddMedia?.(data.data)
             }
+          } else {
+            failedFiles.push(file.name)
           }
-          reader.onerror = () => reject(new Error('File reading failed'))
-          reader.readAsDataURL(file)
-        })
+        } catch (err) {
+          failedFiles.push(file.name)
+        }
       })
 
       await Promise.all(uploadPromises)
-      toast.success(`Uploaded ${files.length} file(s) successfully`)
+
+      if (uploadedUrls.length > 0) {
+        if (onAddImages) {
+          onAddImages(uploadedUrls)
+        } else {
+          uploadedUrls.forEach(url => onAddImage?.(url))
+        }
+        toast.success(`Uploaded ${uploadedUrls.length} file(s) successfully`)
+      }
+
+      if (failedFiles.length > 0) {
+        toast.error(`Failed to upload ${failedFiles.length} file(s)`)
+      }
     } catch (err: any) {
-      toast.error(err.message || 'Error uploading some files')
+      toast.error(err.message || 'Error uploading files')
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -673,6 +698,15 @@ export function ImageGalleryInput({
     })
   }
 
+  const handleAddImages = (newUrls: string[]) => {
+    const unique = newUrls.filter(u => !images.includes(u))
+    const remainingSlots = Math.max(0, maxImages - images.length)
+    const toAdd = unique.slice(0, remainingSlots)
+    if (toAdd.length > 0) {
+      onImagesChange([...images, ...toAdd])
+    }
+  }
+
   const handleRemoveImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     onImagesChange(newImages)
@@ -737,6 +771,7 @@ export function ImageGalleryInput({
           value={inputUrl}
           onChange={setInputUrl}
           onAddImage={handleAddImage}
+          onAddImages={handleAddImages}
           onAddMedia={onAddMedia}
           placeholder={isLimitReached ? "Maximum images reached" : "Add image URL..."}
           showPreview={false}

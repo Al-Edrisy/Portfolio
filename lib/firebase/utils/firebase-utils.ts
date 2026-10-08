@@ -143,28 +143,41 @@ const sanitizeR2Url = (url: string | undefined | null): string => {
 export const docToProject = (doc: QueryDocumentSnapshot): Project => {
   const data = doc.data() as ProjectDocument
 
-  // Normalize images: convert Firestore { cover, gallery } structure to flat array
+  // Normalize images: convert Firestore { cover, gallery } structure or flat array to flat array
   // First image is always the cover, followed by gallery images
   const normalizeImages = (): string[] => {
-    // If new images structure exists with cover or gallery
-    if (data.images) {
-      const images: string[] = []
-      if (data.images.cover) {
-        images.push(sanitizeR2Url(data.images.cover))
+    // 1. If data.images is ALREADY a flat array of strings
+    if (Array.isArray(data.images) && data.images.length > 0) {
+      return data.images.filter(Boolean).map(img => sanitizeR2Url(img))
+    }
+
+    // 2. If data.images is an object with { cover, gallery }
+    if (data.images && typeof data.images === 'object') {
+      const imgsObj = data.images as any
+      const result: string[] = []
+      
+      const coverUrl = imgsObj.cover ? sanitizeR2Url(imgsObj.cover) : ''
+      if (coverUrl) {
+        result.push(coverUrl)
       }
-      if (data.images.gallery && Array.isArray(data.images.gallery)) {
-        // Filter out cover from gallery to avoid duplicates if it's already there
-        const galleryImages = data.images.gallery
-          .filter(img => img !== data.images!.cover)
-          .map(img => sanitizeR2Url(img));
-        images.push(...galleryImages)
+
+      if (Array.isArray(imgsObj.gallery)) {
+        imgsObj.gallery.forEach((img: string) => {
+          if (img) {
+            const sanitized = sanitizeR2Url(img)
+            if (!result.includes(sanitized)) {
+              result.push(sanitized)
+            }
+          }
+        })
       }
-      if (images.length > 0) {
-        return images
+
+      if (result.length > 0) {
+        return result
       }
     }
 
-    // Fall back to legacy single image field
+    // 3. Fall back to legacy single image field
     if (data.image) {
       return [sanitizeR2Url(data.image)]
     }
@@ -182,7 +195,13 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     galleryMediaIds: data.galleryMediaIds,
     videoMediaId: data.videoMediaId,
     // Legacy field: use cover from images structure, or legacy image field
-    image: sanitizeR2Url(data.images?.cover || data.image || ''),
+    image: sanitizeR2Url(
+      (data.images && typeof data.images === 'object' && !Array.isArray(data.images) && data.images.cover) ||
+      (Array.isArray(data.images) ? data.images[0] : '') ||
+      data.image ||
+      images[0] ||
+      ''
+    ),
     // New images array: normalized flat array for UI consumption
     images: images.length > 0 ? images : undefined,
     // Video URL (YouTube, Vimeo, LinkedIn, Facebook, Twitter/X, or direct)
