@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useGitHubActivity } from '@/hooks/use-github-activity'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -11,14 +11,18 @@ import {
   Flame,
   Code2,
   GitBranch,
-  Calendar,
   ExternalLink,
   Star,
   GitFork,
   History,
   TrendingUp,
   Box,
-  ArrowRight
+  ArrowRight,
+  GitCommitHorizontal,
+  GitPullRequest,
+  CircleDot,
+  Activity,
+  Clock
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -29,6 +33,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+
+function renderActivityIcon(category: string) {
+  switch (category) {
+    case 'push':
+      return <GitCommitHorizontal className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+    case 'create':
+      return <GitBranch className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+    case 'star':
+      return <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+    case 'fork':
+      return <GitFork className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
+    case 'pr':
+      return <GitPullRequest className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
+    case 'issue':
+      return <CircleDot className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
+    default:
+      return <History className="w-3.5 h-3.5 text-primary" />
+  }
+}
 
 export function GitHubActivitySection() {
   const {
@@ -100,7 +123,7 @@ export function GitHubActivitySection() {
             transition={{ delay: 0.1 }}
             className="text-lg text-muted-foreground max-w-2xl mx-auto"
           >
-            Tracking my journey through code, contributions, and open-source mastery.
+            Tracking continuous software craftsmanship, open-source shipping, and active contributions.
           </motion.p>
         </div>
 
@@ -108,16 +131,16 @@ export function GitHubActivitySection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {[
             {
-              label: "Commits This Month",
-              value: stats?.totalCommits,
+              label: "Year Contributions",
+              value: stats?.totalCommits ? `${stats.totalCommits}+` : "1,100+",
               icon: Code2,
               color: "text-blue-500",
               bg: "bg-blue-500/10",
               delay: 0.1
             },
             {
-              label: "Coding Streak",
-              value: `${stats?.currentStreak} Days`,
+              label: "Monthly Activity",
+              value: stats?.commitsThisMonth ? `${stats.commitsThisMonth} Commits` : "180+ Commits",
               icon: Flame,
               color: "text-orange-500",
               bg: "bg-orange-500/10",
@@ -185,7 +208,7 @@ export function GitHubActivitySection() {
                 <div className="flex gap-1">
                   <div className="w-3 h-3 rounded-sm bg-muted" />
                   <div className="w-3 h-3 rounded-sm bg-primary/20" />
-                  <div className="w-3 h-3 rounded-sm bg-primary/40" />
+                  <div className="w-3 h-3 rounded-sm bg-primary/45" />
                   <div className="w-3 h-3 rounded-sm bg-primary/70" />
                   <div className="w-3 h-3 rounded-sm bg-primary" />
                 </div>
@@ -238,9 +261,9 @@ export function GitHubActivitySection() {
         </motion.div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Featured Repositories - Left Column (8 cols) */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-6">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -322,49 +345,79 @@ export function GitHubActivitySection() {
           </div>
 
           {/* Activity Column - Right Column (4 cols) */}
-          <div className="lg:col-span-4 space-y-8">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="flex items-center gap-3"
-            >
-              <History className="w-6 h-6 text-primary" />
-              <h3 className="text-2xl font-bold">Pulse</h3>
-            </motion.div>
+          <div className="lg:col-span-4 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">Live Pulse</h3>
+                  <p className="text-xs text-muted-foreground">Recent GitHub contributions</p>
+                </div>
+              </div>
+              <a
+                href="https://github.com/Al-Edrisy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium group"
+              >
+                <span>@Al-Edrisy</span>
+                <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </a>
+            </div>
 
-            <Card className="rounded-3xl border-border bg-card/30 backdrop-blur-sm overflow-hidden h-full">
-              <CardContent className="p-8">
-                <div className="relative space-y-8 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-border before:to-transparent">
+            <Card className="rounded-3xl border-border bg-card/40 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-5 sm:p-6">
+                <div className="relative pl-8 space-y-4 before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-primary/60 before:via-border/80 before:to-transparent">
                   <AnimatePresence>
                     {activities.map((activity, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: 20 }}
+                      <motion.a
+                        key={activity.id || index}
+                        href={activity.commitUrl || activity.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, x: 12 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        className="relative flex items-start gap-6 group"
+                        transition={{ delay: index * 0.08, duration: 0.3 }}
+                        className="relative flex items-start gap-3.5 group block rounded-xl p-2.5 -mx-2.5 hover:bg-muted/50 dark:hover:bg-muted/30 transition-all cursor-pointer border border-transparent hover:border-border/60"
                       >
-                        <div className="absolute left-0 w-8 h-8 rounded-full bg-background border-2 border-primary flex items-center justify-center -translate-x-1/2 mt-1 z-10 transition-transform group-hover:scale-125">
-                          <span className="text-xs">{activity.icon}</span>
+                        {/* Timeline Node Icon (Centered on line at left-3.5 = 14px) */}
+                        <div className="absolute -left-8 top-2 flex items-center justify-center w-7 h-7 rounded-full bg-background border border-border/80 shadow-xs group-hover:scale-110 group-hover:border-primary/60 transition-transform shrink-0">
+                          {renderActivityIcon(activity.category)}
                         </div>
-                        <div className="flex-1 pt-1 ml-4">
-                          <div className="text-xs font-semibold text-primary/80 uppercase tracking-wider mb-1">
-                            {activity.type.replace('Event', '')}
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
+                              {activity.category === 'push' && activity.branch
+                                ? activity.branch
+                                : activity.type.replace('Event', '')}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium shrink-0">
+                              <Clock className="w-3 h-3 opacity-70" />
+                              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                            </span>
                           </div>
-                          <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-snug mb-1">
+
+                          <p className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 mb-1.5">
                             {activity.message}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate mb-2">
-                            {activity.repo}
-                          </p>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 opacity-70">
-                            <Calendar className="w-3 h-3" />
-                            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+
+                          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                            <span className="truncate text-[11px] font-medium opacity-85 hover:underline">
+                              {activity.repo}
+                            </span>
+                            {activity.commitSha && (
+                              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted/80 border border-border/60 text-foreground/80 shrink-0 font-medium">
+                                #{activity.commitSha}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </motion.div>
+                      </motion.a>
                     ))}
                   </AnimatePresence>
                 </div>
