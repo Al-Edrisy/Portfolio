@@ -527,6 +527,8 @@ export default function ProjectModal({ projectId }: ProjectModalProps) {
                     <EnhancedReactionPicker
                       projectId={projectId}
                       currentUserReaction={getCurrentUserReaction()}
+                      reactionCounts={reactionCounts}
+                      totalReactions={totalReactions}
                       variant="modal"
                       onReactionChange={() => {
                         // Reactions will refresh automatically via the hook

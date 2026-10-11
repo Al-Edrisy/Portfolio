@@ -1,21 +1,9 @@
 "use client"
 
 import { motion } from 'motion/react'
-import { ThumbsUp, Heart, Flame, Sparkles, Laugh, Lightbulb, Rocket, HandMetal } from 'lucide-react'
 import { ReactionType } from '@/types'
+import { REACTION_CONFIG } from '../enhanced-reaction-picker'
 import { cn } from '@/lib/utils'
-
-// Reaction configuration
-const reactionConfig = {
-  like: { icon: ThumbsUp, color: 'text-blue-500', bgColor: 'bg-blue-50 dark:bg-blue-950/30' },
-  love: { icon: Heart, color: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-950/30' },
-  fire: { icon: Flame, color: 'text-orange-500', bgColor: 'bg-orange-50 dark:bg-orange-950/30' },
-  wow: { icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-50 dark:bg-yellow-950/30' },
-  laugh: { icon: Laugh, color: 'text-green-500', bgColor: 'bg-green-50 dark:bg-green-950/30' },
-  idea: { icon: Lightbulb, color: 'text-purple-500', bgColor: 'bg-purple-50 dark:bg-purple-950/30' },
-  rocket: { icon: Rocket, color: 'text-indigo-500', bgColor: 'bg-indigo-50 dark:bg-indigo-950/30' },
-  clap: { icon: HandMetal, color: 'text-pink-500', bgColor: 'bg-pink-50 dark:bg-pink-950/30' }
-}
 
 interface ReactionSummaryProps {
   reactionsCount: Record<ReactionType, number>
@@ -40,7 +28,7 @@ export function ReactionSummary({
 
   if (activeReactions.length === 0) {
     return (
-      <div className={cn("text-sm text-gray-500 dark:text-gray-400", className)}>
+      <div className={cn("text-xs text-muted-foreground", className)}>
         No reactions yet
       </div>
     )
@@ -49,23 +37,19 @@ export function ReactionSummary({
   if (compact) {
     return (
       <div className={cn("flex items-center gap-1", className)}>
-        {activeReactions.slice(0, 3).map(({ type }) => {
-          const config = reactionConfig[type]
-          const Icon = config.icon
-          return (
-            <div
+        <div className="flex items-center -space-x-1.5">
+          {activeReactions.slice(0, 3).map(({ type }) => (
+            <span
               key={type}
-              className={cn(
-                "w-6 h-6 rounded-full flex items-center justify-center",
-                config.bgColor
-              )}
+              className="text-base select-none leading-none drop-shadow-xs"
+              title={`${REACTION_CONFIG[type]?.label || type}: ${reactionsCount[type] || 0}`}
             >
-              <Icon className={cn("w-3.5 h-3.5", config.color)} />
-            </div>
-          )
-        })}
+              {REACTION_CONFIG[type]?.emoji || '👍'}
+            </span>
+          ))}
+        </div>
         {totalReactions > 0 && (
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">
+          <span className="text-xs font-semibold text-muted-foreground ml-1">
             {totalReactions}
           </span>
         )}
@@ -77,65 +61,58 @@ export function ReactionSummary({
     <div className={cn("space-y-3", className)}>
       {/* Total Count */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-sm font-semibold text-foreground">
           Reactions
         </h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+        <span className="text-xs text-muted-foreground">
           {totalReactions} {totalReactions === 1 ? 'reaction' : 'reactions'}
         </span>
       </div>
 
       {/* Reaction List */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {activeReactions.map(({ type, count }) => {
-          const config = reactionConfig[type]
-          const Icon = config.icon
+          const config = REACTION_CONFIG[type]
           const percentage = totalReactions > 0 ? (count / totalReactions) * 100 : 0
 
           return (
             <motion.div
               key={type}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={cn(
-                "relative overflow-hidden",
-                "rounded-xl p-3",
-                "border border-gray-200 dark:border-gray-700",
-                "bg-white dark:bg-gray-800"
+                "relative overflow-hidden rounded-xl p-2.5 border border-border/60 bg-card/60 backdrop-blur-xs"
               )}
             >
               {/* Background Progress */}
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${percentage}%` }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.4 }}
                 className={cn(
-                  "absolute inset-0 opacity-20",
-                  config.bgColor
+                  "absolute inset-0 opacity-15",
+                  config.bgLight
                 )}
               />
 
               {/* Content */}
-              <div className="relative flex items-center gap-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center",
-                  config.bgColor
-                )}>
-                  <Icon className={cn("w-5 h-5", config.color)} />
-                </div>
+              <div className="relative flex items-center gap-2.5">
+                <span className="text-2xl select-none leading-none">
+                  {config.emoji}
+                </span>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   {showLabels && (
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">
-                      {type}
+                    <div className="text-[11px] font-medium text-muted-foreground truncate">
+                      {config.label}
                     </div>
                   )}
-                  <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  <div className="text-base font-bold text-foreground">
                     {count}
                   </div>
                 </div>
 
-                <div className="text-xs text-gray-400 dark:text-gray-500">
+                <div className="text-[10px] text-muted-foreground font-medium">
                   {percentage.toFixed(0)}%
                 </div>
               </div>
@@ -147,7 +124,7 @@ export function ReactionSummary({
   )
 }
 
-// Inline reaction display (for cards)
+// Inline reaction display (for cards / badges)
 interface InlineReactionDisplayProps {
   reactionsCount: Record<ReactionType, number>
   totalReactions: number
@@ -173,21 +150,20 @@ export function InlineReactionDisplay({
   }
 
   return (
-    <div className={cn("flex items-center gap-2 flex-wrap", className)}>
+    <div className={cn("flex items-center gap-1.5 flex-wrap", className)}>
       {activeReactions.map(({ type, count }) => {
-        const config = reactionConfig[type]
-        const Icon = config.icon
+        const config = REACTION_CONFIG[type]
 
         return (
           <div
             key={type}
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-full",
-              config.bgColor
+              "flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium",
+              config.activeBg
             )}
           >
-            <Icon className={cn("w-3.5 h-3.5", config.color)} />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm select-none leading-none">{config.emoji}</span>
+            <span className="text-xs font-semibold">
               {count}
             </span>
           </div>
@@ -196,7 +172,7 @@ export function InlineReactionDisplay({
 
       {/* Overflow count */}
       {Object.values(reactionsCount).filter(count => count > 0).length > maxDisplay && (
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs text-muted-foreground font-medium">
           +{Object.values(reactionsCount).filter(count => count > 0).length - maxDisplay} more
         </div>
       )}

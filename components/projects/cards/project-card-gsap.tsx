@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Project } from '@/types'
+import { Project, ReactionType } from '@/types'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -149,6 +149,18 @@ export const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCa
   const getCurrentUserReaction = () => {
     return userReactions.length > 0 ? userReactions[0].type : null
   }
+
+  const effectiveTotalReactions = reactions.length > 0
+    ? reactions.length
+    : (Object.values(project.reactionsCount || {}).reduce((a, b) => a + b, 0) || 0)
+
+  const effectiveReactionCounts = Object.keys(reactionCounts || {}).length > 0
+    ? reactionCounts
+    : (project.reactionsCount || {} as Record<ReactionType, number>)
+
+  const effectiveCommentsCount = comments.length > 0
+    ? comments.length
+    : (project.commentsCount || 0)
 
   const description = project.description || ''
   const isLongDescription = description.length > 160
@@ -374,6 +386,8 @@ export const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCa
             <EnhancedReactionPicker
               projectId={project.id}
               currentUserReaction={getCurrentUserReaction()}
+              reactionCounts={effectiveReactionCounts}
+              totalReactions={effectiveTotalReactions}
               variant="compact"
             />
 
@@ -382,12 +396,17 @@ export const LinkedInStyleProjectCardGSAP = memo(function LinkedInStyleProjectCa
               size="sm"
               onClick={() => setShowCommentsInline(!showCommentsInline)}
               className={cn(
-                "h-8 px-2.5 rounded-full text-xs font-normal text-muted-foreground hover:text-foreground hover:bg-muted transition-colors gap-1.5",
-                showCommentsInline && "bg-muted text-foreground font-medium"
+                "h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors gap-1.5 border border-border/50",
+                showCommentsInline && "bg-muted text-foreground border-border"
               )}
             >
               <MessageCircle className="h-3.5 w-3.5" />
-              <span>{comments.length > 0 ? comments.length : 'Comment'}</span>
+              <span>{effectiveCommentsCount > 0 ? effectiveCommentsCount : 'Comment'}</span>
+              {effectiveCommentsCount > 0 && (
+                <span className="hidden sm:inline text-muted-foreground font-normal">
+                  {effectiveCommentsCount === 1 ? 'comment' : 'comments'}
+                </span>
+              )}
             </Button>
           </div>
 

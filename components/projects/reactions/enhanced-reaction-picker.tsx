@@ -1,141 +1,154 @@
 "use client"
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import {
-  ThumbsUp,
-  Heart,
-  Flame,
-  Sparkles,
-  Laugh,
-  Lightbulb,
-  HandMetal,
-  X,
-  Rocket
-} from 'lucide-react'
 import { ReactionType } from '@/types'
-// Remove this import - we'll use the project reactions hook instead
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
+import { useAddReaction } from '@/hooks/reactions/use-add-reaction'
 import { cn } from '@/lib/utils'
 
-// Enhanced reaction configuration with all 8 types
-const reactionConfig = {
+// Enhanced reaction configuration with real vibrant emojis
+export const REACTION_CONFIG: Record<ReactionType, {
+  emoji: string
+  label: string
+  color: string
+  activeBg: string
+  borderColor: string
+  bgLight: string
+}> = {
   like: {
-    icon: ThumbsUp,
     emoji: '👍',
     label: 'Like',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 hover:bg-blue-100',
-    darkBgColor: 'dark:bg-blue-950/40 dark:hover:bg-blue-900/50',
-    activeColor: 'text-blue-700',
-    activeBg: 'bg-blue-100 dark:bg-blue-900/60',
-    description: 'Show appreciation'
+    color: 'text-blue-500',
+    activeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    borderColor: 'border-blue-500/30',
+    bgLight: 'bg-blue-500/10'
   },
   love: {
-    icon: Heart,
     emoji: '❤️',
     label: 'Love',
-    color: 'text-red-500',
-    bgColor: 'bg-red-50 hover:bg-red-100',
-    darkBgColor: 'dark:bg-red-950/40 dark:hover:bg-red-900/50',
-    activeColor: 'text-red-600',
-    activeBg: 'bg-red-100 dark:bg-red-900/60',
-    description: 'Express love and passion'
+    color: 'text-rose-500',
+    activeBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
+    borderColor: 'border-rose-500/30',
+    bgLight: 'bg-rose-500/10'
   },
   fire: {
-    icon: Flame,
     emoji: '🔥',
     label: 'Fire',
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50 hover:bg-orange-100',
-    darkBgColor: 'dark:bg-orange-950/40 dark:hover:bg-orange-900/50',
-    activeColor: 'text-orange-600',
-    activeBg: 'bg-orange-100 dark:bg-orange-900/60',
-    description: 'This is absolutely amazing!'
-  },
-  wow: {
-    icon: Sparkles,
-    emoji: '😮',
-    label: 'Wow',
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-50 hover:bg-yellow-100',
-    darkBgColor: 'dark:bg-yellow-950/40 dark:hover:bg-yellow-900/50',
-    activeColor: 'text-yellow-600',
-    activeBg: 'bg-yellow-100 dark:bg-yellow-900/60',
-    description: 'Impressed and surprised'
-  },
-  laugh: {
-    icon: Laugh,
-    emoji: '😂',
-    label: 'Laugh',
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 hover:bg-green-100',
-    darkBgColor: 'dark:bg-green-950/40 dark:hover:bg-green-900/50',
-    activeColor: 'text-green-600',
-    activeBg: 'bg-green-100 dark:bg-green-900/60',
-    description: 'Made me laugh'
-  },
-  idea: {
-    icon: Lightbulb,
-    emoji: '💡',
-    label: 'Great Idea',
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 hover:bg-purple-100',
-    darkBgColor: 'dark:bg-purple-950/40 dark:hover:bg-purple-900/50',
-    activeColor: 'text-purple-600',
-    activeBg: 'bg-purple-100 dark:bg-purple-900/60',
-    description: 'Brilliant concept'
+    color: 'text-amber-500',
+    activeBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    borderColor: 'border-amber-500/30',
+    bgLight: 'bg-amber-500/10'
   },
   rocket: {
-    icon: Rocket,
     emoji: '🚀',
-    label: 'Amazing',
+    label: 'Rocket',
     color: 'text-indigo-500',
-    bgColor: 'bg-indigo-50 hover:bg-indigo-100',
-    darkBgColor: 'dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50',
-    activeColor: 'text-indigo-600',
-    activeBg: 'bg-indigo-100 dark:bg-indigo-900/60',
-    description: 'Outstanding work!'
+    activeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
+    borderColor: 'border-indigo-500/30',
+    bgLight: 'bg-indigo-500/10'
+  },
+  idea: {
+    emoji: '💡',
+    label: 'Idea',
+    color: 'text-yellow-500',
+    activeBg: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+    borderColor: 'border-yellow-500/30',
+    bgLight: 'bg-yellow-500/10'
   },
   clap: {
-    icon: HandMetal,
     emoji: '👏',
-    label: 'Applause',
-    color: 'text-pink-500',
-    bgColor: 'bg-pink-50 hover:bg-pink-100',
-    darkBgColor: 'dark:bg-pink-950/40 dark:hover:bg-pink-900/50',
-    activeColor: 'text-pink-600',
-    activeBg: 'bg-pink-100 dark:bg-pink-900/60',
-    description: 'Well done!'
+    label: 'Clap',
+    color: 'text-emerald-500',
+    activeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    borderColor: 'border-emerald-500/30',
+    bgLight: 'bg-emerald-500/10'
+  },
+  laugh: {
+    emoji: '😂',
+    label: 'Laugh',
+    color: 'text-orange-500',
+    activeBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30',
+    borderColor: 'border-orange-500/30',
+    bgLight: 'bg-orange-500/10'
+  },
+  wow: {
+    emoji: '😮',
+    label: 'Wow',
+    color: 'text-purple-500',
+    activeBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
+    borderColor: 'border-purple-500/30',
+    bgLight: 'bg-purple-500/10'
   }
-} as const
+}
 
-interface EnhancedReactionPickerProps {
+export interface EnhancedReactionPickerProps {
   projectId: string
   currentUserReaction?: ReactionType | null
+  reactionCounts?: Record<ReactionType, number>
+  totalReactions?: number
   onReactionChange?: (reactionType: ReactionType | null) => void
   className?: string
   variant?: 'card' | 'modal' | 'compact'
+  showCount?: boolean
 }
 
 export default function EnhancedReactionPicker({
   projectId,
-  currentUserReaction,
+  currentUserReaction = null,
+  reactionCounts,
+  totalReactions,
   onReactionChange,
   className,
-  variant = 'card'
+  variant = 'card',
+  showCount = true
 }: EnhancedReactionPickerProps) {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { addReaction } = useAddReaction()
+
   const [isOpen, setIsOpen] = useState(false)
   const [isReacting, setIsReacting] = useState(false)
-  const pickerRef = useRef<HTMLDivElement>(null)
 
-  // Close picker when clicking outside
+  // Optimistic state
+  const [activeReaction, setActiveReaction] = useState<ReactionType | null>(currentUserReaction || null)
+  const [counts, setCounts] = useState<Record<ReactionType, number>>(reactionCounts || {} as Record<ReactionType, number>)
+  const [total, setTotal] = useState<number>(totalReactions || 0)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Sync with prop updates
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+    setActiveReaction(currentUserReaction || null)
+  }, [currentUserReaction])
+
+  useEffect(() => {
+    if (reactionCounts) {
+      setCounts(reactionCounts)
+    }
+  }, [reactionCounts])
+
+  useEffect(() => {
+    if (typeof totalReactions === 'number') {
+      setTotal(totalReactions)
+    }
+  }, [totalReactions])
+
+  // Clear timers on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
+    }
+  }, [])
+
+  // Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false)
       }
     }
@@ -143,276 +156,228 @@ export default function EnhancedReactionPicker({
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
+
+  const handleMouseEnter = () => {
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current)
+      leaveTimerRef.current = null
+    }
+    hoverTimerRef.current = setTimeout(() => {
+      setIsOpen(true)
+    }, 120)
+  }
+
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current)
+      hoverTimerRef.current = null
+    }
+    leaveTimerRef.current = setTimeout(() => {
+      setIsOpen(false)
+    }, 250)
+  }
 
   const handleReactionClick = async (reactionType: ReactionType) => {
     if (!user) {
       toast({
-        title: "Sign in required",
+        title: "Authentication Required",
         description: "Please sign in to react to projects.",
-        variant: "destructive",
+        variant: "destructive"
       })
+      setIsOpen(false)
       return
     }
 
     if (isReacting) return
 
+    const previousReaction = activeReaction
+    const isRemoving = previousReaction === reactionType
+    const nextReaction: ReactionType | null = isRemoving ? null : reactionType
+
+    // Optimistic UI updates
+    setActiveReaction(nextReaction)
+    setTotal(prev => isRemoving ? Math.max(0, prev - 1) : (previousReaction ? prev : prev + 1))
+    setCounts(prev => {
+      const next = { ...prev }
+      if (previousReaction) {
+        next[previousReaction] = Math.max(0, (next[previousReaction] || 1) - 1)
+      }
+      if (!isRemoving) {
+        next[reactionType] = (next[reactionType] || 0) + 1
+      }
+      return next
+    })
+
+    onReactionChange?.(nextReaction)
+    setIsOpen(false)
+
     try {
       setIsReacting(true)
-
-      // Import Firebase functions
-      const { addDoc, deleteDoc, doc, collection, query, where, getDocs } = await import('firebase/firestore')
-      const { db } = await import('@/lib/firebase')
-
-      // Check if user already has any reaction on this project
-      const existingReactionQuery = query(
-        collection(db, 'reactions'),
-        where('projectId', '==', projectId),
-        where('userId', '==', user.id)
-      )
-
-      const existingReactionSnapshot = await getDocs(existingReactionQuery)
-
-      if (existingReactionSnapshot.empty) {
-        // No existing reaction, add new one
-        await addDoc(collection(db, 'reactions'), {
-          projectId,
-          userId: user.id,
-          type: reactionType,
-          createdAt: new Date(),
-        })
-
-        onReactionChange?.(reactionType)
-        toast({
-          title: "Reaction added!",
-          description: `${reactionConfig[reactionType].label} reaction added successfully.`,
-        })
-      } else {
-        // User has existing reaction
-        const existingReaction = existingReactionSnapshot.docs[0]
-
-        if (existingReaction.data().type === reactionType) {
-          // Same reaction type, remove it
-          await deleteDoc(doc(db, 'reactions', existingReaction.id))
-          onReactionChange?.(null)
-          toast({
-            title: "Reaction removed",
-            description: "Your reaction has been removed.",
-          })
-        } else {
-          // Different reaction type, replace it
-          await deleteDoc(doc(db, 'reactions', existingReaction.id))
-          await addDoc(collection(db, 'reactions'), {
-            projectId,
-            userId: user.id,
-            type: reactionType,
-            createdAt: new Date(),
-          })
-
-          onReactionChange?.(reactionType)
-          toast({
-            title: "Reaction updated!",
-            description: `${reactionConfig[reactionType].label} reaction updated successfully.`,
-          })
-        }
-      }
-
-      setIsOpen(false)
-    } catch (error) {
-      console.error('Error handling reaction:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update reaction. Please try again.",
-        variant: "destructive",
-      })
+      await addReaction(projectId, reactionType)
+    } catch (err: any) {
+      // Revert optimistic update on failure
+      setActiveReaction(previousReaction)
+      if (reactionCounts) setCounts(reactionCounts)
+      if (typeof totalReactions === 'number') setTotal(totalReactions)
+      onReactionChange?.(previousReaction)
+      console.error('Failed to update reaction:', err)
     } finally {
       setIsReacting(false)
     }
   }
 
-  const getTriggerContent = () => {
-    if (currentUserReaction) {
-      const config = reactionConfig[currentUserReaction]
-      return (
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{config.emoji}</span>
-          {variant !== 'compact' && (
-            <span className="text-sm font-medium">{config.label}</span>
-          )}
-        </div>
-      )
-    }
+  // Determine top reacted emoji for unreacted users
+  const topReaction = React.useMemo(() => {
+    const entries = Object.entries(counts) as [ReactionType, number][]
+    const sorted = entries.filter(([_, c]) => c > 0).sort((a, b) => b[1] - a[1])
+    return sorted.length > 0 ? sorted[0][0] : null
+  }, [counts])
 
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-lg">😊</span>
-        {variant !== 'compact' && (
-          <span className="text-sm font-medium">React</span>
-        )}
-      </div>
-    )
-  }
+  // Reaction Floating Bar (Emojis + Microcounts)
+  const ReactionFloatingBar = (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.88, y: 6 }}
+          transition={{ type: "spring", stiffness: 450, damping: 25 }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className="absolute bottom-full left-0 mb-2 p-1 sm:p-1.5 bg-background/95 dark:bg-card/95 backdrop-blur-xl border border-border/80 rounded-full shadow-2xl z-50 flex items-center gap-0.5 sm:gap-1"
+        >
+          {Object.entries(REACTION_CONFIG).map(([type, config]) => {
+            const isUserReaction = activeReaction === type
+            const count = counts[type as ReactionType] || 0
 
+            return (
+              <motion.button
+                key={type}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleReactionClick(type as ReactionType)
+                }}
+                whileHover={{ scale: 1.35, y: -4 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                className={cn(
+                  "relative p-1.5 rounded-full flex flex-col items-center justify-center transition-all duration-150 group",
+                  isUserReaction
+                    ? "bg-muted ring-1 ring-primary/40 shadow-xs scale-105"
+                    : "hover:bg-muted/70"
+                )}
+                title={`${config.label}${count > 0 ? ` (${count})` : ''}`}
+              >
+                <span className="text-xl sm:text-2xl select-none leading-none">
+                  {config.emoji}
+                </span>
+                {count > 0 && (
+                  <span className="text-[9px] font-bold text-muted-foreground mt-0.5 leading-none">
+                    {count}
+                  </span>
+                )}
+              </motion.button>
+            )
+          })}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+
+  // 1. Compact Variant (For Project Cards)
   if (variant === 'compact') {
-    // Get the current reaction icon or use Rocket as default (per user request)
-    const TriggerIcon = currentUserReaction ? reactionConfig[currentUserReaction].icon : Rocket
+    const displayEmoji = activeReaction 
+      ? REACTION_CONFIG[activeReaction].emoji 
+      : topReaction 
+        ? REACTION_CONFIG[topReaction].emoji 
+        : '👍'
 
     return (
-      <div className={cn("relative", className)} ref={pickerRef}>
+      <div 
+        ref={containerRef} 
+        className={cn("relative inline-block", className)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          onClick={() => {
+            if (activeReaction) {
+              handleReactionClick(activeReaction)
+            } else {
+              setIsOpen(prev => !prev)
+            }
+          }}
           disabled={isReacting}
           className={cn(
-            "flex items-center justify-center p-2 rounded-md transition-all duration-200",
-            "hover:bg-accent/80 active:scale-95 min-h-[44px] md:min-h-0 w-10 h-10",
-            currentUserReaction
+            "flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium transition-all duration-200 border",
+            activeReaction
               ? cn(
-                reactionConfig[currentUserReaction].bgColor,
-                reactionConfig[currentUserReaction].darkBgColor,
-                reactionConfig[currentUserReaction].color
-              )
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-            isReacting && "opacity-50 cursor-not-allowed"
+                  REACTION_CONFIG[activeReaction].activeBg,
+                  "shadow-xs hover:opacity-90 active:scale-95"
+                )
+              : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60 active:scale-95",
+            isReacting && "opacity-60 cursor-not-allowed"
           )}
-          title={currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}
+          title={activeReaction ? `Reacted ${REACTION_CONFIG[activeReaction].label} · Click to remove` : 'Click to react'}
         >
-          <TriggerIcon className="h-5 w-5 md:h-4 md:w-4" />
+          <span className="text-sm select-none leading-none">
+            {displayEmoji}
+          </span>
+          {showCount && (
+            <span className={cn(
+              "font-semibold text-xs leading-none",
+              activeReaction ? "" : total > 0 ? "text-foreground" : "text-muted-foreground font-normal"
+            )}>
+              {total > 0 ? total : 'Like'}
+            </span>
+          )}
         </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute bottom-full left-0 mb-2 p-2 bg-background border border-border rounded-xl shadow-lg z-50"
-            >
-              <div className="flex gap-1">
-                {Object.entries(reactionConfig).map(([type, config]) => {
-                  const Icon = config.icon
-                  const isActive = currentUserReaction === type
-
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => handleReactionClick(type as ReactionType)}
-                      disabled={isReacting}
-                      className={cn(
-                        "p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95",
-                        "flex items-center justify-center w-10 h-10",
-                        config.bgColor,
-                        config.darkBgColor,
-                        isActive && config.activeBg,
-                        isReacting && "opacity-50 cursor-not-allowed"
-                      )}
-                      title={config.label}
-                    >
-                      <span className="text-lg">{config.emoji}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {ReactionFloatingBar}
       </div>
     )
   }
 
-  const TriggerIcon = currentUserReaction ? reactionConfig[currentUserReaction].icon : Rocket
+  // 2. Standard Card & Modal Variant
+  const displayEmoji = activeReaction ? REACTION_CONFIG[activeReaction].emoji : (topReaction ? REACTION_CONFIG[topReaction].emoji : '👍')
+  const displayLabel = activeReaction ? REACTION_CONFIG[activeReaction].label : 'React'
 
   return (
-    <div className={cn("relative", className)} ref={pickerRef}>
+    <div 
+      ref={containerRef} 
+      className={cn("relative inline-block", className)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
         disabled={isReacting}
         className={cn(
-          "flex items-center gap-1.5 px-3 py-2 h-9 rounded-full hover:bg-muted font-normal text-muted-foreground hover:text-foreground transition-colors",
-          currentUserReaction
+          "flex items-center gap-2 h-9 px-3.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 border",
+          activeReaction
             ? cn(
-              "bg-transparent hover:bg-muted",
-              reactionConfig[currentUserReaction].color
-            )
-            : "bg-transparent",
-          isReacting && "opacity-50 cursor-not-allowed",
-          "group"
+                REACTION_CONFIG[activeReaction].activeBg,
+                "shadow-xs"
+              )
+            : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60",
+          isReacting && "opacity-60 cursor-not-allowed"
         )}
       >
-        <TriggerIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
-        <span className="text-xs">{currentUserReaction ? reactionConfig[currentUserReaction].label : 'React'}</span>
+        <span className="text-base select-none">{displayEmoji}</span>
+        <span>{displayLabel}</span>
+        {showCount && total > 0 && (
+          <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-background/80 text-foreground font-semibold text-xs border border-border/40">
+            {total}
+          </span>
+        )}
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className={cn(
-              "absolute bottom-full left-0 mb-3 p-4 bg-background border border-border rounded-xl shadow-lg z-50",
-              variant === 'modal' ? "min-w-80" : "min-w-72"
-            )}
-          >
-            <div className="space-y-3">
-              <div className="text-sm font-semibold text-foreground mb-3">
-                Choose your reaction
-              </div>
-
-              <div className="grid grid-cols-4 gap-2">
-                {Object.entries(reactionConfig).map(([type, config]) => {
-                  const Icon = config.icon
-                  const isActive = currentUserReaction === type
-
-                  return (
-                    <motion.button
-                      key={type}
-                      onClick={() => handleReactionClick(type as ReactionType)}
-                      disabled={isReacting}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={cn(
-                        "flex items-center justify-center p-3 rounded-lg transition-all duration-200",
-                        "border border-border/50 hover:border-border relative",
-                        config.bgColor,
-                        config.darkBgColor,
-                        isActive && config.activeBg,
-                        isReacting && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <span className="text-2xl">{config.emoji}</span>
-                      {isActive && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"
-                        />
-                      )}
-                    </motion.button>
-                  )
-                })}
-              </div>
-
-              {currentUserReaction && (
-                <div className="pt-2 border-t border-border/50">
-                  <button
-                    onClick={() => handleReactionClick(currentUserReaction)}
-                    disabled={isReacting}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Remove my reaction
-                  </button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {ReactionFloatingBar}
     </div>
   )
 }
