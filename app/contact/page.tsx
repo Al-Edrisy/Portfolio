@@ -6,15 +6,81 @@ import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 
 export const metadata: Metadata = {
-  title: "Contact Salih Ben Otman - Hire Full Stack Developer",
-  description: "Get in touch with Salih Ben Otman for software development projects, collaboration opportunities, freelance work, or consulting services. Available for full-stack development, React/Next.js projects, AI integrations, UI/UX design, and web application development. Contact via email: salehfree33@gmail.com or phone: +218 92 152 70 18. Let's discuss your next digital solution.",
-  keywords: "Contact Software Developer, Hire Full Stack Developer, Contact Salih Ben Otman, Freelance Developer, Software Development Services, Collaboration Opportunity, Project Inquiry, Hire React Developer, Hire Next.js Developer, Web Development Consultation, Software Engineer Contact",
+  title: "Contact & Engineering Inquiries - Salih Ben Otman",
+  description: "Get in touch with Salih Ben Otman for full-stack engineering, contract projects, React/Next.js architectures, or AI system integrations. Reachable via email: salehfree33@gmail.com, phone: +218 92 152 70 18, or direct contact form.",
+  keywords: [
+    "Contact Salih Ben Otman",
+    "Hire Full Stack Developer",
+    "Software Development Inquiries",
+    "Freelance React Developer",
+    "Next.js Consultant",
+    "AI Systems Engineer Hire",
+  ],
+  alternates: {
+    canonical: "https://salihbenotman.dev/contact",
+  },
   openGraph: {
-    title: "Contact Salih Ben Otman - Hire Full Stack Developer",
-    description: "Available for software development projects, collaboration, and consulting. Expert in React, Next.js, TypeScript, and AI integrations.",
+    title: "Contact & Engineering Inquiries - Salih Ben Otman",
+    description: "Available for high-impact software engineering contracts, collaboration, and consulting.",
     url: "https://salihbenotman.dev/contact",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Contact Salih Ben Otman - Software Developer",
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Salih Ben Otman - Full Stack Developer",
+    description: "Available for full stack web development and AI systems engineering.",
+    creator: "@salihbenotman",
+    images: ["/og-image.png"],
+  },
+  other: {
+    "llms-txt": "https://salihbenotman.dev/llms.txt",
+    "llms-full-txt": "https://salihbenotman.dev/llms-full.txt",
+  },
+}
+
+const contactJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ContactPage",
+      "@id": "https://salihbenotman.dev/contact#contactpage",
+      "url": "https://salihbenotman.dev/contact",
+      "name": "Contact Salih Ben Otman",
+      "mainEntity": {
+        "@type": "Person",
+        "@id": "https://salihbenotman.dev/#person",
+        "name": "Salih Ben Otman",
+        "email": "salehfree33@gmail.com",
+        "telephone": "+218 92 152 70 18"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://salihbenotman.dev/contact#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://salihbenotman.dev"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Contact",
+          "item": "https://salihbenotman.dev/contact"
+        }
+      ]
+    }
+  ]
 }
 
 function LoadingFallback() {
@@ -31,6 +97,10 @@ function LoadingFallback() {
 export default function ContactPage() {
   return (
     <ErrorBoundary>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+      />
       <main className="min-h-screen bg-background">
         <Navigation />
         <div className="pt-20">
@@ -42,4 +112,3 @@ export default function ContactPage() {
     </ErrorBoundary>
   )
 }
-

@@ -69,6 +69,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://salihbenotman.dev",
   },
+  other: {
+    "llms-txt": "https://salihbenotman.dev/llms.txt",
+    "llms-full-txt": "https://salihbenotman.dev/llms-full.txt",
+    "citation_author": "Salih Ben Otman",
+    "citation_title": "Salih Ben Otman - Full Stack Software Engineering & Applied AI Systems Portfolio",
+    "citation_institution": "Final International University",
+    "citation_pdf_url": "https://salihbenotman.dev/cv/salih.otman@final.edu.tr.pdf",
+  },
 }
 
 function LoadingFallback() {

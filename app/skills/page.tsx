@@ -6,14 +6,48 @@ import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 
 export const metadata: Metadata = {
-  title: "Technical Skills & Expertise - Salih Ben Otman",
-  description: "Comprehensive overview of Salih Ben Otman's technical skills and expertise. Proficient in React, Next.js, TypeScript, JavaScript, Node.js, Express.js, HTML5, CSS3, Tailwind CSS, Firebase, MongoDB, PostgreSQL, Git, AI integrations (OpenAI, Langflow), RESTful APIs, responsive design, system architecture, and modern web development best practices. 15+ technologies mastered.",
-  keywords: "Technical Skills, Programming Languages, React Skills, Next.js Expertise, TypeScript, JavaScript, Node.js, Frontend Development Skills, Backend Development, Database Skills, MongoDB, PostgreSQL, Firebase, Git, GitHub, AI Integration, OpenAI, Web Development Skills, Full Stack Skills, UI/UX Skills, Modern Web Technologies, Software Engineering Skills",
+  title: "Technical Skills & Architecture Stack - Salih Ben Otman",
+  description: "Comprehensive breakdown of Salih Ben Otman's technical engineering proficiencies: React 19, Next.js 15, TypeScript, Node.js, Cloud Firestore, PostgreSQL, AI Agent Integrations, and Responsive UI Engineering.",
+  keywords: [
+    "Technical Skills",
+    "Programming Languages",
+    "React Specialist",
+    "Next.js Architecture",
+    "TypeScript",
+    "Node.js Backend",
+    "Firestore Database",
+    "PostgreSQL",
+    "AI Systems Builder",
+    "LangChain",
+    "Salih Ben Otman",
+  ],
+  alternates: {
+    canonical: "https://salihbenotman.dev/skills",
+  },
   openGraph: {
-    title: "Technical Skills & Expertise - Salih Ben Otman",
-    description: "Expert in React, Next.js, TypeScript, Node.js, AI integrations, and 15+ modern web technologies. Professional full-stack development skills.",
+    title: "Technical Skills & Architecture Stack - Salih Ben Otman",
+    description: "Expert in React 19, Next.js 15, TypeScript, Node.js, AI integrations, and modern cloud databases.",
     url: "https://salihbenotman.dev/skills",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Salih Ben Otman - Technical Skills & Architecture Stack",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Technical Skills & Architecture Stack - Salih Ben Otman",
+    description: "Mastery across React, Next.js, TypeScript, Node.js, and AI integrations.",
+    creator: "@salihbenotman",
+    images: ["/og-image.png"],
+  },
+  other: {
+    "llms-txt": "https://salihbenotman.dev/llms.txt",
+    "llms-full-txt": "https://salihbenotman.dev/llms-full.txt",
   },
 }
 
@@ -42,4 +76,3 @@ export default function SkillsPage() {
     </ErrorBoundary>
   )
 }
-

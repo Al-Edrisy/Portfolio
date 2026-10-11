@@ -422,6 +422,22 @@ export const getPaginatedProjects = async (
   }
 }
 
+// Get all published projects for sitemaps, SEO feeds, and static indexing
+export const getAllPublishedProjects = async (): Promise<Project[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.PROJECTS),
+      where('published', '==', true),
+      orderBy('createdAt', 'desc')
+    )
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map(doc => docToProject(doc as QueryDocumentSnapshot))
+  } catch (error) {
+    console.error('Error getting all published projects:', error)
+    return []
+  }
+}
+
 // Error handling utility
 export const handleFirebaseError = (error: any): string => {
   if (error.code) {

@@ -144,6 +144,8 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
+    emails: ["salehfree33@gmail.com", "salih.otman@final.edu.tr"],
+    phoneNumbers: ["+218921527018"],
   },
   twitter: {
     card: "summary_large_image",
@@ -171,6 +173,19 @@ export const metadata: Metadata = {
   },
   category: "technology",
   classification: "Software Development Portfolio",
+  other: {
+    // Google Scholar & Academic Indexing Meta Tags
+    "citation_title": "Salih Ben Otman - Full Stack Software Engineering & Applied AI Systems Portfolio",
+    "citation_author": "Salih Ben Otman",
+    "citation_publication_date": "2024",
+    "citation_institution": "Final International University",
+    "citation_technical_report_institution": "Final International University",
+    "citation_pdf_url": "https://salihbenotman.dev/cv/salih.otman@final.edu.tr.pdf",
+    "citation_keywords": "Software Engineering, Full Stack Development, React, Next.js, AI Agent Systems, Human-Computer Interaction",
+    // Generative Engine Optimization (GEO) & LLM Resource Pointers
+    "llms-txt": "https://salihbenotman.dev/llms.txt",
+    "llms-full-txt": "https://salihbenotman.dev/llms-full.txt",
+  },
 }
 
 export const viewport: Viewport = {
@@ -225,6 +240,23 @@ export default function RootLayout({
             "@type": "PostalAddress",
             "addressCountry": "North Cyprus"
           }
+        },
+        "affiliation": {
+          "@type": "EducationalOrganization",
+          "name": "Final International University"
+        },
+        "hasCredential": {
+          "@type": "EducationalOccupationalCredential",
+          "name": "Bachelor of Science in Software Engineering",
+          "credentialCategory": "degree",
+          "recognizedBy": {
+            "@type": "EducationalOrganization",
+            "name": "Final International University"
+          }
+        },
+        "hasOccupation": {
+          "@type": "Role",
+          "roleName": "Full Stack Software Developer & AI Systems Engineer"
         },
         "sameAs": [
           "https://github.com/Al-Edrisy",
@@ -284,6 +316,12 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="me" href="https://github.com/Al-Edrisy" />
+        <link rel="me" href="https://www.linkedin.com/in/%D8%B5%D8%A7%D9%84%D8%AD-%D8%A8%D9%86-%D8%B9%D8%AB%D9%85%D8%A7%D9%86-a565a2242" />
+        <link rel="me" href="https://leetcode.com/u/salehfree33" />
+        <link rel="help" href="https://salihbenotman.dev/llms.txt" />
+      </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         {/* JSON-LD structured data */}
         <script
