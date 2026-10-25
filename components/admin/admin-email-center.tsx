@@ -582,12 +582,15 @@ export function AdminEmailCenter() {
                         >
                           <div
                             className="flex items-center gap-2 cursor-pointer flex-1 truncate"
-                            onClick={() => toggleUserSelection(u.id)}
+                            onClick={(e) => {
+                              const target = e.target as HTMLElement
+                              if (target.closest('[data-slot="checkbox"]')) return
+                              toggleUserSelection(u.id)
+                            }}
                           >
                             <Checkbox
                               checked={selectAllEligible || selectedUserIds.includes(u.id)}
                               onCheckedChange={() => toggleUserSelection(u.id)}
-                              onClick={e => e.stopPropagation()}
                             />
                             <span className="font-medium truncate">{u.name || 'Unnamed'}</span>
                             <span className="text-xs text-muted-foreground truncate">

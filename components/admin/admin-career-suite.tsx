@@ -1226,9 +1226,10 @@ export function AdminCareerSuite() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 border rounded bg-background text-xs">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex items-center justify-between p-2.5 border rounded bg-background text-xs select-none">
+                      <div className="flex items-center gap-2">
                         <Checkbox
+                          id="tailored-cv-summary-opt"
                           checked={activeApp.useTailoredCvSummary}
                           onCheckedChange={checked =>
                             setApplications(prev =>
@@ -1240,10 +1241,10 @@ export function AdminCareerSuite() {
                             )
                           }
                         />
-                        <span>
+                        <label htmlFor="tailored-cv-summary-opt" className="cursor-pointer">
                           Attach Job-Specific ATS-Tailored CV Supplement alongside original CV PDF
-                        </span>
-                      </label>
+                        </label>
+                      </div>
                       {activeApp.tailoredCv?.htmlContent && (
                         <Button
                           type="button"

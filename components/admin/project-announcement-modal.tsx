@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -113,6 +113,9 @@ export function ProjectAnnouncementModal({
     }
   }, [])
 
+  // Track the project ID for which the modal was initialized to avoid infinite loops and resetting user state on re-renders
+  const initializedProjectIdRef = useRef<string | null>(null)
+
   // Apply template selection
   const selectTemplate = useCallback(
     (tplId: string, availableTemplates: EmailTemplate[] = templates) => {
@@ -132,16 +135,36 @@ export function ProjectAnnouncementModal({
 
   // Initialize project variables and load recipient pool when modal opens
   useEffect(() => {
-    if (!open || !project) return
+    if (!open || !project?.id) {
+      initializedProjectIdRef.current = null
+      return
+    }
+
+    // Modal is already initialized for this project ID; do not reset user exclusions or templates on re-renders!
+    if (initializedProjectIdRef.current === project.id) {
+      return
+    }
+    initializedProjectIdRef.current = project.id
 
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : undefined
     const initialVars = buildProjectTemplateVariables(project, { baseUrl: currentOrigin })
     setVariables(initialVars)
-    selectTemplate('tpl_project_release_note', builtInProjectTemplates)
+    
+    const defaultTpl =
+      builtInProjectTemplates.find(t => t.id === 'tpl_project_release_note') ||
+      builtInProjectTemplates[0]
+    if (defaultTpl) {
+      setSelectedTemplateId(defaultTpl.id)
+      setSubjectTemplate(defaultTpl.subject)
+      setHtmlTemplate(defaultTpl.htmlBody)
+      setTextTemplate(defaultTpl.textBody)
+    }
+
     setIncludeRegisteredUsers(true)
     setIncludePastContacts(false)
     setExcludedEmails([])
     setManualInput('')
+    setRecipientSearch('')
     setConfirmed(false)
 
     let cancelled = false
@@ -161,8 +184,12 @@ export function ProjectAnnouncementModal({
           if (Array.isArray(data.templates) && data.templates.length > 0) {
             setTemplates(data.templates)
           }
-          setRegisteredUsers(data.registeredUsers || [])
-          setPastContacts(data.pastContacts || [])
+          if (Array.isArray(data.registeredUsers)) {
+            setRegisteredUsers(data.registeredUsers)
+          }
+          if (Array.isArray(data.pastContacts)) {
+            setPastContacts(data.pastContacts)
+          }
           if (data.variables && Object.keys(data.variables).length > 0) {
             setVariables(prev => ({ ...prev, ...data.variables }))
           }
@@ -178,7 +205,7 @@ export function ProjectAnnouncementModal({
     return () => {
       cancelled = true
     }
-  }, [open, project, builtInProjectTemplates, getAuthHeaders, selectTemplate])
+  }, [open, project?.id, builtInProjectTemplates, getAuthHeaders])
 
   // Synchronous, instant recipient resolution right on the client: 0ms latency, 0 network overhead, offline-safe
   const recipientSummary = useMemo<RecipientResolutionSummary>(() => {
@@ -277,14 +304,45 @@ export function ProjectAnnouncementModal({
     setConfirmed(false)
   }
 
+  // All active directory email addresses without search filters applied
+  const allActiveDirectoryEmails = useMemo(() => {
+    const set = new Set<string>()
+    if (includeRegisteredUsers) {
+      for (const u of registeredUsers) {
+        const norm = normalizeEmail(u.email)
+        if (norm) set.add(norm)
+      }
+    }
+    if (includePastContacts) {
+      for (const c of pastContacts) {
+        const norm = normalizeEmail(c.email)
+        if (norm) set.add(norm)
+      }
+    }
+    return Array.from(set)
+  }, [registeredUsers, pastContacts, includeRegisteredUsers, includePastContacts])
+
   const handleSelectAll = () => {
-    setExcludedEmails([])
+    if (!recipientSearch.trim()) {
+      setExcludedEmails([])
+    } else {
+      const visibleNorms = new Set(
+        combinedDirectory.map(item => normalizeEmail(item.email)).filter(Boolean)
+      )
+      setExcludedEmails(prev => prev.filter(email => !visibleNorms.has(email)))
+    }
     setConfirmed(false)
   }
 
   const handleDeselectAll = () => {
-    const allNorms = combinedDirectory.map(item => normalizeEmail(item.email)).filter(Boolean)
-    setExcludedEmails(allNorms)
+    if (!recipientSearch.trim()) {
+      setExcludedEmails(allActiveDirectoryEmails)
+    } else {
+      const visibleNorms = combinedDirectory
+        .map(item => normalizeEmail(item.email))
+        .filter(Boolean)
+      setExcludedEmails(prev => Array.from(new Set([...prev, ...visibleNorms])))
+    }
     setConfirmed(false)
   }
 
@@ -615,14 +673,14 @@ export function ProjectAnnouncementModal({
                   <button
                     type="button"
                     onClick={handleSelectAll}
-                    className="h-8 px-2 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                    className="h-8 px-2.5 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors active:scale-[0.985]"
                   >
                     Select All
                   </button>
                   <button
                     type="button"
                     onClick={handleDeselectAll}
-                    className="h-8 px-2 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                    className="h-8 px-2.5 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors active:scale-[0.985]"
                   >
                     Deselect All
                   </button>
@@ -643,10 +701,11 @@ export function ProjectAnnouncementModal({
                       return (
                         <div
                           key={norm}
-                          onClick={() => {
-                            if (!isDisabled) {
-                              toggleRecipientEmail(item.email)
-                            }
+                          onClick={(e) => {
+                            if (isDisabled) return
+                            const target = e.target as HTMLElement
+                            if (target.closest('[data-slot="checkbox"]')) return
+                            toggleRecipientEmail(item.email)
                           }}
                           className={`flex items-center justify-between px-2.5 py-1.5 text-xs transition-colors select-none ${
                             isDisabled
@@ -662,9 +721,6 @@ export function ProjectAnnouncementModal({
                               disabled={isDisabled}
                               onCheckedChange={checked => {
                                 setRecipientExcluded(item.email, checked !== true)
-                              }}
-                              onClick={e => {
-                                e.stopPropagation()
                               }}
                             />
                             <div className="truncate">
@@ -1003,17 +1059,21 @@ export function ProjectAnnouncementModal({
 
         {/* Footer Confirmation & Actions */}
         <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
+          <div className="flex items-start gap-2.5 text-xs select-none">
             <Checkbox
+              id="announcement-approval-confirm"
               checked={confirmed}
               onCheckedChange={v => setConfirmed(Boolean(v))}
               className="mt-0.5"
             />
-            <span className="leading-snug">
+            <label
+              htmlFor="announcement-approval-confirm"
+              className="leading-snug cursor-pointer"
+            >
               I have reviewed the rendered preview and approve sending this announcement to{' '}
               <strong>{validRecipientCount} eligible recipient(s)</strong>.
-            </span>
-          </label>
+            </label>
+          </div>
 
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0">
             <Button

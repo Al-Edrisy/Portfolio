@@ -175,4 +175,68 @@ describe('Project Publish Announcement & Anti-Slop Templates', () => {
     expect(rendered.html).not.toContain('localhost')
     expect(rendered.html).toContain('https://salihbenotman.dev/projects/my-project')
   })
+
+  it('correctly handles Deselect All, individual recipient toggles, and case-insensitive exclusions', () => {
+    const registeredUsers = [
+      { id: 'u1', email: 'Alice.Smith@Example.COM', name: 'Alice Smith', unsubscribed: false },
+      { id: 'u2', email: 'bob@example.com', name: 'Bob Jones', unsubscribed: false },
+      { id: 'u3', email: 'carol@domain.org', name: 'Carol Danvers', unsubscribed: false }
+    ]
+
+    // 1. Initial State: All 3 are valid and selected
+    const initial = resolveRecipients({
+      dbUsers: registeredUsers,
+      selectAllEligible: true,
+      suppressedEmails: new Set()
+    })
+    expect(initial.validCount).toBe(3)
+    expect(initial.validRecipients.map(r => r.email)).toEqual([
+      'alice.smith@example.com',
+      'bob@example.com',
+      'carol@domain.org'
+    ])
+
+    // 2. Deselect individual user with mixed casing/spacing
+    const singleExcluded = new Set([normalizeEmail('  ALICE.SMITH@example.com  ')])
+    const afterSingleDeselect = resolveRecipients({
+      dbUsers: registeredUsers,
+      selectAllEligible: true,
+      suppressedEmails: singleExcluded
+    })
+    expect(afterSingleDeselect.validCount).toBe(2)
+    expect(afterSingleDeselect.validRecipients.map(r => r.email)).toEqual([
+      'bob@example.com',
+      'carol@domain.org'
+    ])
+    expect(afterSingleDeselect.unsubscribedCount).toBe(1)
+
+    // 3. Deselect All: All directory emails suppressed
+    const allNorms = registeredUsers.map(u => normalizeEmail(u.email))
+    const deselectAllSuppressed = new Set(allNorms)
+    const afterDeselectAll = resolveRecipients({
+      dbUsers: registeredUsers,
+      selectAllEligible: true,
+      suppressedEmails: deselectAllSuppressed
+    })
+    expect(afterDeselectAll.validCount).toBe(0)
+    expect(afterDeselectAll.unsubscribedCount).toBe(3)
+
+    // 4. Manual email added while Deselect All was active for directory
+    const withManual = resolveRecipients({
+      dbUsers: registeredUsers,
+      selectAllEligible: true,
+      manualInput: 'special-guest@company.org',
+      suppressedEmails: deselectAllSuppressed
+    })
+    expect(withManual.validCount).toBe(1)
+    expect(withManual.validRecipients[0].email).toBe('special-guest@company.org')
+
+    // 5. Select All restored: exclusions cleared
+    const reSelected = resolveRecipients({
+      dbUsers: registeredUsers,
+      selectAllEligible: true,
+      suppressedEmails: new Set()
+    })
+    expect(reSelected.validCount).toBe(3)
+  })
 })
