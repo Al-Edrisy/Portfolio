@@ -177,9 +177,9 @@ export function renderAutoReplyHtml(data: EmailRequest): string {
           <div style="background: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             <h3 style="color: #1a1a1a; margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Explore My Work</h3>
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-              <a href="#" style="background: #1a1a1a; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">View Projects</a>
-              <a href="#" style="background: #f8f8f8; color: #1a1a1a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #e5e5e5;">My Skills</a>
-              <a href="#" style="background: #f8f8f8; color: #1a1a1a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #e5e5e5;">About Me</a>
+              <a href="https://salihbenotman.dev/projects" style="background: #1a1a1a; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">View Projects</a>
+              <a href="https://salihbenotman.dev/skills" style="background: #f8f8f8; color: #1a1a1a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #e5e5e5;">My Skills</a>
+              <a href="https://salihbenotman.dev/about" style="background: #f8f8f8; color: #1a1a1a; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; border: 1px solid #e5e5e5;">About Me</a>
             </div>
           </div>
           

@@ -18,7 +18,9 @@ import {
   Heart,
   Eye,
   EyeOff,
-  Mail
+  Mail,
+  Send,
+  Briefcase
 } from 'lucide-react'
 import { useProjectsRealtime } from '@/hooks/projects'
 import { useAllReactions } from '@/hooks/reactions'
@@ -27,6 +29,8 @@ import { useMessagesRealtime } from '@/hooks/messages'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { AdminMessages } from './admin-messages'
+import { AdminEmailCenter } from './admin-email-center'
+import { AdminCareerSuite } from './admin-career-suite'
 
 
 export function AdminDashboard() {
@@ -203,10 +207,18 @@ export function AdminDashboard() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="messages">Inbox ({unreadMessages})</TabsTrigger>
+          <TabsTrigger value="email-center" className="flex items-center gap-1.5">
+            <Send className="h-3.5 w-3.5" />
+            Email Center
+          </TabsTrigger>
+          <TabsTrigger value="career-suite" className="flex items-center gap-1.5">
+            <Briefcase className="h-3.5 w-3.5" />
+            Career & Jobs AI
+          </TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -295,6 +307,22 @@ export function AdminDashboard() {
                     Manage All Projects
                   </Button>
                   <Button
+                    onClick={() => setActiveTab('email-center')}
+                    className="w-full justify-start"
+                    variant="outline"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Email Center & Bulk Campaigns
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab('career-suite')}
+                    className="w-full justify-start"
+                    variant="outline"
+                  >
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    AI Job Application Suite
+                  </Button>
+                  <Button
                     onClick={handleManageUsers}
                     className="w-full justify-start"
                     variant="outline"
@@ -372,6 +400,28 @@ export function AdminDashboard() {
                 <AdminMessages />
               </CardContent>
             </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Administrative Email Center Tab */}
+        <TabsContent value="email-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <AdminEmailCenter />
+          </motion.div>
+        </TabsContent>
+
+        {/* Personal AI-Assisted Job Application Suite Tab */}
+        <TabsContent value="career-suite">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <AdminCareerSuite />
           </motion.div>
         </TabsContent>
 
