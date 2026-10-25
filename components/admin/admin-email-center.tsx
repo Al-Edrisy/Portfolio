@@ -472,9 +472,17 @@ export function AdminEmailCenter() {
   })
 
   const toggleUserSelection = (id: string) => {
-    setSelectedUserIds(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    )
+    if (selectAllEligible) {
+      setSelectAllEligible(false)
+      const allEligibleIds = dbUsers
+        .filter(u => !u.unsubscribed && !u.disabled && u.emailNotificationsEnabled !== false)
+        .map(u => u.id)
+      setSelectedUserIds(allEligibleIds.filter(item => item !== id))
+    } else {
+      setSelectedUserIds(prev =>
+        prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      )
+    }
     setExplicitConfirmChecked(false)
   }
 
@@ -570,18 +578,22 @@ export function AdminEmailCenter() {
                       filteredUsers.map(u => (
                         <div
                           key={u.id}
-                          className="flex items-center justify-between py-1.5 px-2 hover:bg-muted/50 rounded text-sm"
+                          className="flex items-center justify-between py-1.5 px-2 hover:bg-muted/50 rounded text-sm select-none"
                         >
-                          <label className="flex items-center gap-2 cursor-pointer flex-1 truncate">
+                          <div
+                            className="flex items-center gap-2 cursor-pointer flex-1 truncate"
+                            onClick={() => toggleUserSelection(u.id)}
+                          >
                             <Checkbox
-                              checked={selectedUserIds.includes(u.id) || selectAllEligible}
+                              checked={selectAllEligible || selectedUserIds.includes(u.id)}
                               onCheckedChange={() => toggleUserSelection(u.id)}
+                              onClick={e => e.stopPropagation()}
                             />
                             <span className="font-medium truncate">{u.name || 'Unnamed'}</span>
                             <span className="text-xs text-muted-foreground truncate">
                               &lt;{u.email}&gt;
                             </span>
-                          </label>
+                          </div>
                           <Badge variant="outline" className="text-xs ml-2">
                             {u.role}
                           </Badge>

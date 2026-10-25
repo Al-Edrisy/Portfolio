@@ -44,6 +44,7 @@ import {
 } from '@/lib/email/template-engine'
 import { auth } from '@/lib/firebase'
 import { useToast } from '@/hooks/use-toast'
+import { normalizeEmail } from '@/lib/email/recipient-resolver'
 
 interface ProjectAnnouncementModalProps {
   project: Project | null
@@ -257,17 +258,17 @@ export function ProjectAnnouncementModal({
     const map = new Map<string, RecipientItem & { sourceGroup: 'user' | 'contact' }>()
     if (includeRegisteredUsers) {
       for (const u of registeredUsers) {
-        const norm = u.email.trim().toLowerCase()
-        if (!map.has(norm)) {
-          map.set(norm, { ...u, sourceGroup: 'user' })
+        const norm = normalizeEmail(u.email)
+        if (norm && !map.has(norm)) {
+          map.set(norm, { ...u, email: norm, sourceGroup: 'user' })
         }
       }
     }
     if (includePastContacts) {
       for (const c of pastContacts) {
-        const norm = c.email.trim().toLowerCase()
-        if (!map.has(norm)) {
-          map.set(norm, { ...c, sourceGroup: 'contact' })
+        const norm = normalizeEmail(c.email)
+        if (norm && !map.has(norm)) {
+          map.set(norm, { ...c, email: norm, sourceGroup: 'contact' })
         }
       }
     }
@@ -282,10 +283,34 @@ export function ProjectAnnouncementModal({
   }, [registeredUsers, pastContacts, includeRegisteredUsers, includePastContacts, recipientSearch])
 
   const toggleRecipientEmail = (email: string) => {
-    const norm = email.trim().toLowerCase()
+    const norm = normalizeEmail(email)
+    if (!norm) return
     setExcludedEmails(prev =>
       prev.includes(norm) ? prev.filter(e => e !== norm) : [...prev, norm]
     )
+    setConfirmed(false)
+  }
+
+  const setRecipientExcluded = (email: string, shouldExclude: boolean) => {
+    const norm = normalizeEmail(email)
+    if (!norm) return
+    setExcludedEmails(prev => {
+      const has = prev.includes(norm)
+      if (shouldExclude && !has) return [...prev, norm]
+      if (!shouldExclude && has) return prev.filter(e => e !== norm)
+      return prev
+    })
+    setConfirmed(false)
+  }
+
+  const handleSelectAll = () => {
+    setExcludedEmails([])
+    setConfirmed(false)
+  }
+
+  const handleDeselectAll = () => {
+    const allNorms = combinedDirectory.map(item => normalizeEmail(item.email)).filter(Boolean)
+    setExcludedEmails(allNorms)
     setConfirmed(false)
   }
 
@@ -446,7 +471,18 @@ export function ProjectAnnouncementModal({
 
   if (!project) return null
 
-  const validRecipientCount = recipientSummary?.validCount ?? 0
+  const validRecipientCount = useMemo(() => {
+    if (recipientSummary && !resolvingRecipients) {
+      return recipientSummary.validCount
+    }
+    const dirCount = combinedDirectory.filter(
+      item =>
+        !excludedEmails.includes(normalizeEmail(item.email)) &&
+        !item.unsubscribed &&
+        !item.disabled
+    ).length
+    return dirCount
+  }, [recipientSummary, resolvingRecipients, combinedDirectory, excludedEmails])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -586,15 +622,32 @@ export function ProjectAnnouncementModal({
 
               {/* Individual user toggle list */}
               <div className="space-y-1.5">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
-                  <Input
-                    value={recipientSearch}
-                    onChange={e => setRecipientSearch(e.target.value)}
-                    placeholder="Filter recipients to check/uncheck..."
-                    className="h-8 pl-8 text-xs"
-                  />
+                <div className="flex items-center gap-1.5">
+                  <div className="relative flex-1">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
+                    <Input
+                      value={recipientSearch}
+                      onChange={e => setRecipientSearch(e.target.value)}
+                      placeholder="Filter recipients..."
+                      className="h-8 pl-8 text-xs"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSelectAll}
+                    className="h-8 px-2 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeselectAll}
+                    className="h-8 px-2 rounded border border-border/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                  >
+                    Deselect All
+                  </button>
                 </div>
+
                 <div className="max-h-36 sm:max-h-40 overflow-y-auto rounded-md border border-border/50 divide-y divide-border/40 bg-background">
                   {combinedDirectory.length === 0 ? (
                     <div className="p-3 text-center text-xs text-muted-foreground">
@@ -602,35 +655,68 @@ export function ProjectAnnouncementModal({
                     </div>
                   ) : (
                     combinedDirectory.map(item => {
-                      const norm = item.email.trim().toLowerCase()
+                      const norm = normalizeEmail(item.email)
                       const isExcluded =
                         excludedEmails.includes(norm) || Boolean(item.unsubscribed || item.disabled)
+                      const isDisabled = Boolean(item.unsubscribed || item.disabled)
+
                       return (
-                        <label
+                        <div
                           key={norm}
-                          className="flex items-center justify-between px-2.5 py-1.5 text-xs hover:bg-muted/30 cursor-pointer"
+                          onClick={() => {
+                            if (!isDisabled) {
+                              toggleRecipientEmail(item.email)
+                            }
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-1.5 text-xs transition-colors select-none ${
+                            isDisabled
+                              ? 'opacity-50 cursor-not-allowed bg-muted/20'
+                              : isExcluded
+                                ? 'bg-muted/15 opacity-70 hover:bg-muted/25 cursor-pointer'
+                                : 'hover:bg-muted/30 cursor-pointer'
+                          }`}
                         >
                           <div className="flex items-center gap-2 truncate pr-2">
                             <Checkbox
                               checked={!isExcluded}
-                              disabled={Boolean(item.unsubscribed || item.disabled)}
-                              onCheckedChange={() => toggleRecipientEmail(item.email)}
+                              disabled={isDisabled}
+                              onCheckedChange={checked => {
+                                setRecipientExcluded(item.email, checked !== true)
+                              }}
+                              onClick={e => {
+                                e.stopPropagation()
+                              }}
                             />
                             <div className="truncate">
-                              <span className="font-medium text-foreground">{item.name || item.email}</span>
+                              <span
+                                className={`font-medium ${
+                                  isExcluded && !isDisabled
+                                    ? 'line-through text-muted-foreground'
+                                    : 'text-foreground'
+                                }`}
+                              >
+                                {item.name || item.email}
+                              </span>
                               <span className="text-muted-foreground ml-1.5 text-[11px]">
                                 &lt;{item.email}&gt;
                               </span>
                             </div>
                           </div>
-                          {item.unsubscribed ? (
-                            <span className="text-[10px] text-amber-600 font-mono">Opted Out</span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground font-mono uppercase">
-                              {item.sourceGroup}
-                            </span>
-                          )}
-                        </label>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {isExcluded && !isDisabled && (
+                              <span className="text-[10px] text-muted-foreground font-mono uppercase bg-muted px-1.5 py-0.5 rounded">
+                                Deselected
+                              </span>
+                            )}
+                            {item.unsubscribed ? (
+                              <span className="text-[10px] text-amber-600 font-mono">Opted Out</span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground font-mono uppercase">
+                                {item.sourceGroup}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       )
                     })
                   )}
