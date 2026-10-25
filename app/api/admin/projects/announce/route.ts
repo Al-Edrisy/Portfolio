@@ -32,11 +32,27 @@ function extractPublicRequestOrigin(request: NextRequest): string {
   return request.nextUrl.origin
 }
 
-async function loadUsersAndContactsFromDb(): Promise<{
+let dbCache: {
+  registeredUsers: DatabaseUserRecord[]
+  pastContacts: DatabaseUserRecord[]
+  suppressedEmails: Set<string>
+  cachedAt: number
+} | null = null
+
+async function loadUsersAndContactsFromDb(forceRefresh = false): Promise<{
   registeredUsers: DatabaseUserRecord[]
   pastContacts: DatabaseUserRecord[]
   suppressedEmails: Set<string>
 }> {
+  const now = Date.now()
+  if (!forceRefresh && dbCache && now - dbCache.cachedAt < 60_000) {
+    return {
+      registeredUsers: dbCache.registeredUsers,
+      pastContacts: dbCache.pastContacts,
+      suppressedEmails: dbCache.suppressedEmails
+    }
+  }
+
   const registeredUsers: DatabaseUserRecord[] = []
   const pastContacts: DatabaseUserRecord[] = []
   const suppressedEmails = new Set<string>()
@@ -93,6 +109,7 @@ async function loadUsersAndContactsFromDb(): Promise<{
     // Ignore
   }
 
+  dbCache = { registeredUsers, pastContacts, suppressedEmails, cachedAt: now }
   return { registeredUsers, pastContacts, suppressedEmails }
 }
 
@@ -152,12 +169,15 @@ export async function GET(request: NextRequest) {
       defaultSummary
     })
   } catch (error: any) {
+    if (error instanceof Response) {
+      return error
+    }
     const status = error.message?.includes('Forbidden')
       ? 403
-      : error.message?.includes('Authentication')
+      : error.message?.includes('Authentication') || error.message?.includes('Unauthorized')
         ? 401
         : 500
-    return NextResponse.json({ success: false, error: error.message }, { status })
+    return NextResponse.json({ success: false, error: error.message || 'Internal error' }, { status })
   }
 }
 
@@ -514,11 +534,14 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   } catch (error: any) {
+    if (error instanceof Response) {
+      return error
+    }
     const status = error.message?.includes('Forbidden')
       ? 403
-      : error.message?.includes('Authentication')
+      : error.message?.includes('Authentication') || error.message?.includes('Unauthorized')
         ? 401
         : 500
-    return NextResponse.json({ success: false, error: error.message }, { status })
+    return NextResponse.json({ success: false, error: error.message || 'Internal error' }, { status })
   }
 }

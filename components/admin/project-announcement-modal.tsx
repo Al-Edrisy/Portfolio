@@ -44,7 +44,7 @@ import {
 } from '@/lib/email/template-engine'
 import { auth } from '@/lib/firebase'
 import { useToast } from '@/hooks/use-toast'
-import { normalizeEmail } from '@/lib/email/recipient-resolver'
+import { normalizeEmail, resolveRecipients } from '@/lib/email/recipient-resolver'
 
 interface ProjectAnnouncementModalProps {
   project: Project | null
@@ -95,11 +95,9 @@ export function ProjectAnnouncementModal({
   const [excludedEmails, setExcludedEmails] = useState<string[]>([])
   const [manualInput, setManualInput] = useState<string>('')
   const [recipientSearch, setRecipientSearch] = useState<string>('')
-  const [recipientSummary, setRecipientSummary] = useState<RecipientResolutionSummary | null>(null)
 
   // UI & dispatch state
   const [loadingInit, setLoadingInit] = useState<boolean>(false)
-  const [resolvingRecipients, setResolvingRecipients] = useState<boolean>(false)
   const [sendingTest, setSendingTest] = useState<boolean>(false)
   const [savingDraft, setSavingDraft] = useState<boolean>(false)
   const [dispatching, setDispatching] = useState<boolean>(false)
@@ -155,6 +153,9 @@ export function ProjectAnnouncementModal({
           `/api/admin/projects/announce?projectId=${encodeURIComponent(project.id || '')}`,
           { headers }
         )
+        if (!res.ok) {
+          return // Tolerant if container is restarting on deployment
+        }
         const data = await res.json()
         if (!cancelled && data.success) {
           if (Array.isArray(data.templates) && data.templates.length > 0) {
@@ -162,7 +163,6 @@ export function ProjectAnnouncementModal({
           }
           setRegisteredUsers(data.registeredUsers || [])
           setPastContacts(data.pastContacts || [])
-          setRecipientSummary(data.defaultSummary || null)
           if (data.variables && Object.keys(data.variables).length > 0) {
             setVariables(prev => ({ ...prev, ...data.variables }))
           }
@@ -180,55 +180,29 @@ export function ProjectAnnouncementModal({
     }
   }, [open, project, builtInProjectTemplates, getAuthHeaders, selectTemplate])
 
-  // Re-resolve recipients when toggles, exclusions, or manual emails change
-  useEffect(() => {
-    if (!open || !project) return
-    const timer = setTimeout(async () => {
-      setResolvingRecipients(true)
-      try {
-        const headers = await getAuthHeaders()
-        const res = await fetch('/api/admin/projects/announce', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            action: 'resolve_recipients',
-            projectId: project.id,
-            projectData: project,
-            subjectTemplate,
-            htmlTemplate,
-            textTemplate,
-            variables,
-            includeRegisteredUsers,
-            includePastContacts,
-            excludedEmails,
-            manualInput
-          })
-        })
-        const data = await res.json()
-        if (data.success && data.summary) {
-          setRecipientSummary(data.summary)
-        }
-      } catch {
-        // Ignore transient errors
-      } finally {
-        setResolvingRecipients(false)
-      }
-    }, 250)
+  // Synchronous, instant recipient resolution right on the client: 0ms latency, 0 network overhead, offline-safe
+  const recipientSummary = useMemo<RecipientResolutionSummary>(() => {
+    const selectedPool: any[] = []
+    if (includeRegisteredUsers) {
+      selectedPool.push(...registeredUsers)
+    }
+    if (includePastContacts) {
+      selectedPool.push(...pastContacts)
+    }
 
-    return () => clearTimeout(timer)
-  }, [
-    open,
-    project,
-    includeRegisteredUsers,
-    includePastContacts,
-    excludedEmails,
-    manualInput,
-    subjectTemplate,
-    htmlTemplate,
-    textTemplate,
-    variables,
-    getAuthHeaders
-  ])
+    const effectiveSuppression = new Set<string>()
+    for (const ex of excludedEmails) {
+      const norm = normalizeEmail(ex)
+      if (norm) effectiveSuppression.add(norm)
+    }
+
+    return resolveRecipients({
+      dbUsers: selectedPool,
+      selectAllEligible: selectedPool.length > 0,
+      manualInput,
+      suppressedEmails: effectiveSuppression
+    })
+  }, [registeredUsers, pastContacts, includeRegisteredUsers, includePastContacts, excludedEmails, manualInput])
 
   // Live local preview & deliverability calculation
   const renderedPreview = useMemo(() => {
@@ -314,6 +288,23 @@ export function ProjectAnnouncementModal({
     setConfirmed(false)
   }
 
+  const parseJsonResponse = async (res: Response) => {
+    if (!res.ok) {
+      if (res.status === 502) {
+        throw new Error('Deployment container is currently restarting on Railway. Please retry in a few seconds.')
+      }
+      const text = await res.text().catch(() => '')
+      try {
+        const parsed = JSON.parse(text)
+        if (parsed.error) throw new Error(parsed.error)
+      } catch (e: any) {
+        if (e.message && !e.message.includes('JSON')) throw e
+      }
+      throw new Error(`Server returned HTTP ${res.status}`)
+    }
+    return res.json()
+  }
+
   const handleSendTest = async () => {
     setSendingTest(true)
     try {
@@ -333,7 +324,7 @@ export function ProjectAnnouncementModal({
           testEmail: testEmail.trim() || undefined
         })
       })
-      const data = await res.json()
+      const data = await parseJsonResponse(res)
       if (data.success) {
         toast({
           title: 'Test Email Accepted',
@@ -379,7 +370,7 @@ export function ProjectAnnouncementModal({
           manualInput
         })
       })
-      const data = await res.json()
+      const data = await parseJsonResponse(res)
       if (data.success) {
         toast({
           title: 'Announcement Saved to Drafts',
@@ -437,7 +428,7 @@ export function ProjectAnnouncementModal({
           confirmed: true
         })
       })
-      const data = await res.json()
+      const data = await parseJsonResponse(res)
       if (data.success) {
         const accepted = data.dispatchSummary?.acceptedCount || 0
         const failed = data.dispatchSummary?.failedCount || 0
@@ -471,18 +462,7 @@ export function ProjectAnnouncementModal({
 
   if (!project) return null
 
-  const validRecipientCount = useMemo(() => {
-    if (recipientSummary && !resolvingRecipients) {
-      return recipientSummary.validCount
-    }
-    const dirCount = combinedDirectory.filter(
-      item =>
-        !excludedEmails.includes(normalizeEmail(item.email)) &&
-        !item.unsubscribed &&
-        !item.disabled
-    ).length
-    return dirCount
-  }, [recipientSummary, resolvingRecipients, combinedDirectory, excludedEmails])
+  const validRecipientCount = recipientSummary.validCount
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -575,9 +555,9 @@ export function ProjectAnnouncementModal({
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   2. Target Audience &amp; Recipients
                 </Label>
-                {resolvingRecipients || loadingInit ? (
+                {loadingInit ? (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Resolving...
+                    <Loader2 className="w-3 h-3 animate-spin" /> Loading Users...
                   </span>
                 ) : (
                   <Badge variant="secondary" className="text-xs font-mono">
