@@ -38,7 +38,9 @@ import {
   PROJECT_ANNOUNCEMENT_TEMPLATE_IDS,
   buildProjectTemplateVariables,
   evaluateDeliverabilityHealth,
-  renderEmailForRecipient
+  renderEmailForRecipient,
+  resolvePublicBaseUrl,
+  sanitizeOutboundUrl
 } from '@/lib/email/template-engine'
 import { auth } from '@/lib/firebase'
 import { useToast } from '@/hooks/use-toast'
@@ -133,7 +135,8 @@ export function ProjectAnnouncementModal({
   useEffect(() => {
     if (!open || !project) return
 
-    const initialVars = buildProjectTemplateVariables(project)
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : undefined
+    const initialVars = buildProjectTemplateVariables(project, { baseUrl: currentOrigin })
     setVariables(initialVars)
     selectTemplate('tpl_project_release_note', builtInProjectTemplates)
     setIncludeRegisteredUsers(true)
@@ -160,7 +163,7 @@ export function ProjectAnnouncementModal({
           setPastContacts(data.pastContacts || [])
           setRecipientSummary(data.defaultSummary || null)
           if (data.variables && Object.keys(data.variables).length > 0) {
-            setVariables(prev => ({ ... data.variables, ...prev }))
+            setVariables(prev => ({ ...prev, ...data.variables }))
           }
         }
       } catch {
@@ -447,12 +450,12 @@ export function ProjectAnnouncementModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto border-border/50 bg-background p-0 gap-0">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-[94vw] lg:w-full max-w-5xl max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden border-border/50 bg-background p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-5 border-b border-border/50 bg-muted/20">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+        <DialogHeader className="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border/50 bg-muted/20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div className="min-w-0 pr-6 sm:pr-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-foreground/[0.08] text-foreground/80 font-semibold">
                   Project Release Dispatch
                 </span>
@@ -467,17 +470,17 @@ export function ProjectAnnouncementModal({
                   </Badge>
                 )}
               </div>
-              <DialogTitle className="text-xl font-semibold tracking-tight text-left">
+              <DialogTitle className="text-base sm:text-lg lg:text-xl font-semibold tracking-tight text-left truncate">
                 Review &amp; Send Announcement: {project.title}
               </DialogTitle>
               <DialogDescription className="text-left text-xs text-muted-foreground mt-0.5">
-                Inspect the anti-slop engineering template, verify deliverability hygiene, and confirm recipients before dispatching.
+                Inspect the engineering template, verify deliverability hygiene, and confirm recipients before dispatching.
               </DialogDescription>
             </div>
           </div>
 
           {project.announcedAt && (
-            <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
+            <div className="mt-2.5 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 sm:p-3 text-xs text-amber-800 dark:text-amber-300">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <strong>Duplicate Send Protection:</strong> This project was already announced on{' '}
@@ -491,11 +494,11 @@ export function ProjectAnnouncementModal({
         </DialogHeader>
 
         {/* Main Body Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
+        <div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
           {/* Left Column: Template Selection & Recipient Controls (5 cols) */}
-          <div className="lg:col-span-5 p-5 space-y-5">
+          <div className="lg:col-span-5 p-4 sm:p-5 space-y-4 sm:space-y-5 min-w-0">
             {/* Step 1: 3 Anti-Slop Template Styles */}
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 1. Choose Anti-Slop Template Style
               </Label>
@@ -507,7 +510,7 @@ export function ProjectAnnouncementModal({
                       key={tpl.id}
                       type="button"
                       onClick={() => selectTemplate(tpl.id)}
-                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                      className={`w-full text-left p-2.5 sm:p-3 rounded-lg border transition-[transform,border-color,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.985] ${
                         active
                           ? 'border-foreground bg-foreground/[0.04] shadow-2xs'
                           : 'border-border/50 hover:border-border bg-card/40'
@@ -547,11 +550,11 @@ export function ProjectAnnouncementModal({
                 )}
               </div>
 
-              <div className="space-y-2 rounded-lg border border-border/50 p-3 bg-muted/10">
-                <div className="flex items-center justify-between">
-                  <div>
+              <div className="space-y-2 rounded-lg border border-border/50 p-2.5 sm:p-3 bg-muted/10">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <p className="text-xs font-medium">Eligible Registered Users</p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground truncate">
                       Verified accounts ({registeredUsers.filter(u => !u.unsubscribed && !u.disabled).length} active)
                     </p>
                   </div>
@@ -564,10 +567,10 @@ export function ProjectAnnouncementModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                  <div>
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
+                  <div className="min-w-0">
                     <p className="text-xs font-medium">Include Past Contact Senders</p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground truncate">
                       Unique people who messaged via contact form ({pastContacts.length})
                     </p>
                   </div>
@@ -592,7 +595,7 @@ export function ProjectAnnouncementModal({
                     className="h-8 pl-8 text-xs"
                   />
                 </div>
-                <div className="max-h-36 overflow-y-auto rounded-md border border-border/50 divide-y divide-border/40 bg-background">
+                <div className="max-h-36 sm:max-h-40 overflow-y-auto rounded-md border border-border/50 divide-y divide-border/40 bg-background">
                   {combinedDirectory.length === 0 ? (
                     <div className="p-3 text-center text-xs text-muted-foreground">
                       No directory recipients in active groups. Add manual emails below if needed.
@@ -653,7 +656,7 @@ export function ProjectAnnouncementModal({
 
               {/* Recipient Validation Breakdown */}
               {recipientSummary && (
-                <div className="grid grid-cols-4 gap-1.5 pt-1 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1 text-center">
                   <div className="rounded border border-border/50 p-1.5 bg-muted/10">
                     <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                       {recipientSummary.validCount}
@@ -682,17 +685,17 @@ export function ProjectAnnouncementModal({
           </div>
 
           {/* Right Column: Live Preview, Deliverability Telemetry & Inline Editor (7 cols) */}
-          <div className="lg:col-span-7 p-5 space-y-4">
+          <div className="lg:col-span-7 p-4 sm:p-5 space-y-3.5 sm:space-y-4 min-w-0">
             {/* Deliverability Hygiene Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/50 bg-muted/15 px-3.5 py-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-border/50 bg-muted/15 px-3 py-2 sm:px-3.5 sm:py-2.5">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="text-xs font-medium">
                   Deliverability Score:{' '}
                   <strong className="font-mono">{deliverability.score}/100</strong>
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] font-mono text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-mono text-muted-foreground">
                 <span>Text Ratio: {deliverability.plainTextRatio}%</span>
                 <span>Links: {deliverability.linkCount}</span>
                 <span>Spam Words: {deliverability.spamTriggersFound.length}</span>
@@ -723,20 +726,78 @@ export function ProjectAnnouncementModal({
               </p>
             </div>
 
+            {/* Project Dynamic URL Destination Card */}
+            <div className="space-y-1.5 rounded-lg border border-border/50 bg-muted/10 p-2.5 sm:p-3">
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Email Project Link (&#123;&#123;project_url&#125;&#125;)
+                </Label>
+                <div className="flex flex-wrap items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const caseStudy =
+                        variables.project_case_study_url ||
+                        `${resolvePublicBaseUrl()}/projects/${project.id}`
+                      setVariables(prev => ({ ...prev, project_url: caseStudy }))
+                      setConfirmed(false)
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors ${
+                      variables.project_url === variables.project_case_study_url ||
+                      (!project.link && !variables.project_url?.includes(project.link || '___'))
+                        ? 'bg-foreground text-background border-foreground'
+                        : 'bg-background hover:bg-muted text-muted-foreground border-border/50'
+                    }`}
+                  >
+                    Case Study Page
+                  </button>
+                  {project.link && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVariables(prev => ({
+                          ...prev,
+                          project_url: project.link
+                        }))
+                        setConfirmed(false)
+                      }}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors ${
+                        variables.project_url === project.link
+                          ? 'bg-foreground text-background border-foreground'
+                          : 'bg-background hover:bg-muted text-muted-foreground border-border/50'
+                      }`}
+                    >
+                      Live Demo Website
+                    </button>
+                  )}
+                </div>
+              </div>
+              <Input
+                value={variables.project_url || ''}
+                onChange={e => {
+                  const val = e.target.value
+                  setVariables(prev => ({ ...prev, project_url: val }))
+                  setConfirmed(false)
+                }}
+                className="h-8 text-xs font-mono"
+                placeholder="https://salihbenotman.dev/projects/..."
+              />
+            </div>
+
             {/* Preview / Customize Tabs */}
             <Tabs value={previewMode} onValueChange={v => setPreviewMode(v as any)}>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <TabsList className="h-8">
-                  <TabsTrigger value="html" className="text-xs px-3 py-1">
+                  <TabsTrigger value="html" className="text-xs px-2.5 sm:px-3 py-1">
                     <Eye className="w-3.5 h-3.5 mr-1.5" />
-                    Rendered Preview
+                    Preview
                   </TabsTrigger>
-                  <TabsTrigger value="text" className="text-xs px-3 py-1">
+                  <TabsTrigger value="text" className="text-xs px-2.5 sm:px-3 py-1">
                     <FileText className="w-3.5 h-3.5 mr-1.5" />
-                    Plain-Text Fallback
+                    Plain Text
                   </TabsTrigger>
-                  <TabsTrigger value="edit" className="text-xs px-3 py-1">
-                    Edit Variables &amp; Copy
+                  <TabsTrigger value="edit" className="text-xs px-2.5 sm:px-3 py-1">
+                    Edit Variables
                   </TabsTrigger>
                 </TabsList>
 
@@ -746,7 +807,7 @@ export function ProjectAnnouncementModal({
                   rel="noreferrer"
                   className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
                 >
-                  Open Project Page <ExternalLink className="w-3 h-3" />
+                  Open Link <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
 
@@ -756,18 +817,18 @@ export function ProjectAnnouncementModal({
                     title="Project Announcement HTML Preview"
                     srcDoc={renderedPreview.html}
                     sandbox=""
-                    className="w-full h-[320px] border-0"
+                    className="w-full h-[260px] sm:h-[320px] lg:h-[340px] border-0"
                   />
                 </div>
               </TabsContent>
 
               <TabsContent value="text" className="mt-2">
-                <pre className="rounded-lg border border-border/50 bg-muted/20 p-4 text-xs font-mono whitespace-pre-wrap h-[320px] overflow-y-auto text-foreground">
+                <pre className="rounded-lg border border-border/50 bg-muted/20 p-3.5 sm:p-4 text-xs font-mono whitespace-pre-wrap h-[260px] sm:h-[320px] lg:h-[340px] overflow-y-auto text-foreground">
                   {renderedPreview.text}
                 </pre>
               </TabsContent>
 
-              <TabsContent value="edit" className="mt-2 space-y-3 h-[320px] overflow-y-auto pr-1">
+              <TabsContent value="edit" className="mt-2 space-y-3 h-[260px] sm:h-[320px] lg:h-[340px] overflow-y-auto pr-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <Label className="text-[11px]">Project Title (project_title)</Label>
@@ -797,6 +858,16 @@ export function ProjectAnnouncementModal({
                         setVariables(prev => ({ ...prev, project_tech: e.target.value }))
                       }
                       className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-[11px]">Destination URL (project_url)</Label>
+                    <Input
+                      value={variables.project_url || ''}
+                      onChange={e =>
+                        setVariables(prev => ({ ...prev, project_url: e.target.value }))
+                      }
+                      className="h-8 text-xs font-mono"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -838,12 +909,12 @@ export function ProjectAnnouncementModal({
             </Tabs>
 
             {/* Test Email Bar */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
               <Input
                 value={testEmail}
                 onChange={e => setTestEmail(e.target.value)}
                 placeholder="Optional test email (defaults to your admin email)"
-                className="h-8 text-xs"
+                className="h-8 text-xs flex-1"
               />
               <Button
                 type="button"
@@ -865,20 +936,20 @@ export function ProjectAnnouncementModal({
         </div>
 
         {/* Footer Confirmation & Actions */}
-        <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
             <Checkbox
               checked={confirmed}
               onCheckedChange={v => setConfirmed(Boolean(v))}
               className="mt-0.5"
             />
-            <span>
+            <span className="leading-snug">
               I have reviewed the rendered preview and approve sending this announcement to{' '}
               <strong>{validRecipientCount} eligible recipient(s)</strong>.
             </span>
           </label>
 
-          <div className="flex items-center justify-end gap-2 shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0">
             <Button
               type="button"
               variant="ghost"
@@ -887,6 +958,7 @@ export function ProjectAnnouncementModal({
                 onOpenChange(false)
                 onComplete?.({ announced: false })
               }}
+              className="w-full sm:w-auto"
             >
               Skip for Now
             </Button>
@@ -897,13 +969,14 @@ export function ProjectAnnouncementModal({
               size="sm"
               onClick={handleSaveDraft}
               disabled={savingDraft || dispatching}
+              className="w-full sm:w-auto"
             >
               {savingDraft ? (
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
               ) : (
                 <Save className="w-3.5 h-3.5 mr-1.5" />
               )}
-              Save Draft in Email Center
+              Save Draft
             </Button>
 
             <Button
@@ -911,6 +984,7 @@ export function ProjectAnnouncementModal({
               size="sm"
               onClick={handleApproveAndDispatch}
               disabled={!confirmed || validRecipientCount === 0 || dispatching}
+              className="w-full sm:w-auto font-medium"
             >
               {dispatching ? (
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />

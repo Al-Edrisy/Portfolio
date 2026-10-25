@@ -4,7 +4,9 @@ import {
   PROJECT_ANNOUNCEMENT_TEMPLATE_IDS,
   buildProjectTemplateVariables,
   evaluateDeliverabilityHealth,
-  renderEmailForRecipient
+  renderEmailForRecipient,
+  resolvePublicBaseUrl,
+  sanitizeOutboundUrl
 } from '../template-engine'
 import { resolveRecipients, normalizeEmail } from '../recipient-resolver'
 
@@ -137,5 +139,40 @@ describe('Project Publish Announcement & Anti-Slop Templates', () => {
       'frank@partner.io'
     ])
     expect(combinedSummary.duplicateCount).toBe(1) // alice@example.com deduplicated across users & contacts
+  })
+
+  it('dynamically resolves public URLs and sanitizes localhost or private IPs', () => {
+    // 1. Rejects localhost candidate and falls back to production domain
+    expect(resolvePublicBaseUrl('http://localhost:3000')).toBe('https://salihbenotman.dev')
+    expect(resolvePublicBaseUrl('http://127.0.0.1:8080')).toBe('https://salihbenotman.dev')
+    expect(resolvePublicBaseUrl('http://10.250.13.74:8080')).toBe('https://salihbenotman.dev')
+
+    // 2. Accepts public deployed domain
+    expect(resolvePublicBaseUrl('https://portfolio-preview.up.railway.app')).toBe(
+      'https://portfolio-preview.up.railway.app'
+    )
+    expect(resolvePublicBaseUrl('https://salihbenotman.dev/')).toBe('https://salihbenotman.dev')
+
+    // 3. Sanitizes localhost links in outbound email URLs
+    expect(sanitizeOutboundUrl('http://localhost:3000/projects/sample-id', 'https://salihbenotman.dev')).toBe(
+      'https://salihbenotman.dev/projects/sample-id'
+    )
+
+    // 4. Injected template variables with localhost are cleaned on render
+    const rendered = renderEmailForRecipient({
+      subjectTemplate: 'Check {{project_url}}',
+      htmlTemplate: '<a href="{{project_url}}">View</a>',
+      textTemplate: 'View: {{project_url}}',
+      globalVariables: {
+        project_url: 'http://localhost:3001/projects/my-project',
+        portfolio_url: 'http://localhost:3001'
+      },
+      recipientVariables: { first_name: 'Alex' }
+    })
+
+    expect(rendered.text).not.toContain('localhost')
+    expect(rendered.text).toContain('https://salihbenotman.dev/projects/my-project')
+    expect(rendered.html).not.toContain('localhost')
+    expect(rendered.html).toContain('https://salihbenotman.dev/projects/my-project')
   })
 })

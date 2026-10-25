@@ -94,18 +94,18 @@ export default function Navigation() {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 will-change-transform ${isScrolled
-        ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm"
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform ${isScrolled
+        ? "bg-background/85 backdrop-blur-md backdrop-saturate-150 border-b border-border/50 dark:border-white/[0.08] shadow-2xs"
         : "bg-transparent"
         }`}
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -12 }}
       animate={{
         opacity: 1,
         y: scrollDirection === 'down' && isScrolled && !isMobileMenuOpen ? -100 : 0
       }}
       transition={{
-        opacity: { duration: 0.2 },
-        y: { duration: 0.3, ease: "easeInOut" }
+        opacity: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+        y: { duration: 0.24, ease: [0.23, 1, 0.32, 1] }
       }}
     >
       <nav className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">

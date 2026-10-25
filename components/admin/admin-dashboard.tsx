@@ -89,57 +89,67 @@ export function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      {/* Top Command Bar (3-Tier Ergonomic Zone) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border/50 dark:border-white/[0.08]">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Crown className="h-8 w-8 text-yellow-500" />
-            Admin Dashboard
+          <div className="inline-flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-foreground/[0.06] text-muted-foreground border border-border/50">
+              Control Plane // Admin
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+            Engineering &amp; Operations
           </h1>
-          <p className="text-muted-foreground">
-            Welcome back, {user?.name}. Manage your portfolio and content.
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Welcome back, {user?.name}. Manage projects, outbound email campaigns, and career pipelines.
           </p>
         </div>
-        <Button onClick={handleCreateProject} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setActiveTab('email-center')}>
+            <Send className="h-3.5 w-3.5 mr-1.5" />
+            Email Center
+          </Button>
+          <Button size="sm" onClick={handleCreateProject}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            New Project
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      {/* Quick Stats — Tabular Numbers, Subtle Alpha Borders, <200ms Stagger */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.2, delay: 0.02, ease: [0.23, 1, 0.32, 1] }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-4 gap-3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-5">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Projects</CardTitle>
+              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalProjects}</div>
-              <p className="text-xs text-muted-foreground">
-                {publishedProjects} published, {draftProjects} drafts
+            <CardContent className="px-5">
+              <div className="text-2xl font-semibold tracking-tight tabular-nums">{totalProjects}</div>
+              <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                {publishedProjects} published · {draftProjects} drafts
               </p>
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.2, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Reactions</CardTitle>
-              <Heart className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-4 gap-3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-5">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Reactions</CardTitle>
+              <Heart className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalReactions}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="px-5">
+              <div className="text-2xl font-semibold tracking-tight tabular-nums">{totalReactions}</div>
+              <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
                 +{recentReactions} this week
               </p>
             </CardContent>
@@ -147,18 +157,18 @@ export function AdminDashboard() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.2, delay: 0.08, ease: [0.23, 1, 0.32, 1] }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Comments</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-4 gap-3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-5">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Comments</CardTitle>
+              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalComments}</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="px-5">
+              <div className="text-2xl font-semibold tracking-tight tabular-nums">{totalComments}</div>
+              <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
                 +{recentComments} this week
               </p>
             </CardContent>
@@ -166,39 +176,39 @@ export function AdminDashboard() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
+          transition={{ duration: 0.2, delay: 0.11, ease: [0.23, 1, 0.32, 1] }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-4 gap-3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-5">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Unread Inbox</CardTitle>
+              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{unreadMessages}</div>
-              <p className="text-xs text-muted-foreground">
-                Out of {messages.length} total
+            <CardContent className="px-5">
+              <div className="text-2xl font-semibold tracking-tight tabular-nums">{unreadMessages}</div>
+              <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                of {messages.length} total messages
               </p>
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.2, delay: 0.14, ease: [0.23, 1, 0.32, 1] }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Most Popular</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card className="py-4 gap-3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-5">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Top Case Study</CardTitle>
+              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-sm font-medium truncate">
+            <CardContent className="px-5">
+              <div className="text-sm font-semibold truncate">
                 {mostPopularProject?.title || 'No projects yet'}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                 {mostPopularProject ?
                   `${Object.values(mostPopularProject.reactionsCount).reduce((sum, count) => sum + count, 0)} reactions`
                   : 'No reactions yet'
@@ -232,9 +242,9 @@ export function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Projects */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              transition={{ duration: 0.18, delay: 0.16, ease: [0.23, 1, 0.32, 1] }}
             >
               <Card>
                 <CardHeader>
@@ -282,9 +292,9 @@ export function AdminDashboard() {
 
             {/* Quick Actions */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.18, delay: 0.18, ease: [0.23, 1, 0.32, 1] }}
             >
               <Card>
                 <CardHeader>
@@ -351,9 +361,9 @@ export function AdminDashboard() {
         {/* Projects Tab */}
         <TabsContent value="projects">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <Card>
               <CardHeader>
@@ -439,9 +449,9 @@ export function AdminDashboard() {
         {/* Messages Tab */}
         <TabsContent value="messages">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <Card>
               <CardHeader>
@@ -460,9 +470,9 @@ export function AdminDashboard() {
         {/* Administrative Email Center Tab */}
         <TabsContent value="email-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <AdminEmailCenter />
           </motion.div>
@@ -471,9 +481,9 @@ export function AdminDashboard() {
         {/* Personal AI-Assisted Job Application Suite Tab */}
         <TabsContent value="career-suite">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <AdminCareerSuite />
           </motion.div>
@@ -482,9 +492,9 @@ export function AdminDashboard() {
         {/* Users Tab */}
         <TabsContent value="users">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <Card>
               <CardHeader>
@@ -520,9 +530,9 @@ export function AdminDashboard() {
         {/* Analytics Tab */}
         <TabsContent value="analytics">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           >
             <Card>
               <CardHeader>

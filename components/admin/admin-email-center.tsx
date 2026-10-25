@@ -480,18 +480,21 @@ export function AdminEmailCenter() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/50 dark:border-white/[0.08]">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="h-6 w-6 text-primary" />
+          <div className="text-[10px] font-mono uppercase font-bold tracking-wider text-muted-foreground mb-1">
+            Outbound Infrastructure // SMTP &amp; Templates
+          </div>
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <Mail className="h-5 w-5 text-foreground" />
             Administrative Email Center
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Compose, preview, and send administrative announcements or bulk campaigns with recipient verification and audit tracking.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Compose, preview, and dispatch announcements or bulk campaigns with recipient verification and audit tracking.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={loadInitialData} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>

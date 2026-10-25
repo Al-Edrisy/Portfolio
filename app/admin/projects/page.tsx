@@ -75,9 +75,32 @@ export default function AdminProjectsPage() {
         <Navigation />
         <div className="pt-20">
           <div className="container mx-auto px-6 py-8">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="text-muted-foreground mt-4">Loading projects...</p>
+            <div className="flex justify-between items-center mb-8 pb-6 border-b border-border/50">
+              <div className="space-y-2">
+                <div className="h-4 w-28 rounded bg-muted animate-pulse" />
+                <div className="h-8 w-56 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="h-9 w-36 rounded-md bg-muted animate-pulse" />
+            </div>
+            {/* Progressive geometry-matched skeleton grid (Anti-Slop Manifesto) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-card border border-border/50 dark:border-white/[0.08] rounded-2xl p-4 space-y-4"
+                >
+                  <div className="aspect-video bg-muted/60 rounded-lg animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-5 w-3/4 bg-muted/60 rounded animate-pulse" />
+                    <div className="h-3.5 w-full bg-muted/50 rounded animate-pulse" />
+                    <div className="h-3.5 w-2/3 bg-muted/50 rounded animate-pulse" />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <div className="h-8 w-20 bg-muted/50 rounded-md animate-pulse" />
+                    <div className="h-8 w-24 bg-muted/50 rounded-md animate-pulse" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -90,11 +113,16 @@ export default function AdminProjectsPage() {
         <Navigation />
         <div className="pt-20">
           <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border/50 dark:border-white/[0.08]">
               <div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">Manage Projects</h1>
-                <p className="text-muted-foreground">
-                  Admin panel for managing all projects in the portfolio.
+                <div className="text-[10px] font-mono uppercase font-bold tracking-wider text-muted-foreground mb-1">
+                  Repository // Case Studies
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+                  Manage Projects
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Publish technical case studies, manage featured order, and dispatch release announcements.
                 </p>
               </div>
               <Button onClick={() => router.push('/projects/create')}>
@@ -104,10 +132,10 @@ export default function AdminProjectsPage() {
             </div>
 
             {projects && projects.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-2xl font-semibold text-foreground mb-4">No Projects Found</h3>
-                <p className="text-muted-foreground mb-6">
-                  Create your first project to get started.
+              <div className="rounded-2xl border border-border/50 bg-card/50 py-16 px-6 text-center">
+                <h3 className="text-lg font-semibold text-foreground mb-1">No Projects Found</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                  Create your first engineering case study to showcase your architecture and notify subscribers.
                 </p>
                 <Button onClick={() => router.push('/projects/create')}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -117,67 +145,74 @@ export default function AdminProjectsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
-                  <div key={project.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
-                    {/* Project Image */}
-                    <div className="aspect-video bg-muted rounded-lg mb-4 overflow-hidden">
-                      {project.image ? (
-                        <img 
-                          src={project.image} 
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          No Image
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Project Info */}
-                    <div className="mb-4">
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">{project.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{project.description}</p>
-                      
-                      {/* Status Badge */}
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          project.published 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                        }`}>
-                          {project.published ? 'Published' : 'Draft'}
-                        </span>
-                        {project.featured && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Featured
-                          </span>
-                        )}
-                        {project.published && (
-                          project.announcedAt ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Announced
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                              Not Announced
-                            </span>
-                          )
+                  /* Proportional radii math: Outer rounded-2xl (16px) - p-4 (16px) -> Inner rounded-lg (8px) */
+                  <div
+                    key={project.id}
+                    className="bg-card border border-border/60 dark:border-white/[0.08] rounded-2xl p-4 hover:border-border transition-[border-color,box-shadow] duration-200 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Project Image */}
+                      <div className="aspect-video bg-muted/50 rounded-lg mb-4 overflow-hidden border border-border/40">
+                        {project.image ? (
+                          <img 
+                            src={project.image} 
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                            No Cover Asset
+                          </div>
                         )}
                       </div>
 
-                      {/* Tech Stack */}
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {project.tech.slice(0, 3).map((tech) => (
-                          <span key={tech} className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
-                            {tech}
+                      {/* Project Info (Left-aligned per Anti-Slop Manifesto) */}
+                      <div className="mb-4 px-1">
+                        <h3 className="font-semibold text-base tracking-tight mb-1.5 line-clamp-1">{project.title}</h3>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{project.description}</p>
+                        
+                        {/* Monochromatic & Intentional Status Badges */}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                            project.published 
+                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25' 
+                              : 'bg-muted/60 text-muted-foreground border-border/60'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${project.published ? 'bg-emerald-500' : 'bg-muted-foreground/60'}`} />
+                            {project.published ? 'Published' : 'Draft'}
                           </span>
-                        ))}
-                        {project.tech.length > 3 && (
-                          <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
-                            +{project.tech.length - 3}
-                          </span>
-                        )}
+                          {project.featured && (
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-foreground/[0.06] text-foreground border border-border/60">
+                              Featured
+                            </span>
+                          )}
+                          {project.published && (
+                            project.announcedAt ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Announced
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-md text-[11px] font-mono text-muted-foreground bg-muted/40 border border-border/40">
+                                Unannounced
+                              </span>
+                            )
+                          )}
+                        </div>
+
+                        {/* Tech Stack */}
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {project.tech.slice(0, 3).map((tech) => (
+                            <span key={tech} className="text-[11px] font-mono px-2 py-0.5 bg-muted/50 text-muted-foreground rounded border border-border/40">
+                              {tech}
+                            </span>
+                          ))}
+                          {project.tech.length > 3 && (
+                            <span className="text-[11px] font-mono px-2 py-0.5 bg-muted/50 text-muted-foreground rounded border border-border/40 tabular-nums">
+                              +{project.tech.length - 3}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 

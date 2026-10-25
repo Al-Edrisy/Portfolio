@@ -518,20 +518,23 @@ export function AdminCareerSuite() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/50 dark:border-white/[0.08]">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-primary" />
+          <div className="text-[10px] font-mono uppercase font-bold tracking-wider text-muted-foreground mb-1">
+            Personal Career Pipeline // OpenRouter AI + ATS
+          </div>
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-foreground" />
             Personal AI-Assisted Job Application Suite
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Private to administrator ({user?.email}). Match job opportunities against your CV & portfolio, generate truthful ATS-tailored applications via OpenRouter, and review every draft before sending.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Private to administrator ({user?.email}). Match job opportunities against your CV &amp; portfolio, generate truthful ATS-tailored applications, and review every draft before sending.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <select
-            className="border rounded-md px-3 py-1.5 text-xs bg-background"
+            className="border border-border/60 dark:border-white/[0.08] rounded-md px-3 py-1.5 text-xs bg-background font-medium"
             value={selectedAiModel}
             onChange={e => setSelectedAiModel(e.target.value)}
           >
@@ -542,7 +545,7 @@ export function AdminCareerSuite() {
             ))}
           </select>
           <Button variant="outline" size="sm" onClick={loadCareerData} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Sync
           </Button>
         </div>

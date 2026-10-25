@@ -73,6 +73,99 @@ export function renderSafeTemplateString(
 }
 
 /**
+ * Checks if a URL or hostname points to a local or private address (e.g. localhost, 127.0.0.1, 10.*, etc.)
+ */
+export function isLocalOrPrivateHost(urlOrHost: string): boolean {
+  if (!urlOrHost) return true
+  try {
+    const raw = urlOrHost.trim()
+    const parsed =
+      raw.startsWith('http://') || raw.startsWith('https://')
+        ? new URL(raw)
+        : new URL(`http://${raw}`)
+    const hostname = parsed.hostname.toLowerCase()
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.endsWith('.local') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
+    )
+  } catch {
+    return (
+      urlOrHost.includes('localhost') ||
+      urlOrHost.includes('127.0.0.1') ||
+      urlOrHost.includes('0.0.0.0')
+    )
+  }
+}
+
+/**
+ * Resolves the public base URL dynamically for outbound emails.
+ * Discards localhost, private IPs, and internal Docker networks,
+ * ensuring outbound emails always link to a publicly accessible domain.
+ */
+export function resolvePublicBaseUrl(explicitUrl?: string): string {
+  // 1. Explicit argument from request origin or window.location (if non-local)
+  const candidate = (explicitUrl || '').trim().replace(/\/$/, '')
+  if (candidate && !isLocalOrPrivateHost(candidate)) {
+    return candidate
+  }
+
+  // 2. Railway public domain
+  const envRailway = (process.env.RAILWAY_PUBLIC_DOMAIN || '').trim()
+  if (envRailway && !isLocalOrPrivateHost(envRailway)) {
+    return envRailway.startsWith('http')
+      ? envRailway.replace(/\/$/, '')
+      : `https://${envRailway.replace(/\/$/, '')}`
+  }
+
+  // 3. Explicit production SITE_URL environment variable
+  const envSite = (process.env.SITE_URL || '').trim().replace(/\/$/, '')
+  if (envSite && !isLocalOrPrivateHost(envSite)) {
+    return envSite
+  }
+
+  // 4. NEXT_PUBLIC_SITE_URL environment variable (if non-local)
+  const envPublic = (process.env.NEXT_PUBLIC_SITE_URL || '').trim().replace(/\/$/, '')
+  if (envPublic && !isLocalOrPrivateHost(envPublic)) {
+    return envPublic
+  }
+
+  // 5. Default production fallback
+  return 'https://salihbenotman.dev'
+}
+
+/**
+ * Ensures any outbound URL does not contain localhost or private container IPs.
+ * If a local host is detected, its pathname & search are preserved on top of the fallback public origin.
+ */
+export function sanitizeOutboundUrl(
+  url: string | undefined,
+  fallbackOrigin: string = resolvePublicBaseUrl()
+): string {
+  if (!url) return fallbackOrigin
+  const trimmed = url.trim()
+  if (!trimmed) return fallbackOrigin
+
+  if (isLocalOrPrivateHost(trimmed)) {
+    try {
+      const parsed = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+        ? new URL(trimmed)
+        : new URL(`http://${trimmed}`)
+      const base = fallbackOrigin.replace(/\/$/, '')
+      const pathAndSearch = `${parsed.pathname}${parsed.search}${parsed.hash}`
+      return pathAndSearch.startsWith('/') ? `${base}${pathAndSearch}` : `${base}/${pathAndSearch}`
+    } catch {
+      return fallbackOrigin
+    }
+  }
+  return trimmed
+}
+
+/**
  * Renders a complete email (subject, html, text) for a single recipient in total isolation
  * so one recipient's variables never leak to another recipient.
  */
@@ -88,14 +181,27 @@ export function renderEmailForRecipient(params: {
   text: string
   missingPlaceholders: string[]
 } {
+  const publicBase = resolvePublicBaseUrl(params.globalVariables?.portfolio_url)
+
   // Clone merged variables per-recipient to guarantee isolation
   const mergedVars: Record<string, string | undefined> = {
     sender_name: process.env.CONTACT_NAME || 'Salih Ben Otman',
     sender_email: process.env.CONTACT_EMAIL || 'salehfree33@gmail.com',
-    portfolio_url: 'https://salihbenotman.dev',
+    portfolio_url: publicBase,
     current_year: new Date().getFullYear().toString(),
     ...(params.globalVariables || {}),
     ...(params.recipientVariables || {})
+  }
+
+  // Sanitize any URLs to prevent localhost from ever appearing in rendered emails
+  if (mergedVars.project_url) {
+    mergedVars.project_url = sanitizeOutboundUrl(mergedVars.project_url, publicBase)
+  }
+  if (mergedVars.project_demo_url) {
+    mergedVars.project_demo_url = sanitizeOutboundUrl(mergedVars.project_demo_url, publicBase)
+  }
+  if (mergedVars.portfolio_url) {
+    mergedVars.portfolio_url = sanitizeOutboundUrl(mergedVars.portfolio_url, publicBase)
   }
 
   const allPlaceholders = extractTemplateVariables(
@@ -147,26 +253,34 @@ export const PROJECT_ANNOUNCEMENT_TEMPLATE_IDS = [
 /**
  * Maps a Project record into clean, structured template variables without undefined values or AI slop.
  */
-export function buildProjectTemplateVariables(project: {
-  id?: string
-  title?: string
-  slug?: string
-  description?: string
-  longDescription?: string
-  challenges?: string
-  solutions?: string
-  results?: string
-  features?: string[]
-  tech?: string[]
-  categories?: string[]
-  category?: string
-  link?: string
-  github?: string
-  authorName?: string
-}): Record<string, string> {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://salihbenotman.dev').replace(/\/$/, '')
+export function buildProjectTemplateVariables(
+  project: {
+    id?: string
+    title?: string
+    slug?: string
+    description?: string
+    longDescription?: string
+    challenges?: string
+    solutions?: string
+    results?: string
+    features?: string[]
+    tech?: string[]
+    categories?: string[]
+    category?: string
+    link?: string
+    github?: string
+    authorName?: string
+  },
+  options?: { baseUrl?: string; preferExternalLink?: boolean }
+): Record<string, string> {
+  const baseUrl = resolvePublicBaseUrl(options?.baseUrl)
   const projectSlugOrId = (project.id || project.slug || '').trim()
-  const projectUrl = projectSlugOrId ? `${baseUrl}/projects/${projectSlugOrId}` : `${baseUrl}/projects`
+  const portfolioCaseStudyUrl = projectSlugOrId
+    ? `${baseUrl}/projects/${projectSlugOrId}`
+    : `${baseUrl}/projects`
+  const externalLink = (project.link || '').trim()
+  const projectDemoUrl = externalLink ? sanitizeOutboundUrl(externalLink, portfolioCaseStudyUrl) : portfolioCaseStudyUrl
+  const projectUrl = options?.preferExternalLink && externalLink ? projectDemoUrl : portfolioCaseStudyUrl
 
   const title = (project.title || 'New Engineering Case Study').trim()
   const category =
@@ -214,7 +328,8 @@ export function buildProjectTemplateVariables(project: {
     project_solution: solutionText,
     project_results: resultsText,
     project_url: projectUrl,
-    project_demo_url: (project.link || '').trim() || projectUrl,
+    project_case_study_url: portfolioCaseStudyUrl,
+    project_demo_url: projectDemoUrl,
     project_github_url: (project.github || '').trim() || 'https://github.com/Al-Edrisy',
     sender_name: project.authorName || process.env.CONTACT_NAME || 'Salih Ben Otman',
     portfolio_url: baseUrl,

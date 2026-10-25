@@ -6,7 +6,9 @@ import {
   PROJECT_ANNOUNCEMENT_TEMPLATE_IDS,
   buildProjectTemplateVariables,
   evaluateDeliverabilityHealth,
-  renderEmailForRecipient
+  renderEmailForRecipient,
+  resolvePublicBaseUrl,
+  sanitizeOutboundUrl
 } from '@/lib/email/template-engine'
 import {
   DatabaseUserRecord,
@@ -20,6 +22,15 @@ import {
   sendSingleEmailWithRetry,
   OutboundEmailPayload
 } from '@/lib/email/campaign-queue'
+
+function extractPublicRequestOrigin(request: NextRequest): string {
+  const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`
+  }
+  return request.nextUrl.origin
+}
 
 async function loadUsersAndContactsFromDb(): Promise<{
   registeredUsers: DatabaseUserRecord[]
@@ -125,7 +136,10 @@ export async function GET(request: NextRequest) {
       suppressedEmails
     })
 
-    const variables = projectRecord ? buildProjectTemplateVariables(projectRecord) : {}
+    const requestOrigin = extractPublicRequestOrigin(request)
+    const variables = projectRecord
+      ? buildProjectTemplateVariables(projectRecord, { baseUrl: requestOrigin })
+      : {}
 
     return NextResponse.json({
       success: true,
@@ -168,9 +182,29 @@ export async function POST(request: NextRequest) {
       confirmed
     } = body
 
+    const requestOrigin = extractPublicRequestOrigin(request)
+    const publicBase = resolvePublicBaseUrl(requestOrigin)
+
+    const defaultProjectVars = buildProjectTemplateVariables(
+      projectData || { id: projectId },
+      { baseUrl: requestOrigin }
+    )
+
     const baseVariables = {
-      ...buildProjectTemplateVariables(projectData || { id: projectId }),
-      ...variables
+      ...defaultProjectVars,
+      ...variables,
+      project_url: sanitizeOutboundUrl(
+        variables.project_url || defaultProjectVars.project_url,
+        publicBase
+      ),
+      project_demo_url: sanitizeOutboundUrl(
+        variables.project_demo_url || defaultProjectVars.project_demo_url,
+        publicBase
+      ),
+      portfolio_url: sanitizeOutboundUrl(
+        variables.portfolio_url || defaultProjectVars.portfolio_url,
+        publicBase
+      )
     }
 
     const { registeredUsers, pastContacts, suppressedEmails } = await loadUsersAndContactsFromDb()
