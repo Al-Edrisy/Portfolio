@@ -20,6 +20,9 @@ export function createTransporter(config: SMTPConfig) {
       user: config.user,
       pass: config.pass,
     },
+    connectionTimeout: 10000, // 10s connection timeout (fails fast to avoid Railway 60s gateway timeouts)
+    greetingTimeout: 8000,    // 8s greeting timeout
+    socketTimeout: 15000,     // 15s socket timeout
     // Production default: verify server certificates
     tls: {
       rejectUnauthorized: true
