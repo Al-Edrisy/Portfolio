@@ -1,6 +1,8 @@
 "use client"
 
 import { EnhancedProjectForm } from '@/components/projects/forms/enhanced-project-form'
+import { ProjectAnnouncementModal } from '@/components/admin/project-announcement-modal'
+import { Project } from '@/types'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -17,6 +19,8 @@ export default function CreateProjectPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [announceProject, setAnnounceProject] = useState<Project | null>(null)
+  const [isAnnounceOpen, setIsAnnounceOpen] = useState(false)
 
   useEffect(() => {
     // Wait for auth to load before checking
@@ -153,6 +157,11 @@ export default function CreateProjectPage() {
   }
 
   const handleSuccess = (project: any) => {
+    if (project?.published && user?.role === 'admin') {
+      setAnnounceProject(project)
+      setIsAnnounceOpen(true)
+      return
+    }
     router.push(`/projects/${project.id}`)
   }
 
@@ -176,6 +185,22 @@ export default function CreateProjectPage() {
           </div>
         </div>
       </div>
+
+      <ProjectAnnouncementModal
+        project={announceProject}
+        open={isAnnounceOpen}
+        onOpenChange={open => {
+          setIsAnnounceOpen(open)
+          if (!open && announceProject?.id) {
+            router.push(`/projects/${announceProject.id}`)
+          }
+        }}
+        onComplete={() => {
+          if (announceProject?.id) {
+            router.push(`/projects/${announceProject.id}`)
+          }
+        }}
+      />
     </main>
   )
 }

@@ -19,6 +19,7 @@ import {
 } from '@/lib/career/job-intelligence'
 import {
   computeContentHash,
+  computeApplicationApprovalHash,
   sendSingleEmailWithRetry,
   processEmailBatchQueue,
   OutboundEmailPayload,
@@ -27,28 +28,6 @@ import {
 } from '@/lib/email/campaign-queue'
 import { isValidEmailAddress, normalizeEmail } from '@/lib/email/recipient-resolver'
 import { renderEmailForRecipient, DEFAULT_EMAIL_TEMPLATES } from '@/lib/email/template-engine'
-
-/**
- * Computes the approval integrity hash for a JobApplicationRecord.
- * Any modification to recipient, subject, body, cover letter, CV, or attachments changes this hash.
- */
-export function computeApplicationApprovalHash(app: {
-  recipientEmail: string
-  emailSubject: string
-  emailBody: string
-  coverLetter: string
-  selectedCvDocumentId: string
-  additionalAttachmentIds?: string[]
-}): string {
-  return computeContentHash([
-    normalizeEmail(app.recipientEmail),
-    app.emailSubject,
-    app.emailBody,
-    app.coverLetter,
-    app.selectedCvDocumentId,
-    app.additionalAttachmentIds || []
-  ])
-}
 
 async function loadAdminCareerData(adminId: string, adminEmail: string): Promise<{
   profile: CareerProfile

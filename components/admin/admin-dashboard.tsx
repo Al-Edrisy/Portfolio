@@ -31,12 +31,16 @@ import { useRouter } from 'next/navigation'
 import { AdminMessages } from './admin-messages'
 import { AdminEmailCenter } from './admin-email-center'
 import { AdminCareerSuite } from './admin-career-suite'
+import { ProjectAnnouncementModal } from './project-announcement-modal'
+import { Project } from '@/types'
 
 
 export function AdminDashboard() {
   const { user } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
+  const [announceProject, setAnnounceProject] = useState<Project | null>(null)
+  const [isAnnounceOpen, setIsAnnounceOpen] = useState(false)
 
   // Get real-time data
   const { projects, loading: projectsLoading } = useProjectsRealtime()
@@ -366,17 +370,67 @@ export function AdminDashboard() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Project Management</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Use the dedicated projects management page for full control.
-                  </p>
-                  <Button onClick={handleManageProjects}>
-                    Go to Projects Management
-                  </Button>
-                </div>
+              <CardContent className="space-y-4">
+                {projects.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Use the dedicated projects management page for full control.
+                    </p>
+                    <Button onClick={handleManageProjects}>
+                      Go to Projects Management
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/50 rounded-lg border border-border/50">
+                    {projects.map(proj => (
+                      <div
+                        key={proj.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 hover:bg-muted/20 transition-colors"
+                      >
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm truncate">{proj.title}</span>
+                            <Badge variant={proj.published ? 'default' : 'secondary'} className="text-[11px]">
+                              {proj.published ? 'Published' : 'Draft'}
+                            </Badge>
+                            {proj.published && (
+                              <Badge variant="outline" className="text-[11px]">
+                                {proj.announcedAt ? 'Announced' : 'Not Announced'}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {proj.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {proj.published && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setAnnounceProject(proj)
+                                setIsAnnounceOpen(true)
+                              }}
+                            >
+                              <Send className="h-3.5 w-3.5 mr-1.5" />
+                              {proj.announcedAt ? 'Re-Announce' : 'Announce'}
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => router.push(`/projects/${proj.id}/edit`)}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -501,6 +555,12 @@ export function AdminDashboard() {
           </motion.div>
         </TabsContent>
       </Tabs>
+
+      <ProjectAnnouncementModal
+        project={announceProject}
+        open={isAnnounceOpen}
+        onOpenChange={setIsAnnounceOpen}
+      />
     </div>
   )
 }

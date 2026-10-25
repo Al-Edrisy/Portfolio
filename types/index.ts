@@ -55,7 +55,13 @@ export interface MediaAsset {
 export interface Project {
   id: string
   title: string
+  slug?: string
   description: string
+  longDescription?: string
+  challenges?: string
+  solutions?: string
+  results?: string
+  features?: string[]
   thumbnailMediaId?: string
   thumbnail?: MediaAsset
   galleryMediaIds?: string[]
@@ -83,6 +89,9 @@ export interface Project {
   sharesCount?: number
   documents?: { name: string; url: string; type: 'srs' | 'erd' | 'readme' | 'mermaid' | 'other' }[]
   documentsMediaIds?: string[]
+  announcedAt?: Date | string | null
+  announcementCampaignId?: string | null
+  announcementRecipientCount?: number
 }
 
 export interface Reaction {

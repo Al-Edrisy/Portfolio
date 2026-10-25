@@ -1,6 +1,7 @@
 // Types for Administrative Email Management & Personal AI-Assisted Job Applications
 
 export type EmailTemplateCategory =
+  | 'project_release'
   | 'general_announcement'
   | 'account_notification'
   | 'onboarding'

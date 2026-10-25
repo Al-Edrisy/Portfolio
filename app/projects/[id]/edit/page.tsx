@@ -1,11 +1,12 @@
 "use client"
 
-import { use } from 'react'
+import { use, useState, useEffect } from 'react'
 import { EnhancedProjectForm } from '@/components/projects/forms/enhanced-project-form'
+import { ProjectAnnouncementModal } from '@/components/admin/project-announcement-modal'
+import { Project } from '@/types'
 import { useProject } from '@/hooks/projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import Navigation from '@/components/ui/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,6 +21,8 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const { user } = useAuth()
   const router = useRouter()
   const { project, loading, error } = useProject(id)
+  const [announceProject, setAnnounceProject] = useState<Project | null>(null)
+  const [isAnnounceOpen, setIsAnnounceOpen] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -131,6 +134,16 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   }
 
   const handleSuccess = (updatedProject: any) => {
+    const transitionedToPublished = !project.published && updatedProject?.published
+    const neverAnnounced = !project.announcedAt
+    if (transitionedToPublished && neverAnnounced && user?.role === 'admin') {
+      setAnnounceProject({
+        ...project,
+        ...updatedProject
+      })
+      setIsAnnounceOpen(true)
+      return
+    }
     router.push(`/projects/${updatedProject.id}`)
   }
 
@@ -155,6 +168,22 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </div>
+
+      <ProjectAnnouncementModal
+        project={announceProject}
+        open={isAnnounceOpen}
+        onOpenChange={open => {
+          setIsAnnounceOpen(open)
+          if (!open && announceProject?.id) {
+            router.push(`/projects/${announceProject.id}`)
+          }
+        }}
+        onComplete={() => {
+          if (announceProject?.id) {
+            router.push(`/projects/${announceProject.id}`)
+          }
+        }}
+      />
     </main>
   )
 }

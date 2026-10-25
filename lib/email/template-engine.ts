@@ -138,10 +138,358 @@ export function renderEmailForRecipient(params: {
   }
 }
 
+export const PROJECT_ANNOUNCEMENT_TEMPLATE_IDS = [
+  'tpl_project_release_note',
+  'tpl_project_editorial_digest',
+  'tpl_project_personal_note'
+] as const
+
 /**
- * Built-in default templates for Administrative Email Management and Job Applications.
+ * Maps a Project record into clean, structured template variables without undefined values or AI slop.
+ */
+export function buildProjectTemplateVariables(project: {
+  id?: string
+  title?: string
+  slug?: string
+  description?: string
+  longDescription?: string
+  challenges?: string
+  solutions?: string
+  results?: string
+  features?: string[]
+  tech?: string[]
+  categories?: string[]
+  category?: string
+  link?: string
+  github?: string
+  authorName?: string
+}): Record<string, string> {
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://salihbenotman.dev').replace(/\/$/, '')
+  const projectSlugOrId = (project.id || project.slug || '').trim()
+  const projectUrl = projectSlugOrId ? `${baseUrl}/projects/${projectSlugOrId}` : `${baseUrl}/projects`
+
+  const title = (project.title || 'New Engineering Case Study').trim()
+  const category =
+    (Array.isArray(project.categories) && project.categories.length > 0
+      ? project.categories.join(' · ')
+      : project.category) || 'Software Engineering'
+
+  const techList =
+    Array.isArray(project.tech) && project.tech.length > 0
+      ? project.tech.join(', ')
+      : 'TypeScript, Next.js, Cloud Architecture'
+
+  const cleanSummary = (project.description || '').trim() || `Technical breakdown and architecture overview of ${title}.`
+
+  // Extract a concise first paragraph from longDescription if challenges/solutions aren't explicitly separated
+  const firstLongParagraph = (project.longDescription || '')
+    .replace(/[#*`_~>-]/g, '')
+    .split(/\n\s*\n/)
+    .map(p => p.trim())
+    .find(p => p.length > 30)
+
+  const challengeText =
+    (project.challenges || '').replace(/[#*`_~]/g, '').trim() ||
+    firstLongParagraph ||
+    `Designing ${title} with predictable latency, maintainable state boundaries, and production resilience.`
+
+  const solutionText =
+    (project.solutions || '').replace(/[#*`_~]/g, '').trim() ||
+    (Array.isArray(project.features) && project.features.length > 0
+      ? `Implemented ${project.features.slice(0, 4).join('; ')} using ${techList}.`
+      : `Built with ${techList}, focusing on clean domain separation and deterministic execution.`)
+
+  const resultsText =
+    (project.results || '').replace(/[#*`_~]/g, '').trim() ||
+    (Array.isArray(project.features) && project.features.length > 0
+      ? project.features.slice(0, 3).join(' · ')
+      : `Shipped to production with full documentation and source breakdown.`)
+
+  return {
+    project_title: title,
+    project_category: category,
+    project_description: cleanSummary,
+    project_tech: techList,
+    project_challenge: challengeText,
+    project_solution: solutionText,
+    project_results: resultsText,
+    project_url: projectUrl,
+    project_demo_url: (project.link || '').trim() || projectUrl,
+    project_github_url: (project.github || '').trim() || 'https://github.com/Al-Edrisy',
+    sender_name: project.authorName || process.env.CONTACT_NAME || 'Salih Ben Otman',
+    portfolio_url: baseUrl,
+    current_year: new Date().getFullYear().toString()
+  }
+}
+
+const SPAM_TRIGGER_WORDS = [
+  'free',
+  'guaranteed',
+  'act now',
+  'limited time',
+  'click here',
+  '100%',
+  'revolutionary',
+  'game-changer',
+  'skyrocket',
+  'urgent',
+  'winner',
+  'no obligation'
+]
+
+/**
+ * Evaluates an email against Cold Email Deliverability & Anti-Slop rules:
+ * - Link count (optimal <= 2 links)
+ * - Plain-text to link ratio (optimal >= 80%)
+ * - Absence of spam trigger words / AI hype buzzwords
+ */
+export function evaluateDeliverabilityHealth(params: {
+  subject: string
+  textBody: string
+  htmlBody: string
+}): {
+  score: number
+  linkCount: number
+  plainTextRatio: number
+  spamTriggersFound: string[]
+  warnings: string[]
+} {
+  const combinedText = `${params.subject}\n${params.textBody}`.toLowerCase()
+  const spamTriggersFound = SPAM_TRIGGER_WORDS.filter(word => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return new RegExp(`\\b${escaped}\\b`, 'i').test(combinedText)
+  })
+
+  // Count distinct href links in HTML or URLs in text
+  const htmlLinks = params.htmlBody.match(/href=["']https?:\/\/[^"']+["']/gi) || []
+  const textUrls = params.textBody.match(/https?:\/\/[^\s)]+/gi) || []
+  const linkCount = Math.max(htmlLinks.length, textUrls.length)
+
+  const totalTextChars = Math.max(params.textBody.trim().length, 1)
+  const linkChars = textUrls.reduce((acc, u) => acc + u.length, 0)
+  const plainTextRatio = Math.min(100, Math.max(0, Math.round(((totalTextChars - linkChars) / totalTextChars) * 100)))
+
+  const warnings: string[] = []
+  let score = 100
+
+  if (linkCount > 2) {
+    score -= (linkCount - 2) * 12
+    warnings.push(`Contains ${linkCount} links (keep to 1–2 links for primary inbox placement).`)
+  }
+  if (plainTextRatio < 80) {
+    score -= 15
+    warnings.push(`Plain-text-to-link ratio is ${plainTextRatio}% (target 80%+).`)
+  }
+  if (spamTriggersFound.length > 0) {
+    score -= spamTriggersFound.length * 15
+    warnings.push(`Contains spam/hype trigger words: ${spamTriggersFound.join(', ')}.`)
+  }
+
+  return {
+    score: Math.max(0, Math.min(100, score)),
+    linkCount,
+    plainTextRatio,
+    spamTriggersFound,
+    warnings
+  }
+}
+
+/**
+ * Built-in default templates for Administrative Email Management, Project Releases, and Job Applications.
  */
 export const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [
+  {
+    id: 'tpl_project_release_note',
+    name: 'Engineering Release Note — Minimalist',
+    description: 'Linear/Vercel changelog aesthetic. Monochrome typography, concrete architecture summary, single case study link, zero marketing fluff.',
+    category: 'project_release',
+    subject: 'Case study: {{project_title}} ({{project_category}})',
+    htmlBody: `<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;background:#fafafa;color:#18181b;-webkit-font-smoothing:antialiased;">
+  <div style="max-width:580px;margin:32px auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:8px;padding:32px;">
+    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#71717a;margin-bottom:12px;">
+      NEW PROJECT // {{project_category}}
+    </div>
+    <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;letter-spacing:-0.02em;color:#09090b;line-height:1.35;">
+      {{project_title}}
+    </h1>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#27272a;">
+      Hi {{first_name}},
+    </p>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#27272a;">
+      {{project_description}}
+    </p>
+    <div style="margin:0 0 24px;padding:16px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#71717a;margin-bottom:6px;">
+        Stack &amp; Architecture
+      </div>
+      <div style="font-size:14px;line-height:1.55;color:#18181b;font-weight:500;margin-bottom:12px;">
+        {{project_tech}}
+      </div>
+      <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#71717a;margin-bottom:6px;">
+        Implementation Notes
+      </div>
+      <div style="font-size:14px;line-height:1.6;color:#3f3f46;">
+        {{project_solution}}
+      </div>
+    </div>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;">
+      Read the full technical write-up and inspect the architecture:<br/>
+      <a href="{{project_url}}" style="color:#09090b;font-weight:600;text-decoration:underline;">{{project_url}}</a>
+    </p>
+    <div style="border-top:1px solid #f4f4f5;padding-top:18px;font-size:14px;line-height:1.5;color:#52525b;">
+      {{sender_name}}<br/>
+      <span style="font-size:12px;color:#a1a1aa;">Software Engineer · Reply with "unsubscribe" anytime to opt out of project notes.</span>
+    </div>
+  </div>
+</body>
+</html>`,
+    textBody: `Hi {{first_name}},\n\nI just published a new engineering case study: {{project_title}} ({{project_category}}).\n\n{{project_description}}\n\nStack: {{project_tech}}\nImplementation: {{project_solution}}\n\nFull write-up and architecture notes:\n{{project_url}}\n\n— {{sender_name}}\n(Reply "unsubscribe" anytime to opt out of project notes.)`,
+    variables: [
+      'first_name',
+      'project_title',
+      'project_category',
+      'project_description',
+      'project_tech',
+      'project_solution',
+      'project_url',
+      'sender_name'
+    ],
+    requiredVariables: ['first_name', 'project_title', 'project_description', 'project_tech', 'project_url'],
+    sampleData: {
+      first_name: 'Alex',
+      project_title: 'Distributed Telemetry & Event Pipeline',
+      project_category: 'Systems & Backend',
+      project_description: 'A low-latency ingestion pipeline built to process high-throughput webhook events with idempotent retry queues.',
+      project_tech: 'Next.js 15, TypeScript, Redis, PostgreSQL, Docker',
+      project_solution: 'Implemented deterministic content-hash deduplication and exponential backoff workers.',
+      project_url: 'https://salihbenotman.dev/projects/telemetry-pipeline',
+      sender_name: 'Salih Ben Otman'
+    },
+    status: 'active',
+    createdBy: 'system',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'tpl_project_editorial_digest',
+    name: 'Editorial Case Study Digest',
+    description: 'Structured engineering breakdown highlighting the core problem, system design, and measurable results.',
+    category: 'project_release',
+    subject: 'Architecture breakdown: how I built {{project_title}}',
+    htmlBody: `<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;background:#f8fafc;color:#0f172a;-webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px;margin:28px auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:36px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:24px;">
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#475569;">
+        CASE STUDY DIGEST // {{project_category}}
+      </span>
+    </div>
+    <h1 style="margin:0 0 14px;font-size:22px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;line-height:1.3;">
+      {{project_title}}
+    </h1>
+    <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#334155;">
+      Hi {{first_name}}, I have documented the engineering decisions behind <strong>{{project_title}}</strong>. Here is a concise summary of the problem and architecture:
+    </p>
+    <div style="margin:0 0 16px;padding-left:14px;border-left:2px solid #0f172a;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#475569;margin-bottom:4px;">The Engineering Problem</div>
+      <div style="font-size:14px;line-height:1.6;color:#1e293b;">{{project_challenge}}</div>
+    </div>
+    <div style="margin:0 0 16px;padding-left:14px;border-left:2px solid #64748b;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#475569;margin-bottom:4px;">System Architecture &amp; Stack ({{project_tech}})</div>
+      <div style="font-size:14px;line-height:1.6;color:#1e293b;">{{project_solution}}</div>
+    </div>
+    <div style="margin:0 0 24px;padding-left:14px;border-left:2px solid #94a3b8;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#475569;margin-bottom:4px;">Key Outcome</div>
+      <div style="font-size:14px;line-height:1.6;color:#1e293b;">{{project_results}}</div>
+    </div>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#0f172a;">
+      Explore the full case study: <a href="{{project_url}}" style="color:#0f172a;font-weight:600;text-decoration:underline;">{{project_url}}</a>
+    </p>
+    <div style="border-top:1px solid #f1f5f9;padding-top:16px;font-size:13px;color:#64748b;">
+      {{sender_name}} · <span style="color:#94a3b8;">Reply "unsubscribe" to stop receiving case study digests.</span>
+    </div>
+  </div>
+</body>
+</html>`,
+    textBody: `Hi {{first_name}},\n\nI have documented the engineering decisions behind {{project_title}} ({{project_category}}).\n\nTHE PROBLEM:\n{{project_challenge}}\n\nARCHITECTURE & STACK ({{project_tech}}):\n{{project_solution}}\n\nKEY OUTCOME:\n{{project_results}}\n\nRead the full case study:\n{{project_url}}\n\n— {{sender_name}}\n(Reply "unsubscribe" to stop receiving case study digests.)`,
+    variables: [
+      'first_name',
+      'project_title',
+      'project_category',
+      'project_challenge',
+      'project_tech',
+      'project_solution',
+      'project_results',
+      'project_url',
+      'sender_name'
+    ],
+    requiredVariables: ['first_name', 'project_title', 'project_challenge', 'project_solution', 'project_url'],
+    sampleData: {
+      first_name: 'Alex',
+      project_title: 'Distributed Telemetry & Event Pipeline',
+      project_category: 'Systems & Backend',
+      project_challenge: 'High-volume webhook bursts caused duplicate downstream writes and lock contention under peak load.',
+      project_tech: 'Next.js 15, TypeScript, Redis, PostgreSQL',
+      project_solution: 'Separated ingress validation from worker dispatch using SHA-256 idempotency keys and bounded batch queues.',
+      project_results: 'Zero duplicate dispatches across 50k+ synthetic events with sub-40ms p95 acknowledgment latency.',
+      project_url: 'https://salihbenotman.dev/projects/telemetry-pipeline',
+      sender_name: 'Salih Ben Otman'
+    },
+    status: 'active',
+    createdBy: 'system',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'tpl_project_personal_note',
+    name: 'Personal Engineer Note — Plain-Text First',
+    description: '1-to-1 personal correspondence style with 85%+ plain-text ratio and zero decorative chrome for maximum primary-inbox placement.',
+    category: 'project_release',
+    subject: 'Built something new: {{project_title}}',
+    htmlBody: `<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#ffffff;color:#111827;font-size:15px;line-height:1.65;">
+  <div style="max-width:560px;">
+    <p style="margin:0 0 14px;">Hi {{first_name}},</p>
+    <p style="margin:0 0 14px;">I wanted to share a quick note on a project I just finished putting together: <strong>{{project_title}}</strong>.</p>
+    <p style="margin:0 0 14px;">{{project_description}}</p>
+    <p style="margin:0 0 14px;">Under the hood, it is built with {{project_tech}}. {{project_solution}}</p>
+    <p style="margin:0 0 18px;">I wrote up the full breakdown and architecture notes here if you would like to take a look:<br/>
+    <a href="{{project_url}}" style="color:#111827;">{{project_url}}</a></p>
+    <p style="margin:0 0 20px;">Would love to hear your thoughts or feedback if you check it out.</p>
+    <p style="margin:0;color:#374151;">Best,<br/>{{sender_name}}</p>
+    <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">If you prefer not to receive occasional notes when I publish a new project, just reply "unsubscribe".</p>
+  </div>
+</body>
+</html>`,
+    textBody: `Hi {{first_name}},\n\nI wanted to share a quick note on a project I just finished putting together: {{project_title}}.\n\n{{project_description}}\n\nUnder the hood, it is built with {{project_tech}}. {{project_solution}}\n\nI wrote up the full breakdown and architecture notes here if you would like to take a look:\n{{project_url}}\n\nWould love to hear your thoughts or feedback if you check it out.\n\nBest,\n{{sender_name}}\n\n(If you prefer not to receive occasional notes when I publish a new project, just reply "unsubscribe".)`,
+    variables: [
+      'first_name',
+      'project_title',
+      'project_description',
+      'project_tech',
+      'project_solution',
+      'project_url',
+      'sender_name'
+    ],
+    requiredVariables: ['first_name', 'project_title', 'project_description', 'project_tech', 'project_url'],
+    sampleData: {
+      first_name: 'Alex',
+      project_title: 'Distributed Telemetry & Event Pipeline',
+      project_description: 'A low-latency ingestion pipeline built to process high-throughput webhook events with idempotent retry queues.',
+      project_tech: 'Next.js 15, TypeScript, Redis, PostgreSQL',
+      project_solution: 'Implemented deterministic content-hash deduplication and exponential backoff workers.',
+      project_url: 'https://salihbenotman.dev/projects/telemetry-pipeline',
+      sender_name: 'Salih Ben Otman'
+    },
+    status: 'active',
+    createdBy: 'system',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
   {
     id: 'tpl_general_announcement',
     name: 'General Announcement',

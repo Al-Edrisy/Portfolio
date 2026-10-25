@@ -113,7 +113,13 @@ export function useCreateProject() {
       const newProject: Project = {
         id: docRef.id,
         title: projectData.title,
+        slug: projectData.slug,
         description: projectData.description,
+        longDescription: projectData.longDescription,
+        challenges: projectData.challenges,
+        solutions: projectData.solutions,
+        results: projectData.results,
+        features: projectData.features,
         thumbnailMediaId: projectData.thumbnailMediaId,
         galleryMediaIds: projectData.galleryMediaIds,
         videoMediaId: projectData.videoMediaId,

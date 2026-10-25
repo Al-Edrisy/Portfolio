@@ -3,10 +3,12 @@
 import { useAdminProjects } from '@/hooks/projects/use-admin-projects'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Edit, Eye, EyeOff, Trash2, Globe, Globe2 } from 'lucide-react'
+import { Plus, Edit, Eye, EyeOff, Trash2, Globe, Globe2, Send, CheckCircle2 } from 'lucide-react'
 import Navigation from '@/components/ui/navigation'
+import { ProjectAnnouncementModal } from '@/components/admin/project-announcement-modal'
+import { Project } from '@/types'
 // Custom cursor removed - using default browser cursor
 import { useToggleFeatured } from '@/hooks/projects/mutations'
 import { useDeleteProject } from '@/hooks/projects/mutations'
@@ -19,6 +21,8 @@ export default function AdminProjectsPage() {
   const { toggleFeatured } = useToggleFeatured()
   const { deleteProject } = useDeleteProject()
   const { togglePublished } = useTogglePublished()
+  const [announceProject, setAnnounceProject] = useState<Project | null>(null)
+  const [isAnnounceOpen, setIsAnnounceOpen] = useState(false)
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -47,8 +51,15 @@ export default function AdminProjectsPage() {
   }
 
   const handleTogglePublished = async (projectId: string, currentStatus: boolean) => {
-    await togglePublished(projectId, currentStatus)
-    refresh()
+    const targetProject = projects.find(p => p.id === projectId)
+    const ok = await togglePublished(projectId, currentStatus)
+    await refresh()
+
+    // If transitioning from Draft (false) -> Published (true) and never announced yet, open announcement review modal
+    if (ok && !currentStatus && targetProject && !targetProject.announcedAt) {
+      setAnnounceProject({ ...targetProject, published: true })
+      setIsAnnounceOpen(true)
+    }
   }
 
   const handleDeleteProject = async (projectId: string) => {
@@ -128,7 +139,7 @@ export default function AdminProjectsPage() {
                       <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{project.description}</p>
                       
                       {/* Status Badge */}
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           project.published 
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
@@ -140,6 +151,18 @@ export default function AdminProjectsPage() {
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                             Featured
                           </span>
+                        )}
+                        {project.published && (
+                          project.announcedAt ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Announced
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                              Not Announced
+                            </span>
+                          )
                         )}
                       </div>
 
@@ -205,6 +228,20 @@ export default function AdminProjectsPage() {
                         )}
                       </Button>
 
+                      {project.published && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setAnnounceProject(project)
+                            setIsAnnounceOpen(true)
+                          }}
+                        >
+                          <Send className="w-3.5 h-3.5 mr-1" />
+                          {project.announcedAt ? 'Re-Announce' : 'Announce'}
+                        </Button>
+                      )}
+
                       <Button
                         size="sm"
                         variant="destructive"
@@ -231,6 +268,15 @@ export default function AdminProjectsPage() {
             )}
           </div>
         </div>
+
+        <ProjectAnnouncementModal
+          project={announceProject}
+          open={isAnnounceOpen}
+          onOpenChange={setIsAnnounceOpen}
+          onComplete={() => {
+            refresh()
+          }}
+        />
       </main>
   )
 }

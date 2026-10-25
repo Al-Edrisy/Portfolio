@@ -187,10 +187,18 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
 
   const images = normalizeImages()
 
+  const rawData = data as any
+
   return {
     id: doc.id,
     title: data.title,
+    slug: rawData.slug,
     description: data.description,
+    longDescription: rawData.longDescription,
+    challenges: rawData.challenges,
+    solutions: rawData.solutions,
+    results: rawData.results,
+    features: rawData.features,
     thumbnailMediaId: data.thumbnailMediaId,
     galleryMediaIds: data.galleryMediaIds,
     videoMediaId: data.videoMediaId,
@@ -214,6 +222,7 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
     published: data.published,
+    featured: rawData.featured,
     authorId: data.authorId,
     authorName: data.authorName || 'Unknown Author',
     authorAvatar: data.authorAvatar,
@@ -226,6 +235,11 @@ export const docToProject = (doc: QueryDocumentSnapshot): Project => {
       url: sanitizeR2Url(d.url)
     })),
     documentsMediaIds: data.documentsMediaIds || [],
+    announcedAt: rawData.announcedAt?.toDate
+      ? rawData.announcedAt.toDate().toISOString()
+      : rawData.announcedAt || null,
+    announcementCampaignId: rawData.announcementCampaignId || null,
+    announcementRecipientCount: rawData.announcementRecipientCount || 0
   }
 }
 

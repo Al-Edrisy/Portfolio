@@ -26,6 +26,7 @@ import {
   processEmailBatchQueue,
   clearIdempotencyCache,
   computeContentHash,
+  computeApplicationApprovalHash,
   isTransientSmtpError
 } from '../campaign-queue'
 import {
@@ -38,7 +39,6 @@ import {
   computeDeterministicJobMatch,
   generateTailoredApplicationDraft
 } from '../../career/job-intelligence'
-import { computeApplicationApprovalHash } from '../../../app/api/admin/career/applications/route'
 
 describe('1. Recipient Parsing, Normalization, Deduplication & Validation', () => {
   it('parses manual recipients across commas, semicolons, and newlines', () => {

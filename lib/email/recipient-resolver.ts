@@ -69,8 +69,11 @@ export interface DatabaseUserCandidate {
   name?: string
   role?: string
   unsubscribed?: boolean
+  disabled?: boolean
   emailNotificationsEnabled?: boolean
 }
+
+export type DatabaseUserRecord = DatabaseUserCandidate
 
 /**
  * Resolves, deduplicates, and validates a combination of database users and manual email inputs.
@@ -78,10 +81,23 @@ export interface DatabaseUserCandidate {
  */
 export function resolveRecipients(options: {
   dbUsers?: DatabaseUserCandidate[]
+  selectAllEligible?: boolean
   manualInput?: string | string[]
   respectUnsubscribe?: boolean
+  suppressedEmails?: Set<string> | string[]
 }): RecipientResolutionSummary {
-  const { dbUsers = [], manualInput = '', respectUnsubscribe = true } = options
+  const {
+    dbUsers = [],
+    manualInput = '',
+    respectUnsubscribe = true,
+    suppressedEmails
+  } = options
+
+  const suppressedSet = new Set<string>(
+    suppressedEmails
+      ? Array.from(suppressedEmails).map(e => normalizeEmail(e))
+      : []
+  )
 
   const seenEmails = new Set<string>()
   const validRecipients: ResolvedRecipient[] = []
@@ -131,7 +147,10 @@ export function resolveRecipients(options: {
 
     if (
       respectUnsubscribe &&
-      (user.unsubscribed === true || user.emailNotificationsEnabled === false)
+      (user.unsubscribed === true ||
+        user.disabled === true ||
+        user.emailNotificationsEnabled === false ||
+        suppressedSet.has(normEmail))
     ) {
       unsubscribedCount++
       seenEmails.add(normEmail)
@@ -194,6 +213,20 @@ export function resolveRecipients(options: {
         source: 'manual',
         valid: false,
         excludedReason: 'duplicate'
+      })
+      continue
+    }
+
+    if (respectUnsubscribe && suppressedSet.has(normEmail)) {
+      unsubscribedCount++
+      seenEmails.add(normEmail)
+      excludedRecipients.push({
+        email: normEmail,
+        name: parsedName,
+        firstName,
+        source: 'manual',
+        valid: false,
+        excludedReason: 'unsubscribed'
       })
       continue
     }

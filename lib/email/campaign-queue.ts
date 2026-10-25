@@ -49,6 +49,28 @@ export function computeContentHash(parts: (string | string[] | undefined)[]): st
 }
 
 /**
+ * Computes the approval integrity hash for a JobApplicationRecord.
+ * Any modification to recipient, subject, body, cover letter, CV, or attachments changes this hash.
+ */
+export function computeApplicationApprovalHash(app: {
+  recipientEmail: string
+  emailSubject: string
+  emailBody: string
+  coverLetter: string
+  selectedCvDocumentId: string
+  additionalAttachmentIds?: string[]
+}): string {
+  return computeContentHash([
+    sanitizeHeader(app.recipientEmail || '').toLowerCase().trim(),
+    app.emailSubject,
+    app.emailBody,
+    app.coverLetter,
+    app.selectedCvDocumentId,
+    app.additionalAttachmentIds || []
+  ])
+}
+
+/**
  * Determines whether an SMTP error is transient (retryable) vs permanent (e.g., 550 User unknown, invalid syntax).
  */
 export function isTransientSmtpError(error: any): boolean {
@@ -124,7 +146,11 @@ export async function sendSingleEmailWithRetry(
         to: cleanRecipient,
         subject: cleanSubject,
         html: payload.html,
-        text: payload.text
+        text: payload.text,
+        headers: {
+          'X-Entity-Ref-ID': sanitizeHeader(payload.idempotencyKey),
+          'List-Unsubscribe': `<mailto:${fromEmail}?subject=unsubscribe>`
+        }
       }
 
       if (payload.replyTo) {
