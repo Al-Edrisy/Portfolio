@@ -4,6 +4,7 @@ import AboutSection from "@/components/sections/about-section"
 import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
+import Footer from "@/components/ui/footer"
 
 // Calculate years of experience dynamically from 2020
 const calculateYearsOfExperience = (): number => {
@@ -15,26 +16,27 @@ const calculateYearsOfExperience = (): number => {
 const yearsOfExperience = calculateYearsOfExperience()
 
 export const metadata: Metadata = {
-  title: "About Salih Ben Otman - Professional Background, Education & Experience",
-  description: `Learn about Salih Ben Otman, a professional Full Stack Software Developer & UI/UX Engineer with ${yearsOfExperience}+ years experience. Bachelor of Science in Software Engineering from Final International University. Expertise in React, Next.js, TypeScript, Node.js, and AI systems.`,
+  title: "About Salih Ben Otman - Engineering Practice, Background & Architecture",
+  description: `The Engineering Practice of Salih Ben Otman (Al-Edrisy): Full Stack Software Developer, UI/UX Engineer, and AI Systems Builder with ${yearsOfExperience}+ years experience. B.Sc. in Software Engineering from Final International University. Architecting high-speed Next.js systems, autonomous AI agents, and tactile digital experiences.`,
   keywords: [
     "About Salih Ben Otman",
-    "Software Developer Background",
-    "Full Stack Developer Experience",
+    "Salih Ben Otman Engineering Practice",
+    "Al-Edrisy",
+    "Full Stack Software Developer",
     "UI/UX Engineer",
-    "FIU Software Engineering",
-    "Final International University",
-    "Developer Education",
-    "React Specialist",
+    "AI Systems Builder",
+    "Final International University Software Engineering",
+    "FIU Kyrenia",
     "Next.js Architect",
-    "AI Integration Engineer",
+    "Langflow and LangChain Developer",
+    "Clean Architecture TypeScript",
   ],
   alternates: {
     canonical: "https://salihbenotman.dev/about",
   },
   openGraph: {
-    title: "About Salih Ben Otman - Full Stack Software Developer",
-    description: `Professional Full Stack Developer with ${yearsOfExperience}+ years experience, Bachelor of Science in Software Engineering from Final International University.`,
+    title: "About Salih Ben Otman - Engineering Practice & Background",
+    description: `Full Stack Developer & AI Systems Engineer with ${yearsOfExperience}+ years experience. B.Sc. in Software Engineering from Final International University.`,
     url: "https://salihbenotman.dev/about",
     type: "profile",
     images: [
@@ -42,13 +44,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "About Salih Ben Otman - Full Stack Developer",
+        alt: "About Salih Ben Otman - Engineering Practice",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About Salih Ben Otman - Full Stack Software Developer",
+    title: "About Salih Ben Otman - Full Stack & AI Systems Engineer",
     description: `Full Stack Developer with ${yearsOfExperience}+ years experience, B.Sc. in Software Engineering from FIU.`,
     creator: "@salihbenotman",
     images: ["/og-image.png"],
@@ -75,11 +77,17 @@ const aboutJsonLd = {
         "@type": "Person",
         "@id": "https://salihbenotman.dev/#person",
         "name": "Salih Ben Otman",
-        "jobTitle": "Full Stack Software Developer",
+        "alternateName": "Al-Edrisy",
+        "jobTitle": "Full Stack Software Developer & AI Systems Builder",
         "alumniOf": {
           "@type": "EducationalOrganization",
           "name": "Final International University"
-        }
+        },
+        "sameAs": [
+          "https://github.com/Al-Edrisy",
+          "https://www.linkedin.com/in/صالح-بن-عثمان-a565a2242",
+          "https://leetcode.com/u/salehfree33"
+        ]
       }
     },
     {
@@ -108,7 +116,7 @@ function LoadingFallback() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <LoadingSpinner size="lg" />
-        <p className="text-muted-foreground mt-4">Loading about section...</p>
+        <p className="text-muted-foreground mt-4 font-mono text-sm">Loading practice profile...</p>
       </div>
     </div>
   )
@@ -121,13 +129,14 @@ export default function AboutPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
       />
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background flex flex-col justify-between">
         <Navigation />
-        <div className="pt-20">
+        <div className="pt-20 flex-1">
           <Suspense fallback={<LoadingFallback />}>
             <AboutSection />
           </Suspense>
         </div>
+        <Footer />
       </main>
     </ErrorBoundary>
   )
