@@ -63,7 +63,7 @@ export default function PersonalNarrative({ yearsOfExperience }: PersonalNarrati
                   <Code2 className="w-3.5 h-3.5 text-primary" />
                   <span>Track Record</span>
                 </span>
-                <span className="text-foreground">50+ Shipped Applications</span>
+                <span className="text-foreground">80+ Shipped Applications</span>
               </div>
             </div>
           </motion.div>
@@ -95,7 +95,7 @@ export default function PersonalNarrative({ yearsOfExperience }: PersonalNarrati
               </p>
 
               <p>
-                Over the past {yearsOfExperience} years, Salih has architected and delivered more than 50 production systems 
+                Over the past {yearsOfExperience} years, Salih has architected and delivered more than 80 production systems 
                 ranging from AI-driven e-commerce engines and real-time collaboration platforms to complex analytics dashboards. 
                 His work is distinguished by an insistence on <strong className="text-foreground font-medium">Clean Architecture</strong>, 
                 type safety, and obsessive attention to UI polish—ensuring that every system is as enjoyable to interact with 

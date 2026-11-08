@@ -72,7 +72,7 @@ export default function PracticeHero({ yearsOfExperience }: PracticeHeroProps) {
 
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono">
-              50+
+              80+
             </div>
             <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
               Shipped Systems & Apps

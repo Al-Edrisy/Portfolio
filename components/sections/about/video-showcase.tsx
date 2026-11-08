@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { motion } from "motion/react"
-import { Play, Pause, Volume2, VolumeX, Maximize2, RotateCcw, Sparkles, Sliders, Layers } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Play, Pause, Volume2, VolumeX, Maximize2, RotateCcw, Sliders } from "lucide-react"
 
 export default function VideoShowcase() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -12,7 +11,6 @@ export default function VideoShowcase() {
   const [isMuted, setIsMuted] = useState(true)
   const [isLooping, setIsLooping] = useState(true)
   const [progress, setProgress] = useState(0)
-  const [hasLoaded, setHasLoaded] = useState(false)
 
   // Toggle playback
   const togglePlay = () => {
@@ -60,7 +58,7 @@ export default function VideoShowcase() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl relative z-10">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-          <div>
+          <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 text-xs font-mono tracking-wider uppercase text-primary mb-3">
               <Sliders className="w-3.5 h-3.5" />
               <span>Technology & Bespoke Tooling</span>
@@ -98,7 +96,6 @@ export default function VideoShowcase() {
               playsInline
               preload="auto"
               onTimeUpdate={handleTimeUpdate}
-              onLoadedData={() => setHasLoaded(true)}
               onClick={togglePlay}
               className="w-full h-full object-contain cursor-pointer"
             >
@@ -111,16 +108,19 @@ export default function VideoShowcase() {
               Your browser does not support video playback.
             </video>
 
-            {/* Video Overlay Top Badge */}
-            <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>01 // PARAMETRIC MESH & GENERATIVE SCENE ENGINE</span>
+            {/* Video Overlay Top Badge - Clean single-line layout without overlapping or orphaned dots */}
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] sm:text-[11px] font-mono text-zinc-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-ping" />
+                <span className="truncate max-w-[220px] sm:max-w-none">
+                  01 // PARAMETRIC MESH & GENERATIVE SCENE ENGINE
+                </span>
               </div>
 
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-400">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] sm:text-[11px] font-mono text-zinc-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
                 <span>R2 CLOUDFLARE HOSTED</span>
-                <span>•</span>
+                <span className="text-zinc-500 font-sans">•</span>
                 <span>60 FPS</span>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function VideoShowcase() {
             )}
 
             {/* Bottom Controls Bar */}
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-6 z-20 flex flex-col gap-3">
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3 sm:p-5 md:p-6 z-20 flex flex-col gap-2.5 sm:gap-3">
               {/* Scrub Line */}
               <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
                 <div
@@ -149,11 +149,11 @@ export default function VideoShowcase() {
 
               {/* Controls Action Row */}
               <div className="flex items-center justify-between text-white/90 text-xs sm:text-sm font-mono">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-3">
                   <button
                     onClick={togglePlay}
                     aria-label={isPlaying ? "Pause video" : "Play video"}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                   >
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
@@ -161,7 +161,7 @@ export default function VideoShowcase() {
                   <button
                     onClick={toggleMute}
                     aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                   >
                     {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </button>
@@ -169,20 +169,21 @@ export default function VideoShowcase() {
                   <button
                     onClick={() => setIsLooping(!isLooping)}
                     aria-label="Toggle loop"
-                    className={`p-2 rounded-lg transition-colors ${isLooping ? "text-primary bg-white/10" : "text-white/60 hover:bg-white/10"}`}
+                    className={`p-1.5 sm:p-2 rounded-lg transition-colors ${isLooping ? "text-primary bg-white/10" : "text-white/60 hover:bg-white/10"}`}
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="hidden sm:inline text-white/60 text-xs font-mono">
-                    INTERNAL LAB EXPLORATION
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-white/70 text-xs font-mono px-2.5 py-1 rounded-md bg-white/10 border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>INTERNAL LAB EXPLORATION</span>
                   </span>
                   <button
                     onClick={toggleFullscreen}
                     aria-label="Fullscreen"
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                   >
                     <Maximize2 className="w-4 h-4" />
                   </button>
@@ -192,17 +193,19 @@ export default function VideoShowcase() {
           </div>
         </motion.div>
 
-        {/* Video Caption & Storytelling Annotation */}
-        <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-muted-foreground">
+        {/* Video Caption & Storytelling Annotation - Fixed responsive layout without wrapping collision */}
+        <div className="mt-5 sm:mt-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 text-xs font-mono text-muted-foreground border-t border-border/30 pt-4">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span>Interactive Tooling: 3D Surface Distortion, Vector Lattice, & Generative Scene Matrix</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+            <span className="leading-snug">
+              Interactive Tooling: 3D Surface Distortion, Vector Lattice, & Generative Scene Matrix
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span>Client & Internal Explorations</span>
-            <span className="text-border">•</span>
-            <span>TypeScript + WebGL/Canvas + UI Primitives</span>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+            <span className="px-2 py-0.5 rounded bg-muted/50 border border-border/40">Client & Internal Explorations</span>
+            <span className="text-border hidden sm:inline">•</span>
+            <span className="px-2 py-0.5 rounded bg-muted/50 border border-border/40">TypeScript + WebGL/Canvas + UI Primitives</span>
           </div>
         </div>
       </div>
