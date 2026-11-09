@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ArrowRight, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-  PROJECTS_SHIPPED,
+  GITHUB_REPOS_COUNT,
   profile,
   technologyCount,
   yearsOfExperience,
@@ -13,9 +13,13 @@ import {
  * as plain HTML with no entrance animation and no client JS.
  */
 export default function PracticeHero() {
-  const stats = [
+  const stats: { value: string; label: string; href?: string }[] = [
     { value: `${yearsOfExperience()}+`, label: "Years building software" },
-    { value: PROJECTS_SHIPPED, label: "Projects shipped" },
+    {
+      value: String(GITHUB_REPOS_COUNT),
+      label: "Public GitHub repositories",
+      href: profile.social.github,
+    },
     { value: String(technologyCount), label: "Technologies in the stack" },
     { value: "B.Sc.", label: `Software Engineering, ${profile.university.short}` },
   ]
@@ -67,16 +71,43 @@ export default function PracticeHero() {
         </div>
 
         <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-border/40 pt-10 md:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col-reverse gap-1">
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                {stat.label}
-              </dt>
-              <dd className="font-mono text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-                {stat.value}
-              </dd>
-            </div>
-          ))}
+          {stats.map((stat) => {
+            const inner = (
+              <div className="group/stat flex flex-col-reverse gap-1">
+                <dt className="text-xs uppercase tracking-wider text-muted-foreground transition-colors group-hover/stat:text-foreground">
+                  {stat.label}
+                  {stat.href && (
+                    <span
+                      aria-hidden
+                      className="ml-1 inline-block transition-transform group-hover/stat:-translate-y-0.5 group-hover/stat:translate-x-0.5"
+                    >
+                      ↗
+                    </span>
+                  )}
+                </dt>
+                <dd className="font-mono text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+                  {stat.value}
+                </dd>
+              </div>
+            )
+
+            if (stat.href) {
+              return (
+                <a
+                  key={stat.label}
+                  href={stat.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${stat.value} ${stat.label} (opens on GitHub in new tab)`}
+                  className="rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {inner}
+                </a>
+              )
+            }
+
+            return <div key={stat.label}>{inner}</div>
+          })}
         </dl>
       </div>
     </section>

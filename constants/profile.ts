@@ -9,8 +9,11 @@ export const CAREER_START_YEAR = 2020
 
 export const yearsOfExperience = () => new Date().getFullYear() - CAREER_START_YEAR
 
-/** Needs owner confirmation: the site currently says 35+ (skills), 50+ (SEO copy) and 80+ (about). */
-export const PROJECTS_SHIPPED = "80+"
+/**
+ * Verified public GitHub repositories count queried from https://api.github.com/users/Al-Edrisy.
+ * Used in place of an estimated project count for absolute transparency and auditability.
+ */
+export const GITHUB_REPOS_COUNT = 39
 
 export const technologyCount = new Set(
   skillCategories.flatMap((category) => category.skills.map((skill) => skill.name))

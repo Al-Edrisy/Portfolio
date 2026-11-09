@@ -1,8 +1,8 @@
 import Image from "next/image"
-import { GraduationCap, MapPin, Rocket } from "lucide-react"
+import { GitBranch, GraduationCap, MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import {
-  PROJECTS_SHIPPED,
+  GITHUB_REPOS_COUNT,
   profile,
   yearsOfExperience,
 } from "@/constants/profile"
@@ -10,14 +10,19 @@ import { Reveal } from "./reveal"
 import { SectionShell, aboutCardClass } from "./section-shell"
 
 export default function PersonalNarrative() {
-  const facts = [
+  const facts: { icon: typeof MapPin; label: string; value: string; href?: string }[] = [
     { icon: MapPin, label: "Based in", value: profile.location },
     {
       icon: GraduationCap,
       label: "Studying",
       value: `${profile.university.degree}, ${profile.university.short}`,
     },
-    { icon: Rocket, label: "Shipped", value: `${PROJECTS_SHIPPED} projects` },
+    {
+      icon: GitBranch,
+      label: "Open Source",
+      value: `${GITHUB_REPOS_COUNT} public repos`,
+      href: profile.social.github,
+    },
   ]
 
   return (
@@ -40,15 +45,40 @@ export default function PersonalNarrative() {
 
           <Card className={`${aboutCardClass} p-5 sm:p-5`}>
             <dl className="space-y-3 text-sm">
-              {facts.map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center justify-between gap-4">
-                  <dt className="flex items-center gap-2 text-muted-foreground">
-                    <Icon aria-hidden className="size-4" />
-                    {label}
-                  </dt>
-                  <dd className="text-right text-foreground">{value}</dd>
-                </div>
-              ))}
+              {facts.map(({ icon: Icon, label, value, href }) => {
+                const row = (
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="flex items-center gap-2 text-muted-foreground">
+                      <Icon aria-hidden className="size-4" />
+                      {label}
+                    </dt>
+                    <dd className="text-right text-foreground">
+                      {value}
+                      {href && (
+                        <span aria-hidden className="ml-1 inline-block text-xs text-muted-foreground">
+                          ↗
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                )
+
+                if (href) {
+                  return (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded transition-colors hover:text-foreground/80 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                    >
+                      {row}
+                    </a>
+                  )
+                }
+
+                return <div key={label}>{row}</div>
+              })}
             </dl>
           </Card>
         </Reveal>
