@@ -1,102 +1,83 @@
-"use client"
-
-import { motion } from "motion/react"
 import Link from "next/link"
-import { ArrowUpRight, Sparkles, Terminal, ShieldCheck, Compass } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { ArrowRight, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  PROJECTS_SHIPPED,
+  profile,
+  technologyCount,
+  yearsOfExperience,
+} from "@/constants/profile"
 
-interface PracticeHeroProps {
-  yearsOfExperience: number
-}
+/**
+ * Server component on purpose: the h1 and intro are the LCP element, so they ship
+ * as plain HTML with no entrance animation and no client JS.
+ */
+export default function PracticeHero() {
+  const stats = [
+    { value: `${yearsOfExperience()}+`, label: "Years building software" },
+    { value: PROJECTS_SHIPPED, label: "Projects shipped" },
+    { value: String(technologyCount), label: "Technologies in the stack" },
+    { value: "B.Sc.", label: `Software Engineering, ${profile.university.short}` },
+  ]
 
-export default function PracticeHero({ yearsOfExperience }: PracticeHeroProps) {
   return (
-    <section className="relative pt-6 pb-16 md:pt-12 md:pb-24 border-b border-border/40 overflow-hidden">
-      {/* Subtle architectural ambient lights */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-primary/5 via-transparent to-transparent blur-3xl pointer-events-none" />
+    <section
+      id="practice"
+      aria-labelledby="practice-title"
+      className="border-b border-border/40 pb-16 pt-8 md:pb-24 md:pt-14"
+    >
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <p className="mb-8 inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/30 px-3 py-1.5 font-mono text-xs text-muted-foreground">
+          <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+          {profile.name} · also known as {profile.alias}
+        </p>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-6xl">
-        {/* Practice Label & Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-wrap items-center justify-between gap-4 mb-8"
+        <h1
+          id="practice-title"
+          className="max-w-4xl text-balance text-3xl font-medium leading-[1.15] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-muted/30 text-xs font-mono tracking-tight text-muted-foreground backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>THE PRACTICE // SALIH BEN OTMAN (AL-EDRISY)</span>
-          </div>
+          Salih Ben Otman builds full-stack systems, AI agents and software with craft.
+        </h1>
 
-          <div className="hidden sm:flex items-center gap-4 text-xs font-mono text-muted-foreground">
-            <span>B.SC. SOFTWARE ENGINEERING</span>
-            <span className="text-border">•</span>
-            <span>FINAL INTERNATIONAL UNIVERSITY</span>
-          </div>
-        </motion.div>
+        <p className="mt-6 max-w-3xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-xl">
+          A software engineering practice based in {profile.location}, working across web
+          platforms, autonomous AI systems and interface design. It partners with founders and
+          teams who are inventing something new and need it to work, scale and feel right from the
+          first release.
+        </p>
 
-        {/* Editorial Vision Headline */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="max-w-4xl"
-        >
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-foreground leading-[1.15] mb-8">
-            An engineering practice working across full-stack systems, autonomous AI agents, and high-craft software.
-          </h1>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button asChild size="lg" className="h-11 rounded-xl px-6">
+            <Link href="/contact" data-cta="hero-start-engagement">
+              Start an engagement
+              <ArrowRight aria-hidden className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="h-11 rounded-xl px-6">
+            <Link href="/projects" data-cta="hero-see-work">
+              See selected work
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost" className="h-11 rounded-xl px-6">
+            <a href={profile.cvHref} download data-cta="hero-download-cv">
+              <Download aria-hidden className="size-4" />
+              Download CV
+            </a>
+          </Button>
+        </div>
 
-          <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground font-normal leading-relaxed max-w-3xl">
-            Operating at the intersection of classical software engineering and modern AI orchestration. 
-            The practice partners with founders, engineering teams, and ambitious ventures to shape how 
-            their products think, scale, and feel—from low-latency backend architectures to tactile digital experiences.
-          </p>
-        </motion.div>
-
-        {/* Practice Quick Metrics */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-12 mt-12 border-t border-border/40"
-        >
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono">
-              {yearsOfExperience}+
+        <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-border/40 pt-10 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex flex-col-reverse gap-1">
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                {stat.label}
+              </dt>
+              <dd className="font-mono text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+                {stat.value}
+              </dd>
             </div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Years Engineering Craft
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono">
-              80+
-            </div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Shipped Systems & Apps
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono">
-              FIU
-            </div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Software Engineering B.Sc.
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono">
-              100%
-            </div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              Clean Architecture
-            </div>
-          </div>
-        </motion.div>
+          ))}
+        </dl>
       </div>
     </section>
   )

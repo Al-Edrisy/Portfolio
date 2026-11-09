@@ -29,10 +29,10 @@ const footerLinks = [
     {
         title: "Services",
         links: [
-            { name: "Full-Stack Development", href: "/services" },
-            { name: "AI Systems Integration", href: "/services" },
-            { name: "UI/UX Engineering", href: "/services" },
-            { name: "Consultation", href: "/services" },
+            { name: "Full-Stack Development", href: "/about#working-together" },
+            { name: "AI Systems Integration", href: "/about#working-together" },
+            { name: "UI/UX Engineering", href: "/about#working-together" },
+            { name: "Consultation", href: "/contact" },
         ]
     },
     {

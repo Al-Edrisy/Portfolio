@@ -1,231 +1,134 @@
-"use client"
-
-import { motion } from "motion/react"
 import Image from "next/image"
-import Link from "next/link"
-import { GraduationCap, Award, Download, ExternalLink, Github, Linkedin, Code2, Mail, CheckCircle2 } from "lucide-react"
+import { Download, ExternalLink, Github, Linkedin, Code2, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { certifications, profile } from "@/constants/profile"
+import { Reveal } from "./reveal"
+import { SectionShell, aboutCardClass } from "./section-shell"
+
+const links = [
+  { label: "GitHub", handle: "@Al-Edrisy", href: profile.social.github, icon: Github, external: true },
+  { label: "LinkedIn", handle: profile.name, href: profile.social.linkedin, icon: Linkedin, external: true },
+  { label: "LeetCode", handle: "@salehfree33", href: profile.social.leetcode, icon: Code2, external: true },
+  { label: "Email", handle: profile.email, href: `mailto:${profile.email}`, icon: Mail, external: false },
+]
 
 export default function AcademicCredentials() {
-  return (
-    <section className="py-16 md:py-24 relative overflow-hidden bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl relative z-10">
-        {/* Section Header */}
-        <div className="max-w-3xl mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 text-xs font-mono tracking-wider uppercase text-primary mb-3">
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Credentials & Verification</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-foreground mb-4 leading-tight">
-            Academic Pedigree & Professional Proof
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-            Verified institutional affiliations, academic documentation, and official developer profiles.
-          </p>
-        </div>
+  const { university } = profile
 
-        {/* Credentials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-12">
-          {/* FIU Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="p-6 sm:p-8 rounded-2xl border border-border/60 bg-card/40 flex flex-col justify-between"
-          >
+  return (
+    <SectionShell
+      id="credentials"
+      eyebrow="Credentials"
+      title="Education, certifications and public profiles."
+      className="border-b-0"
+    >
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <Reveal className="flex">
+          <Card className={`${aboutCardClass} w-full justify-between`}>
             <div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-white p-2 border border-border/60 flex items-center justify-center flex-shrink-0 shadow-xs">
+              <div className="mb-6 flex items-center gap-4">
+                <span className="grid size-14 shrink-0 place-items-center rounded-xl border border-border/60 bg-white p-2">
                   <Image
                     src="/university-logo.png"
-                    alt="Final International University Logo"
-                    width={48}
-                    height={48}
-                    className="object-contain"
+                    alt={`${university.name} logo`}
+                    width={40}
+                    height={40}
+                    className="size-10 object-contain"
                   />
-                </div>
-
+                </span>
                 <div>
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-primary font-semibold">
-                    ACADEMIC INSTITUTION
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-medium text-foreground">
-                    Final International University
-                  </h3>
-                  <div className="text-xs text-muted-foreground">Kyrenia, North Cyprus</div>
+                  <h3 className="text-lg font-medium text-foreground">{university.name}</h3>
+                  <p className="text-sm text-muted-foreground">{university.city}</p>
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6 text-xs sm:text-sm text-foreground/80 font-mono">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Degree</span>
-                  <span className="font-medium text-foreground">B.Sc. in Software Engineering</span>
-                </div>
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Period</span>
-                  <span>Fall 2021 — Present</span>
-                </div>
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Institutional Email</span>
-                  <span className="text-primary select-all">salih.otman@final.edu.tr</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Core Focus</span>
-                  <span>Distributed Systems, HCI, Databases</span>
-                </div>
-              </div>
+              <dl className="mb-6 space-y-3 text-sm">
+                {[
+                  ["Degree", university.degree],
+                  ["Period", university.period],
+                  ["Focus", university.focus],
+                  ["Institutional email", university.email],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex flex-col gap-0.5 border-b border-border/40 pb-3 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
+                  >
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="text-foreground sm:text-right">{value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="w-full rounded-xl border-border/60 font-mono text-xs gap-2"
-            >
-              <a
-                href="/cv/salih.otman@final.edu.tr.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download Official Academic CV (PDF)</span>
+            <Button asChild variant="outline" className="h-11 w-full rounded-xl">
+              <a href={profile.cvHref} download data-cta="credentials-download-cv">
+                <Download aria-hidden className="size-4" />
+                Download CV (PDF)
               </a>
             </Button>
-          </motion.div>
+          </Card>
+        </Reveal>
 
-          {/* Database Mastery & Industry Certs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-            className="p-6 sm:p-8 rounded-2xl border border-border/60 bg-card/40 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
-                  <Award className="w-7 h-7" />
-                </div>
-
-                <div>
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-primary font-semibold">
-                    VERIFIED CERTIFICATION
+        <Reveal delay={0.08} className="flex">
+          <Card className={`${aboutCardClass} w-full`}>
+            <h3 className="mb-6 text-lg font-medium text-foreground">Professional certifications</h3>
+            <ul className="space-y-5">
+              {certifications.map((cert) => (
+                <li key={cert.title} className="flex gap-4">
+                  <span
+                    aria-hidden
+                    className="grid size-11 shrink-0 place-items-center rounded-xl border border-border/60 bg-muted/50 text-xl"
+                  >
+                    {cert.emoji}
+                  </span>
+                  <div className="min-w-0">
+                    <h4 className="font-medium text-foreground">{cert.title}</h4>
+                    <p className="text-sm text-muted-foreground">{cert.instructor}</p>
+                    <p className="text-sm text-muted-foreground">{cert.detail}</p>
+                    {"completed" in cert ? (
+                      <p className="text-sm text-muted-foreground">{cert.completed}</p>
+                    ) : null}
+                    {"href" in cert ? (
+                      <a
+                        href={cert.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:underline"
+                      >
+                        View certificate
+                        <ExternalLink aria-hidden className="size-3.5" />
+                        <span className="sr-only">(opens in a new tab)</span>
+                      </a>
+                    ) : null}
                   </div>
-                  <h3 className="text-lg sm:text-xl font-medium text-foreground">
-                    Complete Database Mastery
-                  </h3>
-                  <div className="text-xs text-muted-foreground">Zero to Mastery Academy</div>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-6 text-xs sm:text-sm text-foreground/80 font-mono">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Instructors</span>
-                  <span>Andrei Neagoie, Mo Binni</span>
-                </div>
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Duration</span>
-                  <span>24.05 Hours Intensive Training</span>
-                </div>
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-muted-foreground">Completion</span>
-                  <span>February 8, 2024</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Curriculum</span>
-                  <span>PostgreSQL, Redis, Normalization, Query Tuning</span>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="w-full rounded-xl border-border/60 font-mono text-xs gap-2"
-            >
-              <a
-                href="https://udemy-certificate.s3.amazonaws.com/image/UC-5755ae07-3463-4a72-9460-78bbd2963eb3.jpg?v=1707389293000"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Verify Credential on AWS S3</span>
-              </a>
-            </Button>
-          </motion.div>
-        </div>
-
-        {/* Verified Developer Footprint */}
-        <div className="p-6 sm:p-8 rounded-2xl border border-border/60 bg-muted/20">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h4 className="text-sm font-mono uppercase tracking-wider text-foreground font-semibold">
-                Verified Footprint & Public Repositories
-              </h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                Explore open-source architectures, algorithmic solutions, and live contributions.
-              </p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-mono">
-              All Channels Active
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <a
-              href="https://github.com/Al-Edrisy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/60 hover:bg-card hover:border-border transition-colors flex items-center gap-3 font-mono text-xs"
-            >
-              <Github className="w-4 h-4 text-foreground" />
-              <div>
-                <div className="font-medium text-foreground">GitHub</div>
-                <div className="text-[11px] text-muted-foreground">@Al-Edrisy</div>
-              </div>
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/صالح-بن-عثمان-a565a2242"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/60 hover:bg-card hover:border-border transition-colors flex items-center gap-3 font-mono text-xs"
-            >
-              <Linkedin className="w-4 h-4 text-blue-500" />
-              <div>
-                <div className="font-medium text-foreground">LinkedIn</div>
-                <div className="text-[11px] text-muted-foreground">Salih Ben Otman</div>
-              </div>
-            </a>
-
-            <a
-              href="https://leetcode.com/u/salehfree33"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/60 hover:bg-card hover:border-border transition-colors flex items-center gap-3 font-mono text-xs"
-            >
-              <Code2 className="w-4 h-4 text-amber-500" />
-              <div>
-                <div className="font-medium text-foreground">LeetCode</div>
-                <div className="text-[11px] text-muted-foreground">@salehfree33</div>
-              </div>
-            </a>
-
-            <a
-              href="mailto:salehfree33@gmail.com"
-              className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/60 hover:bg-card hover:border-border transition-colors flex items-center gap-3 font-mono text-xs"
-            >
-              <Mail className="w-4 h-4 text-primary" />
-              <div>
-                <div className="font-medium text-foreground">Direct Mail</div>
-                <div className="text-[11px] text-muted-foreground">salehfree33@...</div>
-              </div>
-            </a>
-          </div>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Reveal>
       </div>
-    </section>
+
+      <Reveal className="mt-6">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {links.map(({ label, handle, href, icon: Icon, external }) => (
+            <li key={label}>
+              <a
+                href={href}
+                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                data-cta={`credentials-${label.toLowerCase()}`}
+                className="flex min-h-14 items-center gap-3 rounded-xl border border-border/60 bg-card/40 px-4 py-3 text-sm transition-colors duration-150 hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <Icon aria-hidden className="size-5 shrink-0" />
+                <span className="min-w-0">
+                  <span className="block font-medium text-foreground">{label}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{handle}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+    </SectionShell>
   )
 }

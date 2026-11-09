@@ -1,67 +1,52 @@
-import { Suspense } from "react"
 import { Metadata } from "next"
 import AboutSection from "@/components/sections/about-section"
-import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Navigation from "@/components/ui/navigation"
 import Footer from "@/components/ui/footer"
+import { SITE_URL, profile, yearsOfExperience } from "@/constants/profile"
 
-// Calculate years of experience dynamically from 2020
-const calculateYearsOfExperience = (): number => {
-  const startYear = 2020
-  const currentYear = new Date().getFullYear()
-  return currentYear - startYear
-}
-
-const yearsOfExperience = calculateYearsOfExperience()
+const years = yearsOfExperience()
+const pageUrl = `${SITE_URL}/about`
+// The root layout appends " | Salih Ben Otman Portfolio", so keep this short to stay under ~60 chars.
+const title = `About ${profile.name}`
+const socialTitle = `About ${profile.name} – Full Stack, UI/UX & AI Systems Engineer`
+const description = `${profile.name} (${profile.alias}) is a full stack software developer, UI/UX engineer and AI systems builder in ${profile.location} with ${years}+ years of experience. B.Sc. in Software Engineering at ${profile.university.name}.`
 
 export const metadata: Metadata = {
-  title: "About Salih Ben Otman - Engineering Practice, Background & Architecture",
-  description: `The Engineering Practice of Salih Ben Otman (Al-Edrisy): Full Stack Software Developer, UI/UX Engineer, and AI Systems Builder with ${yearsOfExperience}+ years experience. B.Sc. in Software Engineering from Final International University. Architecting high-speed Next.js systems, autonomous AI agents, and tactile digital experiences.`,
+  title,
+  description,
   keywords: [
-    "About Salih Ben Otman",
-    "Salih Ben Otman Engineering Practice",
+    "Salih Ben Otman",
     "Al-Edrisy",
-    "Full Stack Software Developer",
+    "Full Stack Developer",
     "UI/UX Engineer",
     "AI Systems Builder",
-    "Final International University Software Engineering",
-    "FIU Kyrenia",
-    "Next.js Architect",
-    "Langflow and LangChain Developer",
-    "Clean Architecture TypeScript",
+    "Next.js Developer",
+    "Agentic AI",
+    "Final International University",
+    "North Cyprus",
   ],
-  alternates: {
-    canonical: "https://salihbenotman.dev/about",
-  },
+  alternates: { canonical: pageUrl },
   openGraph: {
-    title: "About Salih Ben Otman - Engineering Practice & Background",
-    description: `Full Stack Developer & AI Systems Engineer with ${yearsOfExperience}+ years experience. B.Sc. in Software Engineering from Final International University.`,
-    url: "https://salihbenotman.dev/about",
+    title: socialTitle,
+    description,
+    url: pageUrl,
     type: "profile",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "About Salih Ben Otman - Engineering Practice",
-      },
-    ],
+    // Points at the generated image route. The previous "/og-image.png" did not exist (404).
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${profile.name} – About` }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About Salih Ben Otman - Full Stack & AI Systems Engineer",
-    description: `Full Stack Developer with ${yearsOfExperience}+ years experience, B.Sc. in Software Engineering from FIU.`,
+    title: socialTitle,
+    description,
     creator: "@salihbenotman",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   other: {
-    "citation_author": "Salih Ben Otman",
-    "citation_title": "Salih Ben Otman - Academic & Professional Engineering Background",
-    "citation_institution": "Final International University",
-    "citation_pdf_url": "https://salihbenotman.dev/cv/salih.otman@final.edu.tr.pdf",
-    "llms-txt": "https://salihbenotman.dev/llms.txt",
-    "llms-full-txt": "https://salihbenotman.dev/llms-full.txt",
+    citation_author: profile.name,
+    citation_institution: profile.university.name,
+    "llms-txt": `${SITE_URL}/llms.txt`,
+    "llms-full-txt": `${SITE_URL}/llms-full.txt`,
   },
 }
 
@@ -70,56 +55,46 @@ const aboutJsonLd = {
   "@graph": [
     {
       "@type": "AboutPage",
-      "@id": "https://salihbenotman.dev/about#aboutpage",
-      "url": "https://salihbenotman.dev/about",
-      "name": "About Salih Ben Otman",
-      "mainEntity": {
-        "@type": "Person",
-        "@id": "https://salihbenotman.dev/#person",
-        "name": "Salih Ben Otman",
-        "alternateName": "Al-Edrisy",
-        "jobTitle": "Full Stack Software Developer & AI Systems Builder",
-        "alumniOf": {
-          "@type": "EducationalOrganization",
-          "name": "Final International University"
-        },
-        "sameAs": [
-          "https://github.com/Al-Edrisy",
-          "https://www.linkedin.com/in/صالح-بن-عثمان-a565a2242",
-          "https://leetcode.com/u/salehfree33"
-        ]
-      }
+      "@id": `${pageUrl}#aboutpage`,
+      url: pageUrl,
+      name: `About ${profile.name}`,
+      description,
+      inLanguage: "en",
+      mainEntity: { "@id": `${SITE_URL}/#person` },
+      breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+    },
+    {
+      "@type": "Person",
+      "@id": `${SITE_URL}/#person`,
+      name: profile.name,
+      alternateName: profile.alias,
+      url: SITE_URL,
+      image: `${SITE_URL}/me.jpg`,
+      jobTitle: profile.role,
+      description,
+      email: `mailto:${profile.email}`,
+      address: { "@type": "PostalAddress", addressLocality: "Kyrenia", addressCountry: "CY" },
+      alumniOf: { "@type": "CollegeOrUniversity", name: profile.university.name },
+      knowsAbout: [
+        "Full-stack web development",
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Agentic AI",
+        "LLM orchestration",
+        "UI/UX engineering",
+      ],
+      sameAs: [profile.social.github, profile.social.linkedin, profile.social.leetcode],
     },
     {
       "@type": "BreadcrumbList",
-      "@id": "https://salihbenotman.dev/about#breadcrumb",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://salihbenotman.dev"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "About",
-          "item": "https://salihbenotman.dev/about"
-        }
-      ]
-    }
-  ]
-}
-
-function LoadingFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <LoadingSpinner size="lg" />
-        <p className="text-muted-foreground mt-4 font-mono text-sm">Loading practice profile...</p>
-      </div>
-    </div>
-  )
+      "@id": `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "About", item: pageUrl },
+      ],
+    },
+  ],
 }
 
 export default function AboutPage() {
@@ -127,17 +102,16 @@ export default function AboutPage() {
     <ErrorBoundary>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+        // `<` is escaped so no string in the data can close the script tag.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(aboutJsonLd).replace(/</g, "\\u003c"),
+        }}
       />
-      <main className="min-h-screen bg-background flex flex-col justify-between">
-        <Navigation />
-        <div className="pt-20 flex-1">
-          <Suspense fallback={<LoadingFallback />}>
-            <AboutSection />
-          </Suspense>
-        </div>
-        <Footer />
+      <Navigation />
+      <main id="main-content" className="min-h-screen bg-background pt-20">
+        <AboutSection />
       </main>
+      <Footer />
     </ErrorBoundary>
   )
 }
