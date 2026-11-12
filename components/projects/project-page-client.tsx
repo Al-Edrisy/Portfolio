@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import {
   ArrowLeft,
+  Sparkles,
   ExternalLink,
   Github,
   Calendar,
@@ -47,9 +49,10 @@ import { DocumentVisualizer } from '@/components/projects/docs/document-visualiz
 
 interface ProjectPageClientProps {
   projectId: string
+  brandExperienceSlug?: string | null
 }
 
-export default function ProjectPageClient({ projectId }: ProjectPageClientProps) {
+export default function ProjectPageClient({ projectId, brandExperienceSlug }: ProjectPageClientProps) {
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
@@ -585,6 +588,14 @@ export default function ProjectPageClient({ projectId }: ProjectPageClientProps)
               <div className="sticky top-24 space-y-6">
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
+                  {brandExperienceSlug && (
+                    <Button asChild size="lg" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 font-medium">
+                      <Link href={`/experiences/${brandExperienceSlug}`}>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Explore Brand Experience
+                      </Link>
+                    </Button>
+                  )}
                   {project.link && (
                     <Button asChild size="lg" className="w-full shadow-lg shadow-primary/20">
                       <a

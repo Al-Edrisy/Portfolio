@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProjectById } from "@/lib/firebase/utils/firebase-utils"
+import { hasBrand } from "@/experiences/scanner"
 import ProjectPageClient from "@/components/projects/project-page-client"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Footer from "@/components/ui/footer"
@@ -216,6 +217,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     ]
   }
 
+  const brandExperienceSlug = (project.slug && hasBrand(project.slug))
+    ? project.slug
+    : (hasBrand(id) ? id : null)
+
   return (
     <ErrorBoundary>
       {/* Dynamic Project JSON-LD Schema */}
@@ -224,7 +229,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
       />
       <main className="min-h-screen bg-background">
-        <ProjectPageClient projectId={id} />
+        <ProjectPageClient projectId={id} brandExperienceSlug={brandExperienceSlug} />
       </main>
       <Footer />
     </ErrorBoundary>

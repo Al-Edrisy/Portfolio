@@ -1,0 +1,88 @@
+# 07 — Risk & Regression Assessment
+
+> **Audit Stamped:** 2026-11-12  
+> **Target Application:** Al-Edrisy Personal Engineering Portfolio  
+> **Production URL:** [https://al-edrisy.up.railway.app](https://al-edrisy.up.railway.app)  
+> **Scope:** Failure Mode Analysis, Regression Safeguards, Risk Classification, and Mitigation Strategies
+
+---
+
+## 1. Zero-Regression Mandate & Philosophy
+
+The guiding directive of this engineering initiative is:
+> **"The portfolio remains the portfolio. The existing projects remain exactly as they are. The new feature introduces a different way to explore selected work... All changes must be additive wherever possible."**
+
+To enforce this, we conducted a comprehensive failure mode and effects analysis (FMEA) across all application layers.
+
+---
+
+## 2. Risk Classification Matrix
+
+Each potential risk is classified by severity: **Critical**, **High**, **Medium**, or **Low**, accompanied by its exact source file locus and concrete mitigation strategy.
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ RISK SEVERITY OVERVIEW                                                 │
+│                                                                        │
+│   [CRITICAL]  Global CSS & Token Bleed                                │
+│   [CRITICAL]  Database Schema Breaking Change                          │
+│   [HIGH]      Route Collision & History Hijacking                      │
+│   [HIGH]      ScrollTrigger DOM Spacer Contamination                   │
+│   [MEDIUM]    App Template Motion Interference                         │
+│   [MEDIUM]    Bundle Size Bloat & Unoptimized Media                    │
+│   [LOW]       Administrative Form Sync Failure                         │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detailed Risk Catalog & Mitigations
+
+| Risk # | Description & Locus | Severity | Potential Failure Mode | Architectural Mitigation Strategy |
+| :--- | :--- | :--- | :--- | :--- |
+| **R-01** | **Global CSS / Variable Contamination**<br>`app/globals.css`, `app/layout.tsx` | **CRITICAL** | Overriding `--background`, `--primary`, or `--radius` globally breaks the portfolio's light/dark mode and card styling. | **Strict Token Namespacing:** Brand styles never touch `:root` or `body`. All brand colors, fonts, and radiuses use `--brand-*` CSS custom properties applied solely to the `.brand-experience-root` container element. |
+| **R-02** | **Destructive Firestore Schema Mutation**<br>`types/index.ts`, `lib/firebase/utils/` | **CRITICAL** | Requiring non-optional fields or altering `ProjectDocument` causes legacy projects without brand data to fail serialization or crash `docToProject()`. | **Strict Optionality:** `brandExperience?: BrandExperienceConfig` is strictly optional. No database migrations required. If absent, runtime defaults to existing presentation. |
+| **R-03** | **Route Collision & Broken Navigation**<br>`app/experiences/`, `app/projects/[id]` | **HIGH** | New routes clashing with existing `/projects/[id]` or breaking browser back/forward buttons. | **Isolated Namespace:** The new feature lives exclusively under `app/experiences/[slug]`. It does not modify `/projects/[id]/page.tsx` routing. Breadcrumbs and explicit back links preserve history. |
+| **R-04** | **GSAP Pin-Spacer Contamination**<br>`experiences/engine/hooks/` | **HIGH** | ScrollTrigger creates inline `.pin-spacer` DOM elements that persist after navigating back to the portfolio, causing massive whitespace gaps. | **Auto-Reverting GSAP Context:** All tweens and triggers are created inside `gsap.context()` in `useBrandGsap()`. The unmount lifecycle calls `ctx.revert()` which completely destroys all pin spacers and resets DOM styles. |
+| **R-05** | **App Router Template Transition Conflict**<br>`app/template.tsx` | **MEDIUM** | `app/template.tsx` animates `{ opacity: 0, y: 10 }`. If a brand experience has a pinned full-screen hero, the $y$-offset animation can cause miscalculations in ScrollTrigger initial positions. | **ScrollTrigger Refresh on Mount:** Call `ScrollTrigger.refresh()` after a 350ms delay matching template transition completion, or nest under a layout that bypasses the motion template. |
+| **R-06** | **Media Bandwidth & Railway Quota Bloat**<br>`app/api/media/[...key]` | **MEDIUM** | Serving multiple uncompressed 4K MP4 videos exhausts server memory or bandwidth quotas. | **Direct R2 CDN Bypass:** When `R2_PUBLIC_DOMAIN` is configured, client browsers fetch directly from Cloudflare's edge CDN, bypassing the Railway Node.js server entirely. Videos use pre-compressed 1080p WebM/H.264. |
+| **R-07** | **Hydration Mismatch on Font / Theme Load**<br>`app/experiences/[slug]/page.tsx` | **LOW** | Client-side theme detection causing mismatch between SSR HTML and React client hydration. | **Server Component Generation:** Brand theme tokens are baked directly into the initial HTML markup generated by the Server Component, guaranteeing zero hydration shift. |
+
+---
+
+## 3. Existing Files Requiring Modification vs. New Files Created
+
+To guarantee transparency, we explicitly map every file involved in the integration:
+
+### 3.1 Existing Files Requiring Modification (Minimal, Surgical & Additive)
+Only **two** existing files require minor, additive code additions:
+
+1. **`types/index.ts`**
+   - *Modification:* Add `BrandExperienceConfig` interface and append optional `brandExperience?: BrandExperienceConfig` property to the `Project` interface.
+   - *Regression Risk:* **Zero**. TypeScript optional properties are backward compatible with all existing code and database records.
+2. **`components/projects/project-page-client.tsx`**
+   - *Modification:* In the action buttons sidebar (lines 586-613), conditionally render the `<Button asChild>` pointing to `/experiences/${project.brandExperience.slug}` if `project.brandExperience?.enabled` is true.
+   - *Regression Risk:* **Zero**. If the property is undefined (as it is on all current projects), nothing renders and the UI remains identical to production today.
+
+*(Optional future addition)*: `components/projects/cards/project-card-gsap.tsx` to display an optional brand badge.
+
+### 3.2 New Files to Be Created (100% Isolated)
+All other functionality lives in dedicated, self-contained files:
+
+- `app/experiences/[slug]/page.tsx` (Server Component route handler & SEO generator)
+- `app/experiences/[slug]/loading.tsx` (Suspense loading skeleton)
+- `app/experiences/[slug]/not-found.tsx` (404 recovery page)
+- `experiences/engine/brand-experience-renderer.tsx` (Core layout engine)
+- `experiences/engine/brand-context.tsx` (Scoped React context)
+- `experiences/engine/section-registry.ts` (Dynamic section dispatcher)
+- `experiences/engine/hooks/use-brand-gsap.ts` (Scoped GSAP manager)
+- `experiences/configurations/` (Pronto, 7A, Ispani, Akakus manifest files)
+- `experiences/sections/` (Hero, Story, Showcase, Identity, Capabilities, Engineering, Closing)
+- `experiences/components/` (BrandNavigation, BrandButton, DeviceMockup, MediaPlayer)
+
+---
+
+## 4. Rollback & Verification Protocol
+
+If any unforeseen anomaly occurs during future implementation:
+1. **Instant Feature Flag Rollback:** Setting `enabled: false` on the brand configuration instantly hides all entry points from the portfolio.
+2. **Zero Blast Radius:** Because the core feature lives in `/experiences/`, removing or disabling the route leaves all existing pages (`/`, `/projects`, `/about`, `/skills`, `/contact`, `/admin`) 100% unaffected.
+3. **Automated Verification:** The 89 Vitest unit tests can be re-run at any time to verify core utility and component integrity.

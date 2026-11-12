@@ -92,6 +92,10 @@ export interface Project {
   announcedAt?: Date | string | null
   announcementCampaignId?: string | null
   announcementRecipientCount?: number
+  brandExperience?: {
+    enabled: boolean
+    slug: string
+  }
 }
 
 export interface Reaction {
