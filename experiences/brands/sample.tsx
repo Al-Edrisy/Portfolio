@@ -118,17 +118,17 @@ export default function SampleBrandExperience() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="flex flex-wrap items-center justify-center gap-4 pt-4"
             >
-              <a href="#showcase">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-7 shadow-lg shadow-blue-500/20">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-7 shadow-lg shadow-blue-500/20">
+                <a href="#showcase">
                   <span>Explore Interactive Mockup</span>
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </a>
-              <a href="#architecture">
-                <Button size="lg" variant="outline" className="border-slate-800 hover:bg-slate-900/60 rounded-full text-slate-300">
+                </a>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-slate-800 hover:bg-slate-900/60 rounded-full text-slate-300">
+                <a href="#architecture">
                   <span>Technical Specs</span>
-                </Button>
-              </a>
+                </a>
+              </Button>
             </motion.div>
           </div>
         </section>
@@ -390,17 +390,17 @@ export default function SampleBrandExperience() {
             </p>
 
             <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-              <Link href="/experiences">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6">
+                <Link href="/experiences">
                   <span>Explore All Experiences</span>
                   <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-              <Link href="/projects">
-                <Button size="lg" variant="outline" className="border-slate-800 hover:bg-slate-900 rounded-full text-slate-300">
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-slate-800 hover:bg-slate-900 rounded-full text-slate-300">
+                <Link href="/projects">
                   <span>Return to Portfolio</span>
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

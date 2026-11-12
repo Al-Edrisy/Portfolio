@@ -91,12 +91,12 @@ export default function ExperiencesDirectoryPage() {
 
                   {/* Launch CTA Button */}
                   <div className="pt-6 mt-6 border-t border-border/50 flex items-center justify-between">
-                    <Link href={`/experiences/${brand.slug}`} className="w-full">
-                      <Button className="w-full justify-between rounded-xl group/btn" size="lg">
+                    <Button asChild className="w-full justify-between rounded-xl group/btn" size="lg">
+                      <Link href={`/experiences/${brand.slug}`}>
                         <span>Launch Experience</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -118,12 +118,12 @@ export default function ExperiencesDirectoryPage() {
                 </p>
               </div>
 
-              <Link href="/experiences/sample">
-                <Button variant="outline" size="sm" className="shrink-0 rounded-full">
+              <Button asChild variant="outline" size="sm" className="shrink-0 rounded-full">
+                <Link href="/experiences/sample">
                   <Sparkles className="w-3.5 h-3.5 mr-2 text-primary" />
                   <span>Inspect Reference Sample</span>
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
           </div>
