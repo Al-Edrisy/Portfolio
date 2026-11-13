@@ -11,6 +11,6 @@ export function getBrandMediaUrl(brandSlug: string, assetPath: string): string {
     return `${base}/brand-assets/${brandSlug}/${cleanPath}`
   }
 
-  // Fallback to local /public or media proxy
-  return `/experiences/${brandSlug}/${cleanPath}`
+  // Fallback to local /brands or /experiences assets
+  return `/brands/${brandSlug}/${cleanPath}`
 }

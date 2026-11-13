@@ -93,6 +93,10 @@ const BRAND_COMPONENTS: Record<string, React.ComponentType<any>> = {
     ssr: true,
     loading: () => <ExperienceLoadingSkeleton />,
   }),
+  akakus: dynamic(() => import('@/experiences/brands/akakus'), {
+    ssr: true,
+    loading: () => <ExperienceLoadingSkeleton />,
+  }),
 }
 
 export default async function ExperiencePage({ params }: ExperiencePageProps) {

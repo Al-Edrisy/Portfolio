@@ -45,10 +45,10 @@ const BRAND_METADATA_FALLBACKS: Record<string, Partial<DiscoveredBrand>> = {
   },
   akakus: {
     name: 'Akakus',
-    tagline: 'Desert Monolith Architectural System',
-    description: 'Architectural structural canvas inspired by prehistoric formations, earth tones, and timeless minimalism.',
-    accentColor: '#F59E0B',
-    category: 'Architectural System / Spatial Design',
+    tagline: 'AI Calorie & Nutrition Tracker with Living Companion',
+    description: 'An AI-powered nutrition companion rooted in the Acacus desert sandstone. Features living biometric companion Fuzzy, Google Gemini 2.5 Vision analysis, and an Apple Health-grade editorial design system.',
+    accentColor: '#C85A32',
+    category: 'AI Health & Nutrition / Mobile System',
   },
 }
 
