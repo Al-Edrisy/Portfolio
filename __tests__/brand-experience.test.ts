@@ -1,17 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { getAllBrands, getBrandBySlug, hasBrand } from '@/experiences/scanner'
-import SampleBrandExperience from '@/experiences/brands/sample'
 import AkakusBrandExperience from '@/experiences/brands/akakus'
 import ExperiencePage from '@/app/experiences/[slug]/page'
-import { getBrandMediaUrl } from '@/experiences/shared/media-utils'
+import { getBrandMediaUrl, getBrandCloudflareUrl } from '@/experiences/shared/media-utils'
 
 describe('Brand Experience Scanner & Components', () => {
-  it('should discover sample and akakus brands', () => {
+  it('should discover akakus and exclude removed sample brand', () => {
     const brands = getAllBrands()
-    expect(brands.length).toBeGreaterThanOrEqual(2)
-    const sample = brands.find(b => b.slug === 'sample')
-    expect(sample).toBeDefined()
-    expect(sample?.name).toBe('Sample Brand Experience')
+    expect(brands.length).toBeGreaterThanOrEqual(1)
+    expect(brands.find(b => b.slug === 'sample')).toBeUndefined()
 
     const akakus = brands.find(b => b.slug === 'akakus')
     expect(akakus).toBeDefined()
@@ -19,22 +16,24 @@ describe('Brand Experience Scanner & Components', () => {
     expect(akakus?.accentColor).toBe('#C85A32')
   })
 
-  it('should find brand by slug', () => {
-    expect(hasBrand('sample')).toBe(true)
+  it('should find akakus brand by slug and reject sample', () => {
+    expect(hasBrand('sample')).toBe(false)
     expect(hasBrand('akakus')).toBe(true)
     const akakus = getBrandBySlug('akakus')
     expect(akakus?.slug).toBe('akakus')
     expect(akakus?.category).toContain('AI Health')
   })
 
-  it('should render SampleBrandExperience and AkakusBrandExperience', () => {
-    expect(SampleBrandExperience).toBeDefined()
+  it('should render AkakusBrandExperience', () => {
     expect(AkakusBrandExperience).toBeDefined()
   })
 
-  it('should resolve brand media URLs accurately', () => {
+  it('should resolve brand media and Cloudflare R2 video URLs accurately', () => {
     const heroUrl = getBrandMediaUrl('akakus', 'hero-wordmark.webp')
     expect(heroUrl).toBe('/brands/akakus/hero-wordmark.webp')
+
+    const videoUrl = getBrandCloudflareUrl('akakus', 'launch_1080p.mp4')
+    expect(videoUrl).toBe('/api/media/brand-assets/akakus/launch_1080p.mp4')
   })
 
   it('should execute ExperiencePage server component for akakus', async () => {

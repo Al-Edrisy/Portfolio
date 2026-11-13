@@ -15,13 +15,6 @@ const BRANDS_DIR = path.join(process.cwd(), 'experiences', 'brands')
 
 // Fallback metadata for known brands if not explicitly exported in the file
 const BRAND_METADATA_FALLBACKS: Record<string, Partial<DiscoveredBrand>> = {
-  sample: {
-    name: 'Sample Brand Experience',
-    tagline: 'Interactive Product Showcase & Architectural Blueprint',
-    description: 'A reference blueprint demonstrating full-screen video heroes, interactive widgets, GSAP scroll choreography, and Cloudflare media integration.',
-    accentColor: '#3B82F6',
-    category: 'Reference Blueprint / Interactive Showcase',
-  },
   pronto: {
     name: 'Pronto.Eats',
     tagline: 'Hyper-Fast Culinary Logistics & Instant Food Delivery',

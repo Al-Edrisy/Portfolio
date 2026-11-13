@@ -1,24 +1,34 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getAllBrands } from '@/experiences/scanner'
+import { getBrandMediaUrl } from '@/experiences/shared/media-utils'
 import Navigation from '@/components/ui/navigation'
 import Footer from '@/components/ui/footer'
 import ErrorBoundary from '@/components/ui/error-boundary'
-import { Sparkles, ArrowRight, Layers, Terminal, Compass } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
-  title: 'Brand Experiences Lab — Salih Ben Otman',
+  title: 'Brand Experiences — Salih Ben Otman',
   description:
-    'Dedicated interactive product showcases and brand design systems. Explore full-screen digital experiences, bespoke UI interactions, and Cloudflare-accelerated media architectures.',
+    'Dedicated interactive product showcases and brand design systems. Explore full-screen digital experiences, bespoke UI interactions, and Cloudflare-accelerated media.',
   alternates: {
     canonical: 'https://salihbenotman.dev/experiences',
   },
   openGraph: {
-    title: 'Brand Experiences Showcase — Salih Ben Otman',
+    title: 'Brand Experiences — Salih Ben Otman',
     description: 'Bespoke interactive digital product experiences and independent brand design systems.',
     url: 'https://salihbenotman.dev/experiences',
     type: 'website',
+  },
+}
+
+const BRAND_PREVIEW_MEDIA: Record<string, { src: string; bg: string; alt: string }> = {
+  akakus: {
+    src: getBrandMediaUrl('akakus', 'hero-wordmark.webp'),
+    bg: '#F9F5E4',
+    alt: 'Akakus — Your ultimate partner in active living',
   },
 }
 
@@ -27,105 +37,116 @@ export default function ExperiencesDirectoryPage() {
 
   return (
     <ErrorBoundary>
-      <main className="min-h-screen bg-background text-foreground flex flex-col">
+      <main className="flex min-h-screen flex-col bg-background text-foreground">
         <Navigation />
 
-        <div className="flex-1 pt-28 pb-20">
-          <div className="container mx-auto px-6 max-w-6xl space-y-12">
-            
-            {/* Header Section */}
-            <div className="space-y-4 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium">
-                <Compass className="w-3.5 h-3.5" />
-                <span>Product Lab & Visual Systems</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-balance">
-                Brand <span className="text-primary">Experiences</span>
+        <div className="flex-1 pt-32 pb-24">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            {/* Clean Editorial Header (no eyebrow/kicker) */}
+            <header className="max-w-3xl border-b border-border/60 pb-12">
+              <h1
+                className="text-4xl font-semibold text-foreground sm:text-5xl md:text-6xl"
+                style={{ letterSpacing: '-0.025em', lineHeight: 1.08, textWrap: 'balance' }}
+              >
+                Brand Experiences
               </h1>
-
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed text-balance">
-                Dedicated, immersive digital product presentations. Instead of traditional case studies,
-                each experience immerses you into the independent brand identity, interactive workflows, and
-                motion design built for the product.
+              <p className="mt-5 max-w-[65ch] text-base leading-relaxed text-muted-foreground sm:text-lg">
+                Dedicated interactive worlds built for individual products. Each canvas steps
+                outside standard case-study templates to let the typography, motion, and visual
+                system speak directly.
               </p>
-            </div>
+            </header>
 
-            {/* Brands Showcase Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-              {brands.map((brand) => (
-                <div
-                  key={brand.slug}
-                  className="group relative rounded-2xl bg-card border border-border/80 hover:border-primary/50 transition-all duration-300 p-7 flex flex-col justify-between shadow-xs hover:shadow-md"
-                >
-                  <div className="space-y-4">
-                    {/* Header Row: Category badge & accent indicator */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-muted text-muted-foreground">
-                        {brand.category}
-                      </span>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: brand.accentColor }}
-                        />
-                        <span>/experiences/{brand.slug}</span>
-                      </div>
-                    </div>
-
-                    {/* Title & Tagline */}
-                    <div>
-                      <h2 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-                        {brand.name}
-                      </h2>
-                      <p className="text-sm font-medium text-muted-foreground mt-1">
-                        {brand.tagline}
-                      </p>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground/90 leading-relaxed">
-                      {brand.description}
-                    </p>
-                  </div>
-
-                  {/* Launch CTA Button */}
-                  <div className="pt-6 mt-6 border-t border-border/50 flex items-center justify-between">
-                    <Button asChild className="w-full justify-between rounded-xl group/btn" size="lg">
-                      <Link href={`/experiences/${brand.slug}`}>
-                        <span>Launch Experience</span>
-                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Open Canvas Scaffolding Banner */}
-            <div className="p-8 rounded-2xl bg-muted/40 border border-border/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Terminal className="w-4 h-4 text-primary" />
-                  <span>Open-Canvas Architecture</span>
-                </div>
-                <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
-                  Want to add a new brand? Simply drop any React JSX file (e.g.{' '}
-                  <code className="text-primary font-mono">pronto.tsx</code> or{' '}
-                  <code className="text-primary font-mono">seven-a.tsx</code>) into the{' '}
-                  <code className="text-primary font-mono">experiences/brands/</code> directory.
-                  It will automatically appear here and mount its direct URL with zero database setup.
+            {/* Editorial Artifact-Led Showcase */}
+            <section className="mt-14 space-y-20">
+              {brands.length === 0 ? (
+                <p className="py-12 text-base text-muted-foreground">
+                  No brand experiences are currently published.
                 </p>
-              </div>
+              ) : (
+                brands.map((brand) => {
+                  const preview = BRAND_PREVIEW_MEDIA[brand.slug]
+                  return (
+                    <article
+                      key={brand.slug}
+                      className="group grid grid-cols-1 items-center gap-10 lg:grid-cols-12"
+                    >
+                      {/* Artifact Preview Frame */}
+                      <Link
+                        href={`/experiences/${brand.slug}`}
+                        className="relative block overflow-hidden rounded-2xl lg:col-span-7"
+                        style={{ backgroundColor: preview?.bg ?? '#141413' }}
+                      >
+                        {preview ? (
+                          <Image
+                            src={preview.src}
+                            alt={preview.alt}
+                            width={1024}
+                            height={571}
+                            priority
+                            loading="eager"
+                            className="h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                          />
+                        ) : (
+                          <div
+                            className="flex aspect-[16/9] w-full items-center justify-center p-10"
+                            style={{ backgroundColor: `${brand.accentColor}15` }}
+                          >
+                            <span
+                              className="text-3xl font-semibold tracking-tight"
+                              style={{ color: brand.accentColor }}
+                            >
+                              {brand.name}
+                            </span>
+                          </div>
+                        )}
+                      </Link>
 
-              <Button asChild variant="outline" size="sm" className="shrink-0 rounded-full">
-                <Link href="/experiences/sample">
-                  <Sparkles className="w-3.5 h-3.5 mr-2 text-primary" />
-                  <span>Inspect Reference Sample</span>
-                </Link>
-              </Button>
-            </div>
+                      {/* Editorial Details */}
+                      <div className="flex flex-col justify-center space-y-5 lg:col-span-5">
+                        <div className="flex items-center gap-2.5 text-xs font-medium text-muted-foreground">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: brand.accentColor }}
+                          />
+                          <span>{brand.category}</span>
+                        </div>
 
+                        <div>
+                          <h2
+                            className="text-3xl font-semibold text-foreground sm:text-4xl"
+                            style={{ letterSpacing: '-0.02em', lineHeight: 1.12 }}
+                          >
+                            <Link
+                              href={`/experiences/${brand.slug}`}
+                              className="transition-colors hover:text-primary"
+                            >
+                              {brand.name}
+                            </Link>
+                          </h2>
+                          <p className="mt-2 text-base font-medium text-foreground/80">
+                            {brand.tagline}
+                          </p>
+                        </div>
+
+                        <p className="max-w-[55ch] text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          {brand.description}
+                        </p>
+
+                        <div className="pt-2">
+                          <Button asChild size="lg" className="rounded-full px-6">
+                            <Link href={`/experiences/${brand.slug}`}>
+                              <span>Enter Experience</span>
+                              <ArrowUpRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })
+              )}
+            </section>
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { BrandShell } from '@/experiences/shared/brand-shell'
-import { getBrandMediaUrl } from '@/experiences/shared/media-utils'
+import { getBrandMediaUrl, getBrandCloudflareUrl } from '@/experiences/shared/media-utils'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -343,10 +343,41 @@ export default function AkakusBrandExperience() {
 
       {/* =========================================================
           3. OBSIDIAN PRODUCT STAGE (#000000)
-          Seamless integration of dark-staged mobile trios & icons
+          Seamless integration of Launch Film, mobile trios & icons
          ========================================================= */}
       <section className="bg-[#000000] py-20 text-[#F9F5E4] md:py-28">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          {/* Cloudflare R2 Launch Film */}
+          <div className="mb-20">
+            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div>
+                <h2
+                  className="text-3xl font-semibold text-[#F9F5E4] sm:text-4xl"
+                  style={{ letterSpacing: '-0.025em', lineHeight: 1.12, textWrap: 'balance' }}
+                >
+                  Launch Film
+                </h2>
+                <p className="mt-2 max-w-[60ch] text-base leading-relaxed text-[#C8C2B0]">
+                  Introducing Fuzzy and the Akakus active living companion in motion.
+                </p>
+              </div>
+              <span className="font-mono text-xs tabular-nums text-[#8F8A7B]">
+                1080p · 24fps · Cloudflare R2 Stream
+              </span>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl bg-[#0A0A09] ring-1 ring-[#F9F5E4]/10">
+              <video
+                src={getBrandCloudflareUrl('akakus', 'launch_1080p.mp4')}
+                poster={getBrandMediaUrl('akakus', 'hero-wordmark.webp')}
+                controls
+                playsInline
+                preload="metadata"
+                className="aspect-video w-full object-cover"
+              />
+            </div>
+          </div>
+
           <div className="flex flex-col justify-between gap-6 border-b border-[#F9F5E4]/15 pb-8 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <h2

@@ -11,6 +11,22 @@ export function getBrandMediaUrl(brandSlug: string, assetPath: string): string {
     return `${base}/brand-assets/${brandSlug}/${cleanPath}`
   }
 
-  // Fallback to local /brands or /experiences assets
+  // Fallback to local /brands assets
   return `/brands/${brandSlug}/${cleanPath}`
+}
+
+/**
+ * Resolves large/streaming media (e.g. MP4 videos) hosted on Cloudflare R2.
+ * Uses public CDN domain if configured, otherwise streams via /api/media/[...key] R2 Range proxy.
+ */
+export function getBrandCloudflareUrl(brandSlug: string, assetPath: string): string {
+  const publicDomain = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || process.env.R2_PUBLIC_DOMAIN
+  const cleanPath = assetPath.startsWith('/') ? assetPath.slice(1) : assetPath
+
+  if (publicDomain && !publicDomain.includes('.r2.cloudflarestorage.com')) {
+    const base = publicDomain.endsWith('/') ? publicDomain.slice(0, -1) : publicDomain
+    return `${base}/brand-assets/${brandSlug}/${cleanPath}`
+  }
+
+  return `/api/media/brand-assets/${brandSlug}/${cleanPath}`
 }

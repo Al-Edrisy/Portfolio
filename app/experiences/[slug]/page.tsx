@@ -81,18 +81,6 @@ function ExperienceLoadingSkeleton() {
  * Explicit registry of brand components ensuring 100% reliable chunk resolution
  */
 const BRAND_COMPONENTS: Record<string, React.ComponentType<any>> = {
-  sample: dynamic(() => import('@/experiences/brands/sample'), {
-    ssr: true,
-    loading: () => <ExperienceLoadingSkeleton />,
-  }),
-  pronto: dynamic(() => import('@/experiences/brands/sample'), {
-    ssr: true,
-    loading: () => <ExperienceLoadingSkeleton />,
-  }),
-  'seven-a': dynamic(() => import('@/experiences/brands/sample'), {
-    ssr: true,
-    loading: () => <ExperienceLoadingSkeleton />,
-  }),
   akakus: dynamic(() => import('@/experiences/brands/akakus'), {
     ssr: true,
     loading: () => <ExperienceLoadingSkeleton />,
