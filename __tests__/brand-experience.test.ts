@@ -33,8 +33,8 @@ describe('Brand Experience Scanner & Components', () => {
   })
 
   it('should resolve brand media URLs accurately', () => {
-    const charUrl = getBrandMediaUrl('akakus', 'characters/fuel-up.webp')
-    expect(charUrl).toBe('/brands/akakus/characters/fuel-up.webp')
+    const heroUrl = getBrandMediaUrl('akakus', 'hero-wordmark.webp')
+    expect(heroUrl).toBe('/brands/akakus/hero-wordmark.webp')
   })
 
   it('should execute ExperiencePage server component for akakus', async () => {
