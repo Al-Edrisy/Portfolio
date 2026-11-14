@@ -3,9 +3,14 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { getAllBrands, getBrandBySlug, hasBrand } from '@/experiences/scanner'
+import { toAbsoluteUrl } from '@/lib/utils/site-url'
 
 interface ExperiencePageProps {
   params: Promise<{ slug: string }>
+}
+
+const BRAND_OG_IMAGES: Record<string, string> = {
+  akakus: '/brands/akakus/hero-wordmark.webp',
 }
 
 /**
@@ -34,7 +39,8 @@ export async function generateMetadata({ params }: ExperiencePageProps): Promise
 
   const title = `${brand.name} — Interactive Brand Experience`
   const description = `${brand.tagline} — ${brand.description}`
-  const canonicalUrl = `https://salihbenotman.dev/experiences/${slug}`
+  const canonicalUrl = toAbsoluteUrl(`/experiences/${slug}`)
+  const ogImageUrl = toAbsoluteUrl(BRAND_OG_IMAGES[slug] || '/opengraph-image')
 
   return {
     title,
@@ -57,11 +63,22 @@ export async function generateMetadata({ params }: ExperiencePageProps): Promise
       url: canonicalUrl,
       type: 'website',
       siteName: 'Salih Ben Otman Portfolio — Brand Experiences',
+      locale: 'en_US',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${brand.name} — ${brand.tagline}`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      creator: '@salihbenotman',
+      images: [ogImageUrl],
     },
   }
 }

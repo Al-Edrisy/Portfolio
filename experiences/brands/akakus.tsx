@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { BrandShell } from '@/experiences/shared/brand-shell'
 import { getBrandMediaUrl, getBrandCloudflareUrl } from '@/experiences/shared/media-utils'
 import { Button } from '@/components/ui/button'
+import { ShareButton } from '@/components/ui/share-button'
 
 /**
  * Lightweight GPU WebGL fragment shader rendering subtle, pointer-reactive
@@ -545,6 +546,15 @@ export default function AkakusBrandExperience() {
                 <ArrowUpRight className="ml-1.5 h-4 w-4" />
               </Link>
             </Button>
+
+            <ShareButton
+              title="Akakus — AI Calorie, Nutrition & Active Living Companion"
+              description="A living companion for nutrition, movement, and everyday energy."
+              url="/experiences/akakus"
+              variant="outline"
+              className="rounded-full border-[#1C1B19]/20 bg-transparent px-6 py-2.5 text-sm font-medium text-[#1C1B19] hover:bg-[#1C1B19]/5"
+              label="Share Experience"
+            />
           </div>
         </div>
       </footer>

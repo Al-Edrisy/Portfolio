@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProjectById } from "@/lib/firebase/utils/firebase-utils"
 import { hasBrand } from "@/experiences/scanner"
+import { toAbsoluteUrl, getSiteUrl } from "@/lib/utils/site-url"
 import ProjectPageClient from "@/components/projects/project-page-client"
 import ErrorBoundary from "@/components/ui/error-boundary"
 import Footer from "@/components/ui/footer"
@@ -32,10 +33,20 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
     const title = `${project.title} | Salih Ben Otman - Project Showcase`
     const rawDescription = project.description || "Interactive software project built with modern web architecture."
     const description = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
-    const canonicalUrl = `https://salihbenotman.dev/projects/${id}`
-    const imageUrl = (project.images && project.images.length > 0)
-      ? project.images[0]
-      : (project.image || "https://salihbenotman.dev/og-image.png")
+    const canonicalUrl = toAbsoluteUrl(`/projects/${id}`)
+
+    // Extract cover image supporting Array, Object { cover, gallery }, or legacy string
+    let rawImageUrl: string | undefined
+    if (Array.isArray(project.images) && project.images.length > 0) {
+      rawImageUrl = project.images[0]
+    } else if (project.images && typeof project.images === 'object') {
+      const imgObj = project.images as any
+      rawImageUrl = imgObj.cover || (Array.isArray(imgObj.gallery) ? imgObj.gallery[0] : undefined)
+    }
+    if (!rawImageUrl) {
+      rawImageUrl = project.image || '/opengraph-image'
+    }
+    const absoluteImageUrl = toAbsoluteUrl(rawImageUrl)
 
     const techKeywords = Array.isArray(project.tech) ? project.tech : []
 
@@ -88,16 +99,15 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
         type: "article",
         publishedTime: publishedDateStr,
         modifiedTime: modifiedDateStr || publishedDateStr,
-        authors: ["https://salihbenotman.dev"],
+        authors: [getSiteUrl()],
         section: "Technology",
         tags: techKeywords,
         images: [
           {
-            url: imageUrl,
+            url: absoluteImageUrl,
             width: 1200,
             height: 630,
             alt: `${project.title} - Built by Salih Ben Otman`,
-            type: "image/png",
           },
         ],
       },
@@ -106,7 +116,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
         title,
         description,
         creator: "@salihbenotman",
-        images: [imageUrl],
+        images: [absoluteImageUrl],
       },
       other: {
         // Google Scholar & Academic metadata

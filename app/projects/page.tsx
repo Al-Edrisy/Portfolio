@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { Metadata } from "next"
+import { toAbsoluteUrl } from "@/lib/utils/site-url"
 import ProjectsSection from "@/components/sections/projects-section"
 import LoadingSpinner from "@/components/ui/loading-spinner"
 import ErrorBoundary from "@/components/ui/error-boundary"
@@ -23,16 +24,17 @@ export const metadata: Metadata = {
     "Salih Ben Otman",
   ],
   alternates: {
-    canonical: "https://salihbenotman.dev/projects",
+    canonical: toAbsoluteUrl("/projects"),
   },
   openGraph: {
     title: "Software Projects Portfolio - Salih Ben Otman | Full Stack & AI Applications",
     description: "Explore 50+ professional software development projects: AI systems, dashboards, SaaS platforms, and modern web applications built with Next.js and TypeScript.",
-    url: "https://salihbenotman.dev/projects",
+    url: toAbsoluteUrl("/projects"),
     type: "website",
+    siteName: "Salih Ben Otman Portfolio",
     images: [
       {
-        url: "/og-image.png",
+        url: toAbsoluteUrl("/opengraph-image"),
         width: 1200,
         height: 630,
         alt: "Salih Ben Otman - Software Projects Portfolio",
@@ -44,7 +46,7 @@ export const metadata: Metadata = {
     title: "Software Projects Portfolio - Salih Ben Otman",
     description: "Explore 50+ professional software development projects: AI systems, dashboards, SaaS platforms, and modern web applications.",
     creator: "@salihbenotman",
-    images: ["/og-image.png"],
+    images: [toAbsoluteUrl("/opengraph-image")],
   },
   other: {
     "llms-txt": "https://salihbenotman.dev/llms.txt",

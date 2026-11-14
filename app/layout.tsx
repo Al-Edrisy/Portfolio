@@ -12,9 +12,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { GlobalErrorHandler } from "@/components/ui/global-error-handler"
 import "./globals.css"
 import { Suspense } from "react"
+import { getSiteUrl } from "@/lib/utils/site-url"
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://salihbenotman.dev'),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Salih Ben Otman - Full Stack Software Developer | UI/UX Engineer | AI Systems Builder",
     template: "%s | Salih Ben Otman Portfolio"
@@ -130,14 +131,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://salihbenotman.dev",
+    url: getSiteUrl(),
     title: "Salih Ben Otman - Full Stack Software Developer Portfolio",
     description:
       "Professional Software Developer Portfolio - 5+ years experience in Full Stack Development, UI/UX Engineering, and AI Systems. Specializing in React, Next.js, TypeScript, Node.js, and modern web technologies. 50+ completed projects.",
     siteName: "Salih Ben Otman Portfolio",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "Salih Ben Otman - Full Stack Software Developer Portfolio",
@@ -153,7 +154,7 @@ export const metadata: Metadata = {
     description:
       "Professional Software Developer with 5+ years experience. Expert in React, Next.js, TypeScript, AI integrations. Portfolio showcasing innovative digital solutions.",
     creator: "@salihbenotman",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -169,7 +170,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://salihbenotman.dev",
+    canonical: getSiteUrl(),
   },
   category: "technology",
   classification: "Software Development Portfolio",

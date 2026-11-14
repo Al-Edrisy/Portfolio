@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Compass, Volume2, VolumeX } from 'lucide-react'
+import { ShareButton } from '@/components/ui/share-button'
 
 export interface BrandShellProps {
   brandName: string
@@ -89,6 +90,13 @@ export function BrandShell({
               {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-primary" />}
             </button>
           )}
+
+          <ShareButton
+            variant="outline"
+            size="sm"
+            className="rounded-full bg-background/85 backdrop-blur-md border border-border/60 text-xs shadow-sm h-8 px-3"
+            showLabel={false}
+          />
 
           <div className="px-3.5 py-1.5 rounded-full bg-background/85 backdrop-blur-md border border-border/60 text-xs font-semibold tracking-wider uppercase flex items-center gap-2 shadow-sm">
             <span

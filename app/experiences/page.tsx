@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getAllBrands } from '@/experiences/scanner'
 import { getBrandMediaUrl } from '@/experiences/shared/media-utils'
+import { toAbsoluteUrl } from '@/lib/utils/site-url'
 import Navigation from '@/components/ui/navigation'
 import Footer from '@/components/ui/footer'
 import ErrorBoundary from '@/components/ui/error-boundary'
@@ -14,13 +15,29 @@ export const metadata: Metadata = {
   description:
     'Dedicated interactive product showcases and brand design systems. Explore full-screen digital experiences, bespoke UI interactions, and Cloudflare-accelerated media.',
   alternates: {
-    canonical: 'https://salihbenotman.dev/experiences',
+    canonical: toAbsoluteUrl('/experiences'),
   },
   openGraph: {
     title: 'Brand Experiences — Salih Ben Otman',
     description: 'Bespoke interactive digital product experiences and independent brand design systems.',
-    url: 'https://salihbenotman.dev/experiences',
+    url: toAbsoluteUrl('/experiences'),
+    siteName: 'Salih Ben Otman Portfolio',
     type: 'website',
+    images: [
+      {
+        url: toAbsoluteUrl('/brands/akakus/hero-wordmark.webp'),
+        width: 1200,
+        height: 630,
+        alt: 'Brand Experiences Showcase — Salih Ben Otman',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Brand Experiences — Salih Ben Otman',
+    description: 'Bespoke interactive digital product experiences and independent brand design systems.',
+    creator: '@salihbenotman',
+    images: [toAbsoluteUrl('/brands/akakus/hero-wordmark.webp')],
   },
 }
 

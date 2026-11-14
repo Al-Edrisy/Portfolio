@@ -46,6 +46,7 @@ import { ImageGalleryModal } from '@/components/projects/gallery/image-gallery-m
 import { ProjectVideoPlayer } from '@/components/projects/project-video-player'
 import { useIncrementView } from '@/hooks/projects'
 import { DocumentVisualizer } from '@/components/projects/docs/document-visualizer'
+import { ShareButton } from '@/components/ui/share-button'
 
 interface ProjectPageClientProps {
   projectId: string
@@ -620,6 +621,14 @@ export default function ProjectPageClient({ projectId, brandExperienceSlug }: Pr
                       </a>
                     </Button>
                   )}
+                  <ShareButton
+                    title={`${project.title} | Salih Ben Otman`}
+                    description={project.description}
+                    variant="secondary"
+                    size="lg"
+                    className="w-full justify-center"
+                    label="Share Project"
+                  />
                 </div>
 
                 {/* Project Info */}
