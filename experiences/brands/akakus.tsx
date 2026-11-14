@@ -370,9 +370,11 @@ export default function AkakusBrandExperience() {
               <video
                 src={getBrandCloudflareUrl('akakus', 'launch_1080p.mp4')}
                 poster={getBrandMediaUrl('akakus', 'hero-wordmark.webp')}
-                controls
+                autoPlay
+                loop
+                muted
                 playsInline
-                preload="metadata"
+                preload="auto"
                 className="aspect-video w-full object-cover"
               />
             </div>
